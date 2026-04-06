@@ -1,103 +1,103 @@
 # Nexus Tools
 
-A developer toolkit combining development utilities and personal productivity management, built with cloud-native architecture.
+一款专为开发者打造的工具箱，集开发工具和个人效率管理于一体，采用云端原生架构。
 
-## Features
+## 功能特性
 
-### Developer Tools
-- **JSON Toolkit** - Format, minify, validate
-- **Text Processing** - Excel/CSV to JSON conversion, Markdown editor
-- **Encoding/Decoding** - Base64, Hash generator, JWT parser
-- **URL Tools** - URL encoding/decoding, Regex tester
+### 开发工具
+- **JSON 工具** - 格式化、压缩、验证
+- **文本处理** - Excel/CSV 与 JSON 互转，Markdown 编辑器
+- **编解码工具** - Base64、Hash 生成器、JWT 解析
+- **URL 工具** - URL 编解码、正则测试
 
-### Productivity
-- **Todo Management** - Task tracking with priorities and due dates
-- **Time Tracking** - Activity logging and statistics reports
+### 效率管理
+- **待办事项** - 任务追踪，支持优先级和截止日期
+- **时间追踪** - 活动记录与统计报告
 
-### Cloud Sync
-- Offline-first design
-- Real-time conflict resolution
-- Version history
+### 云端同步
+- 离线优先设计
+- 实时冲突解决
+- 版本历史回溯
 
-### User Experience
-- CMD+K quick launch
-- Custom keyboard shortcuts
-- System theme adaptation
+### 用户体验
+- CMD+K 快速启动
+- 自定义快捷键
+- 跟随系统主题
 
-## Tech Stack
+## 技术栈
 
-| Layer | Technology |
-|-------|------------|
-| Mac App | SwiftUI + GRDB.swift |
-| API Gateway | Spring Cloud Gateway |
-| User Service | Spring Boot 3.x |
-| Workspace Service | Spring Boot 3.x |
-| Database | MySQL |
-| Cache | Redis |
-| Service Registry | Nacos |
-| Message Queue | RabbitMQ |
+| 层级 | 技术 |
+|------|------|
+| Mac 应用 | SwiftUI + GRDB.swift |
+| API 网关 | Spring Cloud Gateway |
+| 用户服务 | Spring Boot 3.x |
+| 工作空间服务 | Spring Boot 3.x |
+| 数据库 | MySQL |
+| 缓存 | Redis |
+| 服务注册 | Nacos |
+| 消息队列 | RabbitMQ |
 
-## Project Structure
+## 项目结构
 
 ```
 nexus-tools/
-├── mac-app/              # SwiftUI Mac application
+├── mac-app/              # SwiftUI Mac 应用
 ├── backend/
-│   ├── nexus-gateway/    # API Gateway
+│   ├── nexus-gateway/    # API 网关
 │   ├── nexus-user-service/
 │   ├── nexus-workspace-service/
 │   └── nexus-common/
 ├── docs/
-│   └── sql/              # Database scripts
-└── docker/               # Docker configurations
+│   └── sql/              # 数据库脚本
+└── docker/               # Docker 配置
 ```
 
-## Getting Started
+## 快速开始
 
-### Prerequisites
+### 环境要求
 - Java 21
-- Xcode 15+ (for Mac app)
+- Xcode 15+ (Mac 应用)
 - MySQL 8.0+
 - Redis
 - Nacos 2.x
 
-### Backend Setup
+### 后端启动
 
 ```bash
 cd backend
 
-# Build
+# 编译
 mvn clean package -DskipTests
 
-# Start services
+# 启动服务
 java -jar nexus-gateway/target/nexus-gateway-*.jar --spring.profiles.active=local &
 java -jar nexus-user-service/target/nexus-user-service-*.jar --spring.profiles.active=local &
 java -jar nexus-workspace-service/target/nexus-workspace-service-*.jar --spring.profiles.active=local &
 ```
 
-### Mac App Setup
+### Mac 应用启动
 
 ```bash
 cd mac-app
 open NexusTools.xcodeproj
-# Build & Run in Xcode
+# 在 Xcode 中 Build & Run
 ```
 
-## API Endpoints
+## API 端点
 
-| Service | Port | Path |
-|---------|------|------|
+| 服务 | 端口 | 路径 |
+|------|------|------|
 | Gateway | 8080 | `/api/v1/*` |
-| User Service | 8081 | Internal |
-| Workspace Service | 8082 | Internal |
+| User Service | 8081 | 内部调用 |
+| Workspace Service | 8082 | 内部调用 |
 
-## Roadmap
+## 开发路线
 
-- [x] Phase 1: Architecture foundation
-- [ ] Phase 2: Local developer tools
-- [ ] Phase 3: User authentication system
-- [ ] Phase 4: Todo & time tracking
-- [ ] Phase 5: Themes & keyboard shortcuts
+- [x] Phase 1: 架构基础
+- [ ] Phase 2: 本地开发工具
+- [ ] Phase 3: 用户认证系统
+- [ ] Phase 4: 待办与时间追踪
+- [ ] Phase 5: 主题与快捷键
 
 ## License
 
