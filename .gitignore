@@ -41,3 +41,5 @@ logs/
 # Environment
 .env
 .env.local
+# Local config files with secrets
+**/application-local.yml

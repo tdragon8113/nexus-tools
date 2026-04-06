@@ -4,18 +4,26 @@ server:
 spring:
   application:
     name: nexus-gateway
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   cloud:
     nacos:
+      server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+      username: ${NACOS_USERNAME:}
+      password: ${NACOS_PASSWORD:}
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        enabled: true
+        namespace: ${NACOS_NAMESPACE:}
+        group: DEFAULT_GROUP
       config:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
-        file-extension: yaml
-        namespace: nexus-tools
+        enabled: true
+        namespace: ${NACOS_NAMESPACE:}
+        group: DEFAULT_GROUP
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
 logging:
   level:

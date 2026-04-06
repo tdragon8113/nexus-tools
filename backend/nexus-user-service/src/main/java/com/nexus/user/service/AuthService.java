@@ -39,7 +39,7 @@ public class AuthService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setStatus(1);
         user.setCreatedAt(LocalDateTime.now());
 
@@ -55,7 +55,7 @@ public class AuthService {
             throw BusinessException.userNotFound();
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw BusinessException.invalidPassword();
         }
 

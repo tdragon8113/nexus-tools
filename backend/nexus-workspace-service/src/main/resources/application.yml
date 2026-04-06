@@ -4,22 +4,31 @@ server:
 spring:
   application:
     name: nexus-workspace-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   cloud:
     nacos:
+      server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+      username: ${NACOS_USERNAME:}
+      password: ${NACOS_PASSWORD:}
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        enabled: true
+        namespace: ${NACOS_NAMESPACE:}
+        group: DEFAULT_GROUP
       config:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
-        file-extension: yaml
-        namespace: nexus-tools
+        enabled: true
+        namespace: ${NACOS_NAMESPACE:}
+        group: DEFAULT_GROUP
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/nexus_workspace?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:root}
+    password: ${MYSQL_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
-  rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml

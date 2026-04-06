@@ -7,129 +7,174 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1000001000000000000001 /* NexusToolsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000000000000001 /* NexusToolsApp.swift */; };
-		A1000002000000000000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000000000000002 /* AppDelegate.swift */; };
-		A1000003000000000000003 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000000000000003 /* User.swift */; };
-		A1000004000000000000004 /* AppSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000000000000004 /* AppSetting.swift */; };
-		A1000005000000000000005 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000000000000005 /* MainView.swift */; };
-		A1000006000000000000006 /* QuickLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000000000000006 /* QuickLaunchView.swift */; };
-		A1000007000000000000007 /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007000000000000007 /* DatabaseService.swift */; };
-		A1000008000000000000008 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008000000000000008 /* NetworkService.swift */; };
-		A1000009000000000000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000009000000000000009 /* Assets.xcassets */; };
+		CA1000001 /* NexusToolsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000001 /* NexusToolsApp.swift */; };
+		CA1000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000002 /* AppDelegate.swift */; };
+		CA1000003 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000003 /* User.swift */; };
+		CA1000004 /* AppSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000004 /* AppSetting.swift */; };
+		CA1000005 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000005 /* MainView.swift */; };
+		CA1000006 /* QuickLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000006 /* QuickLaunchView.swift */; };
+		CA1000007 /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000007 /* DatabaseService.swift */; };
+		CA1000008 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000008 /* NetworkService.swift */; };
+		CA1000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB1000009 /* Assets.xcassets */; };
+		CA1000010 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = CN1000001 /* GRDB */; };
+		CA1000011 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000011 /* NetworkError.swift */; };
+		CA1000012 /* ApiResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000012 /* ApiResponse.swift */; };
+		CA1000013 /* ToolItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000013 /* ToolItem.swift */; };
+		CA1000014 /* ToolRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000014 /* ToolRow.swift */; };
+		CA1000015 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000015 /* Constants.swift */; };
+		CA1000016 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000016 /* Logger.swift */; };
+		CA1000017 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000017 /* Environment.swift */; };
+		CA1000018 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000018 /* Date+Extensions.swift */; };
+		CA1000019 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000019 /* String+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B1000001000000000000001 /* NexusToolsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NexusToolsApp.swift; sourceTree = "<group>"; };
-		B1000002000000000000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		B1000003000000000000003 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		B1000004000000000000004 /* AppSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSetting.swift; sourceTree = "<group>"; };
-		B1000005000000000000005 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
-		B1000006000000000000006 /* QuickLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLaunchView.swift; sourceTree = "<group>"; };
-		B1000007000000000000007 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
-		B1000008000000000000008 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
-		B1000009000000000000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		B1000010000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B1000011000000000000011 /* NexusTools.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NexusTools.entitlements; sourceTree = "<group>"; };
-		C1000001000000000000001 /* NexusTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NexusTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB1000001 /* NexusToolsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NexusToolsApp.swift; sourceTree = "<group>"; };
+		CB1000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CB1000003 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		CB1000004 /* AppSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSetting.swift; sourceTree = "<group>"; };
+		CB1000005 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		CB1000006 /* QuickLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLaunchView.swift; sourceTree = "<group>"; };
+		CB1000007 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
+		CB1000008 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		CB1000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CB1000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CB1000020 /* NexusTools.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NexusTools.entitlements; sourceTree = "<group>"; };
+		CB1000011 /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
+		CB1000012 /* ApiResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiResponse.swift; sourceTree = "<group>"; };
+		CB1000013 /* ToolItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolItem.swift; sourceTree = "<group>"; };
+		CB1000014 /* ToolRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolRow.swift; sourceTree = "<group>"; };
+		CB1000015 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		CB1000016 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		CB1000017 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+		CB1000018 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		CB1000019 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
+		CC1000001 /* NexusTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NexusTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D1000001000000000000001 /* Frameworks */ = {
+		CD1000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA1000010 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		E1000001000000000000001 = {
+		CE1000001 = {
 			isa = PBXGroup;
 			children = (
-				E1000002000000000000002 /* NexusTools */,
-				E1000003000000000000003 /* Products */,
+				CE1000002 /* NexusTools */,
+				CE1000003 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		E1000002000000000000002 /* NexusTools */ = {
+		CE1000002 /* NexusTools */ = {
 			isa = PBXGroup;
 			children = (
-				E1000004000000000000004 /* App */,
-				E1000005000000000000005 /* Models */,
-				E1000006000000000000006 /* Views */,
-				E1000007000000000000007 /* ViewModels */,
-				E1000008000000000000008 /* Services */,
-				E1000009000000000000009 /* Utils */,
-				E1000010000000000000010 /* Resources */,
-				B1000010000000000000010 /* Info.plist */,
-				B1000011000000000000011 /* NexusTools.entitlements */,
+				CE1000004 /* App */,
+				CE1000005 /* Models */,
+				CE1000006 /* Views */,
+				CE1000007 /* ViewModels */,
+				CE1000008 /* Services */,
+				CE1000009 /* Utils */,
+				CE1000010 /* Resources */,
+				CB1000010 /* Info.plist */,
+				CB1000020 /* NexusTools.entitlements */,
 			);
 			path = NexusTools;
 			sourceTree = "<group>";
 		};
-		E1000003000000000000003 /* Products */ = {
+		CE1000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C1000001000000000000001 /* NexusTools.app */,
+				CC1000001 /* NexusTools.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E1000004000000000000004 /* App */ = {
+		CE1000004 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				B1000001000000000000001 /* NexusToolsApp.swift */,
-				B1000002000000000000002 /* AppDelegate.swift */,
+				CB1000001 /* NexusToolsApp.swift */,
+				CB1000002 /* AppDelegate.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
 		};
-		E1000005000000000000005 /* Models */ = {
+		CE1000005 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				B1000003000000000000003 /* User.swift */,
-				B1000004000000000000004 /* AppSetting.swift */,
+				CB1000003 /* User.swift */,
+				CB1000004 /* AppSetting.swift */,
+				CB1000011 /* NetworkError.swift */,
+				CB1000012 /* ApiResponse.swift */,
+				CB1000013 /* ToolItem.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
 		};
-		E1000006000000000000006 /* Views */ = {
+		CE1000006 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B1000005000000000000005 /* MainView.swift */,
-				B1000006000000000000006 /* QuickLaunchView.swift */,
+				CB1000005 /* MainView.swift */,
+				CB1000006 /* QuickLaunchView.swift */,
+				CE1000011 /* Components */,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
-		E1000007000000000000007 /* ViewModels */ = {
+		CE1000011 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				CB1000014 /* ToolRow.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		CE1000007 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
-		E1000008000000000000008 /* Services */ = {
+		CE1000008 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				B1000007000000000000007 /* DatabaseService.swift */,
-				B1000008000000000000008 /* NetworkService.swift */,
+				CB1000007 /* DatabaseService.swift */,
+				CB1000008 /* NetworkService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
 		};
-		E1000009000000000000009 /* Utils */ = {
+		CE1000009 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				CB1000015 /* Constants.swift */,
+				CB1000016 /* Logger.swift */,
+				CB1000017 /* Environment.swift */,
+				CE1000012 /* Extensions */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		E1000010000000000000010 /* Resources */ = {
+		CE1000012 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				B1000009000000000000009 /* Assets.xcassets */,
+				CB1000018 /* Date+Extensions.swift */,
+				CB1000019 /* String+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		CE1000010 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				CB1000009 /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -137,39 +182,42 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F1000001000000000000001 /* NexusTools */ = {
+		CF1000001 /* NexusTools */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = G1000001000000000000001 /* Build configuration list for PBXNativeTarget "NexusTools" */;
+			buildConfigurationList = CG1000001 /* Build configuration list for PBXNativeTarget "NexusTools" */;
 			buildPhases = (
-				H1000001000000000000001 /* Sources */,
-				D1000001000000000000001 /* Frameworks */,
-				I1000001000000000000001 /* Resources */,
+				CH1000001 /* Sources */,
+				CD1000001 /* Frameworks */,
+				CI1000001 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = NexusTools;
+			packageProductDependencies = (
+				CN1000001 /* GRDB */,
+			);
 			productName = NexusTools;
-			productReference = C1000001000000000000001 /* NexusTools.app */;
+			productReference = CC1000001 /* NexusTools.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		J1000001000000000000001 /* Project object */ = {
+		CJ1000001 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
-					F1000001000000000000001 = {
+					CF1000001 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
 			};
-			buildConfigurationList = K1000001000000000000001 /* Build configuration list for PBXProject "NexusTools" */;
+			buildConfigurationList = CK1000001 /* Build configuration list for PBXProject "NexusTools" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -177,47 +225,59 @@
 				en,
 				Base,
 			);
-			mainGroup = E1000001000000000000001;
-			productRefGroup = E1000003000000000000003 /* Products */;
+			mainGroup = CE1000001;
+			productRefGroup = CE1000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+			);
 			targets = (
-				F1000001000000000000001 /* NexusTools */,
+				CF1000001 /* NexusTools */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		I1000001000000000000001 /* Resources */ = {
+		CI1000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000009000000000000009 /* Assets.xcassets in Resources */,
+				CA1000009 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		H1000001000000000000001 /* Sources */ = {
+		CH1000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000001000000000000001 /* NexusToolsApp.swift in Sources */,
-				A1000002000000000000002 /* AppDelegate.swift in Sources */,
-				A1000003000000000000003 /* User.swift in Sources */,
-				A1000004000000000000004 /* AppSetting.swift in Sources */,
-				A1000005000000000000005 /* MainView.swift in Sources */,
-				A1000006000000000000006 /* QuickLaunchView.swift in Sources */,
-				A1000007000000000000007 /* DatabaseService.swift in Sources */,
-				A1000008000000000000008 /* NetworkService.swift in Sources */,
+				CA1000001 /* NexusToolsApp.swift in Sources */,
+				CA1000002 /* AppDelegate.swift in Sources */,
+				CA1000003 /* User.swift in Sources */,
+				CA1000004 /* AppSetting.swift in Sources */,
+				CA1000005 /* MainView.swift in Sources */,
+				CA1000006 /* QuickLaunchView.swift in Sources */,
+				CA1000007 /* DatabaseService.swift in Sources */,
+				CA1000008 /* NetworkService.swift in Sources */,
+				CA1000011 /* NetworkError.swift in Sources */,
+				CA1000012 /* ApiResponse.swift in Sources */,
+				CA1000013 /* ToolItem.swift in Sources */,
+				CA1000014 /* ToolRow.swift in Sources */,
+				CA1000015 /* Constants.swift in Sources */,
+				CA1000016 /* Logger.swift in Sources */,
+				CA1000017 /* Environment.swift in Sources */,
+				CA1000018 /* Date+Extensions.swift in Sources */,
+				CA1000019 /* String+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		L1000001000000000000001 /* Debug */ = {
+		CL1000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -281,7 +341,7 @@
 			};
 			name = Debug;
 		};
-		L1000002000000000000002 /* Release */ = {
+		CL1000002 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -337,7 +397,7 @@
 			};
 			name = Release;
 		};
-		M1000001000000000000001 /* Debug */ = {
+		CM1000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -366,7 +426,7 @@
 			};
 			name = Debug;
 		};
-		M1000002000000000000002 /* Release */ = {
+		CM1000002 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -398,25 +458,44 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		K1000001000000000000001 /* Build configuration list for PBXProject "NexusTools" */ = {
+		CK1000001 /* Build configuration list for PBXProject "NexusTools" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				L1000001000000000000001 /* Debug */,
-				L1000002000000000000002 /* Release */,
+				CL1000001 /* Debug */,
+				CL1000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		G1000001000000000000001 /* Build configuration list for PBXNativeTarget "NexusTools" */ = {
+		CG1000001 /* Build configuration list for PBXNativeTarget "NexusTools" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				M1000001000000000000001 /* Debug */,
-				M1000002000000000000002 /* Release */,
+				CM1000001 /* Debug */,
+				CM1000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.24.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CN1000001 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = J1000001000000000000001 /* Project object */;
+	rootObject = CJ1000001 /* Project object */;
 }
