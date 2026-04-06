@@ -23,6 +23,8 @@ public class SessionAuthFilter implements GlobalFilter, Ordered {
             "/api/v1/auth/register"
     );
 
+    private static final String NAMESPACE = "NexusTools";
+
     public SessionAuthFilter(ReactiveStringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
@@ -32,12 +34,10 @@ public class SessionAuthFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getPath().value();
 
-        // White list check
         if (WHITE_LIST.stream().anyMatch(path::equals)) {
             return chain.filter(exchange);
         }
 
-        // Get Session Cookie
         HttpCookie sessionCookie = request.getCookies().getFirst("SESSION");
         if (sessionCookie == null) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -45,11 +45,16 @@ public class SessionAuthFilter implements GlobalFilter, Ordered {
         }
 
         String sessionId = sessionCookie.getValue();
-        String sessionKey = "spring:session:NexusTools:SESSION:" + sessionId + ":userId";
+        String sessionKey = "spring:session:" + NAMESPACE + ":sessions:" + sessionId;
 
-        // Reactive Redis lookup
-        return redisTemplate.opsForValue().get(sessionKey)
-                .flatMap(userId -> {
+        return redisTemplate.opsForHash().get(sessionKey, "sessionAttr:userId")
+                .flatMap(userIdObj -> {
+                    String userId = userIdObj != null ? userIdObj.toString() : null;
+                    if (userId == null || userId.isEmpty()) {
+                        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                        return exchange.getResponse().setComplete();
+                    }
+
                     ServerHttpRequest mutatedRequest = request.mutate()
                             .header("X-User-Id", userId)
                             .build();

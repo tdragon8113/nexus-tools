@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.user.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.nexus.user.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="email" property="email"/>
+        <result column="password_hash" property="passwordHash"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findByUsername" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <select id="findById" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, email, password_hash, nickname, avatar_url, status, created_at)
+        VALUES (#{username}, #{email}, #{passwordHash}, #{nickname}, #{avatarUrl}, #{status}, #{createdAt})
+    </insert>
+
+    <update id="update">
+        UPDATE users SET
+            nickname = #{nickname},
+            avatar_url = #{avatarUrl},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+</mapper>
