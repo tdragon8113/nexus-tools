@@ -19,4 +19,4 @@ spring:
 
 logging:
   level:
-    com.nexus.gateway: DEBUG
+    com.nexus.gateway: INFO
