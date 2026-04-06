@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  nexus-gateway:
+    build:
+      context: ../backend/nexus-gateway
+      dockerfile: ../../docker/gateway/Dockerfile
+    container_name: nexus-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - NACOS_SERVER_ADDR=${NACOS_ADDR}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    networks:
+      - nexus-network
+    depends_on:
+      - nexus-user-service
+      - nexus-workspace-service
+
+  nexus-user-service:
+    build:
+      context: ../backend/nexus-user-service
+      dockerfile: ../../docker/user-service/Dockerfile
+    container_name: nexus-user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - NACOS_SERVER_ADDR=${NACOS_ADDR}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    networks:
+      - nexus-network
+
+  nexus-workspace-service:
+    build:
+      context: ../backend/nexus-workspace-service
+      dockerfile: ../../docker/workspace-service/Dockerfile
+    container_name: nexus-workspace-service
+    ports:
+      - "8082:8082"
+    environment:
+      - NACOS_SERVER_ADDR=${NACOS_ADDR}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+    networks:
+      - nexus-network
+
+networks:
+  nexus-network:
+    driver: bridge
