@@ -1,0 +1,151 @@
+name: Build and Deploy to Aliyun
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g. v1.0.0)'
+        required: true
+        default: 'latest'
+
+jobs:
+  build:
+    name: Build Microservices
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.get_tag.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get tag version
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Building version: $TAG"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: |
+          cd backend
+          mvn clean install -DskipTests -B
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jars
+          path: |
+            backend/nexus-gateway/target/nexus-gateway-*.jar
+            backend/nexus-user-service/target/nexus-user-service-*.jar
+            backend/nexus-workspace-service/target/nexus-workspace-service-*.jar
+          retention-days: 1
+
+  push-images:
+    name: Push Docker Images to ACR
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [nexus-gateway, nexus-user-service, nexus-workspace-service]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jars
+          path: backend
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Aliyun ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+
+      - name: Determine Dockerfile path
+        id: dockerfile
+        run: |
+          case "${{ matrix.service }}" in
+            nexus-gateway) echo "path=docker/gateway/Dockerfile" >> $GITHUB_OUTPUT ;;
+            nexus-user-service) echo "path=docker/user-service/Dockerfile" >> $GITHUB_OUTPUT ;;
+            nexus-workspace-service) echo "path=docker/workspace-service/Dockerfile" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Build and push ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/${{ matrix.service }}
+          file: ${{ steps.dockerfile.outputs.path }}
+          push: true
+          tags: |
+            ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ matrix.service }}:${{ needs.build.outputs.image_tag }}
+            ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Server
+    needs: push-images
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent-action@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Add host to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync docker-compose.yml
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
+          scp docker/docker-compose.prod.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
+
+      - name: Deploy services
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
+            export ALIYUN_REGISTRY=${{ secrets.ALIYUN_REGISTRY }} && \
+            export ALIYUN_NAMESPACE=${{ secrets.ALIYUN_NAMESPACE }} && \
+            export IMAGE_TAG=${{ env.IMAGE_TAG }} && \
+            docker-compose pull && \
+            docker-compose up -d && \
+            docker-compose ps"
+
+      - name: Health check
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
+            echo 'Waiting for services...' && \
+            sleep 20 && \
+            for i in 1 2 3; do \
+              curl -sf http://localhost:8080/actuator/health > /dev/null && break || sleep 10; \
+            done && \
+            docker-compose ps"
