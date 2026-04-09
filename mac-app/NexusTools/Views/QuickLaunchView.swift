@@ -2,6 +2,8 @@ import SwiftUI
 
 /// 快捷启动视图 - CMD+K 唤起的主界面
 struct QuickLaunchView: View {
+    @Environment(AuthService.self) private var authService
+
     @State private var searchText = ""
     @State private var selectedCategory: ToolCategory?
 
@@ -41,6 +43,12 @@ struct QuickLaunchView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // User Info Header
+            if let user = authService.currentUser {
+                userInfoHeader(user)
+                Divider()
+            }
+
             searchBar
             Divider()
             categoryFilter
@@ -52,6 +60,33 @@ struct QuickLaunchView: View {
     }
 
     // MARK: - View Components
+
+    private func userInfoHeader(_ user: User) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "person.circle.fill")
+                .font(.title2)
+                .foregroundColor(.accentColor)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(user.username)
+                    .font(.headline)
+                Text(user.email)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Button(action: openProfile) {
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
 
     private var searchBar: some View {
         HStack {
@@ -114,8 +149,20 @@ struct QuickLaunchView: View {
         print("Opening: \(tool.name)")
         // TODO: 实现工具打开逻辑
     }
+
+    private func openProfile() {
+        // Post notification to open profile
+        NotificationCenter.default.post(name: .showProfile, object: nil)
+    }
+}
+
+// MARK: - Notification Extension
+
+extension Notification.Name {
+    static let showProfile = Notification.Name("showProfile")
 }
 
 #Preview {
     QuickLaunchView()
+        .environment(AuthService.shared)
 }

@@ -7,6 +7,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItem: NSStatusItem?
     private var panel: NSPanel?
+    private var authService = AuthService.shared
 
     // MARK: - Lifecycle
 
@@ -22,6 +23,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Set as accessory app (menu bar only)
         NSApp.setActivationPolicy(.accessory)
+
+        // Observe auth state changes
+        observeAuthState()
     }
 
     // MARK: - Setup Methods
@@ -55,13 +59,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Position panel near menu bar
         if let screen = NSScreen.main {
             let screenFrame = screen.frame
-            let xPosition = screenFrame.width - Constants.UI.panelWidth - 20
-            let yPosition = screenFrame.height - Constants.UI.panelHeight - 60
+            let xPosition = screenFrame.width - CGFloat(Constants.UI.panelWidth) - 20
+            let yPosition = screenFrame.height - CGFloat(Constants.UI.panelHeight) - 60
             panel.setFrameOrigin(NSPoint(x: xPosition, y: yPosition))
         }
 
-        panel.contentView = NSHostingView(rootView: QuickLaunchView())
+        updatePanelContent(panel)
         self.panel = panel
+    }
+
+    private func updatePanelContent(_ panel: NSPanel) {
+        if authService.isLoggedIn {
+            panel.contentView = NSHostingView(rootView: QuickLaunchView().environment(authService))
+        } else {
+            panel.contentView = NSHostingView(rootView: AuthView().environment(authService))
+        }
     }
 
     private func setupKeyboardShortcut() {
@@ -80,6 +92,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Logger.info("Database ready")
         } catch {
             Logger.error("Database initialization failed: \(error)")
+        }
+    }
+
+    private func observeAuthState() {
+        // Use Task to periodically check auth state
+        Task {
+            while true {
+                try? await Task.sleep(for: .seconds(0.5))
+                await MainActor.run {
+                    if let panel = self.panel {
+                        self.updatePanelContent(panel)
+                    }
+                    self.updateMenu()
+                }
+            }
         }
     }
 
@@ -102,6 +129,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         panel?.orderOut(nil)
     }
 
+    private func updateMenu() {
+        statusItem?.menu = createMenu()
+    }
+
     // MARK: - Menu
 
     func createMenu() -> NSMenu {
@@ -115,6 +146,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         openItem.target = self
         menu.addItem(openItem)
 
+        if authService.isLoggedIn {
+            menu.addItem(NSMenuItem.separator())
+
+            let profileItem = NSMenuItem(
+                title: "个人中心",
+                action: #selector(showProfile),
+                keyEquivalent: "p"
+            )
+            profileItem.target = self
+            menu.addItem(profileItem)
+
+            let logoutItem = NSMenuItem(
+                title: "退出登录",
+                action: #selector(logout),
+                keyEquivalent: ""
+            )
+            logoutItem.target = self
+            menu.addItem(logoutItem)
+        }
+
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(
@@ -125,5 +176,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(quitItem)
 
         return menu
+    }
+
+    @objc func showProfile() {
+        let profilePanel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 400),
+            styleMask: [.titled, .closable, .nonactivatingPanel, .hudWindow],
+            backing: .buffered,
+            defer: false
+        )
+
+        profilePanel.isFloatingPanel = true
+        profilePanel.level = .floating
+        profilePanel.title = "个人中心"
+
+        if let screen = NSScreen.main {
+            let screenFrame = screen.frame
+            let xPosition = screenFrame.width / 2 - 160
+            let yPosition = screenFrame.height / 2 - 200
+            profilePanel.setFrameOrigin(NSPoint(x: xPosition, y: yPosition))
+        }
+
+        profilePanel.contentView = NSHostingView(rootView: ProfileView().environment(authService))
+        profilePanel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc func logout() {
+        Task {
+            await authService.logout()
+        }
     }
 }

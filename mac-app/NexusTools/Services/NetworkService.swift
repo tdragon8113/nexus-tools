@@ -13,7 +13,7 @@ actor NetworkService {
     // MARK: - Initialization
 
     private init() {
-        self.baseURL = Environment.current.apiBaseURL
+        self.baseURL = AppEnvironment.current.apiBaseURL
 
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
@@ -30,6 +30,10 @@ actor NetworkService {
 
     func clearSession() {
         self.sessionCookie = nil
+    }
+
+    func getSessionCookie() -> String? {
+        return sessionCookie
     }
 
     // MARK: - HTTP Methods

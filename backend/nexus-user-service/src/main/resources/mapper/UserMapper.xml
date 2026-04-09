@@ -38,4 +38,8 @@
             updated_at = #{updatedAt}
         WHERE id = #{id}
     </update>
+
+    <delete id="deleteById">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
 </mapper>

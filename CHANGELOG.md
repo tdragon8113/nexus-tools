@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.2] - 2026-04-09
+
+### 新增
+
+- 用户个人中心功能
+  - 注册：用户名、邮箱、密码
+  - 登录：会话管理、本地持久化
+  - 个人信息展示
+  - 退出登录
+  - 注销账号（带确认弹窗）
+- Mac 应用认证 UI（LoginView、RegisterView、AuthView、ProfileView）
+- 后端注销账号 API（DELETE /auth/account）
+
+### 改进
+
+- Environment 重命名为 AppEnvironment，避免与 SwiftUI 冲突
+- NetworkService 添加 getSessionCookie 方法
+
 ## [v1.0.1] - 2026-04-09
 
 ### 新增

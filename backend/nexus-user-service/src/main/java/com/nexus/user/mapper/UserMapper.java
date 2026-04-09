@@ -10,4 +10,5 @@ public interface UserMapper {
     User findById(Long id);
     int insert(User user);
     int update(User user);
+    int deleteById(Long id);
 }

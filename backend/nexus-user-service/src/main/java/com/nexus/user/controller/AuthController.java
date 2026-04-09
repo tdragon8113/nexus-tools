@@ -41,4 +41,10 @@ public class AuthController {
     public ApiResponse<UserResponse> getCurrentUser(@RequestHeader("X-User-Id") Long userId) {
         return ApiResponse.success(authService.getCurrentUser(userId));
     }
+
+    @DeleteMapping("/account")
+    public ApiResponse<Void> deleteAccount(@RequestHeader("X-User-Id") Long userId, HttpSession session) {
+        authService.deleteAccount(userId, session);
+        return ApiResponse.success();
+    }
 }

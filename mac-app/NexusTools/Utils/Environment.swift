@@ -1,13 +1,13 @@
 import Foundation
 
-/// 环境配置
-enum Environment {
+/// 应用环境配置
+enum AppEnvironment {
     case development
     case staging
     case production
 
     /// 当前环境
-    static var current: Environment {
+    static var current: AppEnvironment {
         #if DEBUG
         return .development
         #else

@@ -80,6 +80,18 @@ public class AuthService {
         return toResponse(user);
     }
 
+    @Transactional
+    public void deleteAccount(Long userId, HttpSession session) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+
+        userMapper.deleteById(userId);
+        session.invalidate();
+        log.info("User account deleted: {}", user.getUsername());
+    }
+
     private UserResponse toResponse(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());

@@ -2,10 +2,12 @@ import Foundation
 import GRDB
 
 /// 用户模型
-struct User: Codable, FetchableRecord, PersistableRecord {
+struct User: Codable, FetchableRecord, PersistableRecord, Identifiable {
     var id: Int64
     var username: String
     var email: String
+    var nickname: String?
+    var avatarUrl: String?
     var sessionToken: String?
     var lastSyncAt: Date?
     var createdAt: Date
@@ -16,6 +18,8 @@ struct User: Codable, FetchableRecord, PersistableRecord {
         case id
         case username
         case email
+        case nickname
+        case avatarUrl
         case sessionToken = "session_token"
         case lastSyncAt = "last_sync_at"
         case createdAt = "created_at"
@@ -27,6 +31,8 @@ struct User: Codable, FetchableRecord, PersistableRecord {
         static let id = Column(CodingKeys.id)
         static let username = Column(CodingKeys.username)
         static let email = Column(CodingKeys.email)
+        static let nickname = Column(CodingKeys.nickname)
+        static let avatarUrl = Column(CodingKeys.avatarUrl)
         static let sessionToken = Column(CodingKeys.sessionToken)
         static let lastSyncAt = Column(CodingKeys.lastSyncAt)
         static let createdAt = Column(CodingKeys.createdAt)
@@ -40,6 +46,8 @@ struct User: Codable, FetchableRecord, PersistableRecord {
             id: 0,
             username: username,
             email: email,
+            nickname: nil,
+            avatarUrl: nil,
             sessionToken: nil,
             lastSyncAt: nil,
             createdAt: Date()

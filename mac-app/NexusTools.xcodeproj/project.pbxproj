@@ -7,495 +7,543 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA1000001 /* NexusToolsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000001 /* NexusToolsApp.swift */; };
-		CA1000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000002 /* AppDelegate.swift */; };
-		CA1000003 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000003 /* User.swift */; };
-		CA1000004 /* AppSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000004 /* AppSetting.swift */; };
-		CA1000005 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000005 /* MainView.swift */; };
-		CA1000006 /* QuickLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000006 /* QuickLaunchView.swift */; };
-		CA1000007 /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000007 /* DatabaseService.swift */; };
-		CA1000008 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000008 /* NetworkService.swift */; };
-		CA1000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB1000009 /* Assets.xcassets */; };
-		CA1000010 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = CN1000001 /* GRDB */; };
-		CA1000011 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000011 /* NetworkError.swift */; };
-		CA1000012 /* ApiResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000012 /* ApiResponse.swift */; };
-		CA1000013 /* ToolItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000013 /* ToolItem.swift */; };
-		CA1000014 /* ToolRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000014 /* ToolRow.swift */; };
-		CA1000015 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000015 /* Constants.swift */; };
-		CA1000016 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000016 /* Logger.swift */; };
-		CA1000017 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000017 /* Environment.swift */; };
-		CA1000018 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000018 /* Date+Extensions.swift */; };
-		CA1000019 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000019 /* String+Extensions.swift */; };
+			CA1000001 /* NexusToolsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000001 /* NexusToolsApp.swift */; };
+			CA1000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000002 /* AppDelegate.swift */; };
+			CA1000003 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000003 /* User.swift */; };
+			CA1000004 /* AppSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000004 /* AppSetting.swift */; };
+			CA1000005 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000005 /* MainView.swift */; };
+			CA1000006 /* QuickLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000006 /* QuickLaunchView.swift */; };
+			CA1000007 /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000007 /* DatabaseService.swift */; };
+			CA1000008 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000008 /* NetworkService.swift */; };
+			CA1000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB1000009 /* Assets.xcassets */; };
+			CA1000010 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = CN1000001 /* GRDB */; };
+			CA1000011 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000012 /* NetworkError.swift */; };
+			CA1000012 /* ApiResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000013 /* ApiResponse.swift */; };
+			CA1000013 /* ToolItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000014 /* ToolItem.swift */; };
+			CA1000014 /* ToolRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000015 /* ToolRow.swift */; };
+			CA1000015 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000016 /* Constants.swift */; };
+			CA1000016 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000017 /* Logger.swift */; };
+			CA1000017 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000018 /* Environment.swift */; };
+			CA1000018 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000019 /* Date+Extensions.swift */; };
+			CA1000019 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000020 /* String+Extensions.swift */; };
+			CA1000030 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000030 /* AuthService.swift */; };
+			CA1000031 /* AuthRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000031 /* AuthRequests.swift */; };
+			CA1000032 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000032 /* LoginView.swift */; };
+			CA1000033 /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000033 /* RegisterView.swift */; };
+			CA1000034 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000034 /* AuthView.swift */; };
+			CA1000035 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000035 /* ProfileView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		CB1000001 /* NexusToolsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NexusToolsApp.swift; sourceTree = "<group>"; };
-		CB1000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		CB1000003 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		CB1000004 /* AppSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSetting.swift; sourceTree = "<group>"; };
-		CB1000005 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
-		CB1000006 /* QuickLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLaunchView.swift; sourceTree = "<group>"; };
-		CB1000007 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
-		CB1000008 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
-		CB1000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CB1000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CB1000020 /* NexusTools.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NexusTools.entitlements; sourceTree = "<group>"; };
-		CB1000011 /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
-		CB1000012 /* ApiResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiResponse.swift; sourceTree = "<group>"; };
-		CB1000013 /* ToolItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolItem.swift; sourceTree = "<group>"; };
-		CB1000014 /* ToolRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolRow.swift; sourceTree = "<group>"; };
-		CB1000015 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		CB1000016 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		CB1000017 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
-		CB1000018 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
-		CB1000019 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
-		CC1000001 /* NexusTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NexusTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
+			CB1000001 /* NexusToolsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NexusToolsApp.swift; sourceTree = "<group>"; };
+			CB1000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+			CB1000003 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+			CB1000004 /* AppSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSetting.swift; sourceTree = "<group>"; };
+			CB1000005 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+			CB1000006 /* QuickLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLaunchView.swift; sourceTree = "<group>"; };
+			CB1000007 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
+			CB1000008 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+			CB1000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+			CB1000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+			CB1000011 /* NexusTools.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NexusTools.entitlements; sourceTree = "<group>"; };
+			CB1000012 /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
+			CB1000013 /* ApiResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiResponse.swift; sourceTree = "<group>"; };
+			CB1000014 /* ToolItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolItem.swift; sourceTree = "<group>"; };
+			CB1000015 /* ToolRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolRow.swift; sourceTree = "<group>"; };
+			CB1000016 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+			CB1000017 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+			CB1000018 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+			CB1000019 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+			CB1000020 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
+			CB1000030 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+			CB1000031 /* AuthRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthRequests.swift; sourceTree = "<group>"; };
+			CB1000032 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+			CB1000033 /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+			CB1000034 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
+			CB1000035 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+			CC1000001 /* NexusTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NexusTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		CD1000001 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CA1000010 /* GRDB in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+			CD1000001 /* Frameworks */ = {
+				isa = PBXFrameworksBuildPhase;
+				buildActionMask = 2147483647;
+				files = (
+					CA1000010 /* GRDB in Frameworks */,
+				);
+				runOnlyForDeploymentPostprocessing = 0;
+			};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		CE1000001 = {
-			isa = PBXGroup;
-			children = (
-				CE1000002 /* NexusTools */,
-				CE1000003 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		CE1000002 /* NexusTools */ = {
-			isa = PBXGroup;
-			children = (
-				CE1000004 /* App */,
-				CE1000005 /* Models */,
-				CE1000006 /* Views */,
-				CE1000007 /* ViewModels */,
-				CE1000008 /* Services */,
-				CE1000009 /* Utils */,
-				CE1000010 /* Resources */,
-				CB1000010 /* Info.plist */,
-				CB1000020 /* NexusTools.entitlements */,
-			);
-			path = NexusTools;
-			sourceTree = "<group>";
-		};
-		CE1000003 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				CC1000001 /* NexusTools.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		CE1000004 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000001 /* NexusToolsApp.swift */,
-				CB1000002 /* AppDelegate.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
-		CE1000005 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000003 /* User.swift */,
-				CB1000004 /* AppSetting.swift */,
-				CB1000011 /* NetworkError.swift */,
-				CB1000012 /* ApiResponse.swift */,
-				CB1000013 /* ToolItem.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		CE1000006 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000005 /* MainView.swift */,
-				CB1000006 /* QuickLaunchView.swift */,
-				CE1000011 /* Components */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		CE1000011 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000014 /* ToolRow.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		CE1000007 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		CE1000008 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000007 /* DatabaseService.swift */,
-				CB1000008 /* NetworkService.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		CE1000009 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000015 /* Constants.swift */,
-				CB1000016 /* Logger.swift */,
-				CB1000017 /* Environment.swift */,
-				CE1000012 /* Extensions */,
-			);
-			path = Utils;
-			sourceTree = "<group>";
-		};
-		CE1000012 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000018 /* Date+Extensions.swift */,
-				CB1000019 /* String+Extensions.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
-		CE1000010 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000009 /* Assets.xcassets */,
-			);
-			path = Resources;
-			sourceTree = "<group>";
-		};
+			CE1000001 = {
+				isa = PBXGroup;
+				children = (
+					CE1000002 /* NexusTools */,
+					CE1000003 /* Products */,
+				);
+				sourceTree = "<group>";
+			};
+			CE1000002 /* NexusTools */ = {
+				isa = PBXGroup;
+				children = (
+					CE1000004 /* App */,
+					CE1000005 /* Models */,
+					CE1000006 /* Views */,
+					CE1000007 /* ViewModels */,
+					CE1000008 /* Services */,
+					CE1000009 /* Utils */,
+					CE1000010 /* Resources */,
+					CE1000013 /* DTOs */,
+					CB1000010 /* Info.plist */,
+					CB1000011 /* NexusTools.entitlements */,
+				);
+				path = NexusTools;
+				sourceTree = "<group>";
+			};
+			CE1000003 /* Products */ = {
+				isa = PBXGroup;
+				children = (
+					CC1000001 /* NexusTools.app */,
+				);
+				name = Products;
+				sourceTree = "<group>";
+			};
+			CE1000004 /* App */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000001 /* NexusToolsApp.swift */,
+					CB1000002 /* AppDelegate.swift */,
+				);
+				path = App;
+				sourceTree = "<group>";
+			};
+			CE1000005 /* Models */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000003 /* User.swift */,
+					CB1000004 /* AppSetting.swift */,
+					CB1000012 /* NetworkError.swift */,
+					CB1000013 /* ApiResponse.swift */,
+					CB1000014 /* ToolItem.swift */,
+				);
+				path = Models;
+				sourceTree = "<group>";
+			};
+			CE1000006 /* Views */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000005 /* MainView.swift */,
+					CB1000006 /* QuickLaunchView.swift */,
+					CE1000011 /* Components */,
+					CE1000014 /* Auth */,
+					CE1000015 /* Profile */,
+				);
+				path = Views;
+				sourceTree = "<group>";
+			};
+			CE1000011 /* Components */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000015 /* ToolRow.swift */,
+				);
+				path = Components;
+				sourceTree = "<group>";
+			};
+			CE1000014 /* Auth */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000032 /* LoginView.swift */,
+					CB1000033 /* RegisterView.swift */,
+					CB1000034 /* AuthView.swift */,
+				);
+				path = Auth;
+				sourceTree = "<group>";
+			};
+			CE1000015 /* Profile */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000035 /* ProfileView.swift */,
+				);
+				path = Profile;
+				sourceTree = "<group>";
+			};
+			CE1000007 /* ViewModels */ = {
+				isa = PBXGroup;
+				children = (
+				);
+				path = ViewModels;
+				sourceTree = "<group>";
+			};
+			CE1000008 /* Services */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000007 /* DatabaseService.swift */,
+					CB1000008 /* NetworkService.swift */,
+					CB1000030 /* AuthService.swift */,
+				);
+				path = Services;
+				sourceTree = "<group>";
+			};
+			CE1000009 /* Utils */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000016 /* Constants.swift */,
+					CB1000017 /* Logger.swift */,
+					CB1000018 /* Environment.swift */,
+					CE1000012 /* Extensions */,
+				);
+				path = Utils;
+				sourceTree = "<group>";
+			};
+			CE1000012 /* Extensions */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000019 /* Date+Extensions.swift */,
+					CB1000020 /* String+Extensions.swift */,
+				);
+				path = Extensions;
+				sourceTree = "<group>";
+			};
+			CE1000010 /* Resources */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000009 /* Assets.xcassets */,
+				);
+				path = Resources;
+				sourceTree = "<group>";
+			};
+			CE1000013 /* DTOs */ = {
+				isa = PBXGroup;
+				children = (
+					CB1000031 /* AuthRequests.swift */,
+				);
+				path = DTOs;
+				sourceTree = "<group>";
+			};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		CF1000001 /* NexusTools */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CG1000001 /* Build configuration list for PBXNativeTarget "NexusTools" */;
-			buildPhases = (
-				CH1000001 /* Sources */,
-				CD1000001 /* Frameworks */,
-				CI1000001 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = NexusTools;
-			packageProductDependencies = (
-				CN1000001 /* GRDB */,
-			);
-			productName = NexusTools;
-			productReference = CC1000001 /* NexusTools.app */;
-			productType = "com.apple.product-type.application";
-		};
+			CF1000001 /* NexusTools */ = {
+				isa = PBXNativeTarget;
+				buildConfigurationList = CG1000001 /* Build configuration list for PBXNativeTarget "NexusTools" */;
+				buildPhases = (
+					CH1000001 /* Sources */,
+					CD1000001 /* Frameworks */,
+					CI1000001 /* Resources */,
+				);
+				buildRules = (
+				);
+				dependencies = (
+				);
+				name = NexusTools;
+				packageProductDependencies = (
+					CN1000001 /* GRDB */,
+				);
+				productName = NexusTools;
+				productReference = CC1000001 /* NexusTools.app */;
+				productType = "com.apple.product-type.application";
+			};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		CJ1000001 /* Project object */ = {
-			isa = PBXProject;
-			attributes = {
-				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-					CF1000001 = {
-						CreatedOnToolsVersion = 15.0;
+			CJ1000001 /* Project object */ = {
+				isa = PBXProject;
+				attributes = {
+					BuildIndependentTargetsInParallel = 1;
+					LastSwiftUpdateCheck = 1500;
+					LastUpgradeCheck = 1500;
+					TargetAttributes = {
+						CF1000001 = {
+							CreatedOnToolsVersion = 15.0;
+						};
 					};
 				};
+				buildConfigurationList = CK1000001 /* Build configuration list for PBXProject "NexusTools" */;
+				compatibilityVersion = "Xcode 14.0";
+				developmentRegion = en;
+				hasScannedForEncodings = 0;
+				knownRegions = (
+					en,
+					Base,
+				);
+				mainGroup = CE1000001;
+				productRefGroup = CE1000003 /* Products */;
+				projectDirPath = "";
+				projectRoot = "";
+				packageReferences = (
+					CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+				);
+				targets = (
+					CF1000001 /* NexusTools */,
+				);
 			};
-			buildConfigurationList = CK1000001 /* Build configuration list for PBXProject "NexusTools" */;
-			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
-			hasScannedForEncodings = 0;
-			knownRegions = (
-				en,
-				Base,
-			);
-			mainGroup = CE1000001;
-			productRefGroup = CE1000003 /* Products */;
-			projectDirPath = "";
-			projectRoot = "";
-			packageReferences = (
-				CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
-			);
-			targets = (
-				CF1000001 /* NexusTools */,
-			);
-		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		CI1000001 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CA1000009 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+			CI1000001 /* Resources */ = {
+				isa = PBXResourcesBuildPhase;
+				buildActionMask = 2147483647;
+				files = (
+					CA1000009 /* Assets.xcassets in Resources */,
+				);
+				runOnlyForDeploymentPostprocessing = 0;
+			};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		CH1000001 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CA1000001 /* NexusToolsApp.swift in Sources */,
-				CA1000002 /* AppDelegate.swift in Sources */,
-				CA1000003 /* User.swift in Sources */,
-				CA1000004 /* AppSetting.swift in Sources */,
-				CA1000005 /* MainView.swift in Sources */,
-				CA1000006 /* QuickLaunchView.swift in Sources */,
-				CA1000007 /* DatabaseService.swift in Sources */,
-				CA1000008 /* NetworkService.swift in Sources */,
-				CA1000011 /* NetworkError.swift in Sources */,
-				CA1000012 /* ApiResponse.swift in Sources */,
-				CA1000013 /* ToolItem.swift in Sources */,
-				CA1000014 /* ToolRow.swift in Sources */,
-				CA1000015 /* Constants.swift in Sources */,
-				CA1000016 /* Logger.swift in Sources */,
-				CA1000017 /* Environment.swift in Sources */,
-				CA1000018 /* Date+Extensions.swift in Sources */,
-				CA1000019 /* String+Extensions.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+			CH1000001 /* Sources */ = {
+				isa = PBXSourcesBuildPhase;
+				buildActionMask = 2147483647;
+				files = (
+					CA1000001 /* NexusToolsApp.swift in Sources */,
+					CA1000002 /* AppDelegate.swift in Sources */,
+					CA1000003 /* User.swift in Sources */,
+					CA1000004 /* AppSetting.swift in Sources */,
+					CA1000005 /* MainView.swift in Sources */,
+					CA1000006 /* QuickLaunchView.swift in Sources */,
+					CA1000007 /* DatabaseService.swift in Sources */,
+					CA1000008 /* NetworkService.swift in Sources */,
+					CA1000011 /* NetworkError.swift in Sources */,
+					CA1000012 /* ApiResponse.swift in Sources */,
+					CA1000013 /* ToolItem.swift in Sources */,
+					CA1000014 /* ToolRow.swift in Sources */,
+					CA1000015 /* Constants.swift in Sources */,
+					CA1000016 /* Logger.swift in Sources */,
+					CA1000017 /* Environment.swift in Sources */,
+					CA1000018 /* Date+Extensions.swift in Sources */,
+					CA1000019 /* String+Extensions.swift in Sources */,
+					CA1000030 /* AuthService.swift in Sources */,
+					CA1000031 /* AuthRequests.swift in Sources */,
+					CA1000032 /* LoginView.swift in Sources */,
+					CA1000033 /* RegisterView.swift in Sources */,
+					CA1000034 /* AuthView.swift in Sources */,
+					CA1000035 /* ProfileView.swift in Sources */,
+				);
+				runOnlyForDeploymentPostprocessing = 0;
+			};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		CL1000001 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			CL1000001 /* Debug */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ALWAYS_SEARCH_USER_PATHS = NO;
+					ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+					CLANG_ANALYZER_NONNULL = YES;
+					CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+					CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+					CLANG_ENABLE_MODULES = YES;
+					CLANG_ENABLE_OBJC_ARC = YES;
+					CLANG_ENABLE_OBJC_WEAK = YES;
+					CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+					CLANG_WARN_BOOL_CONVERSION = YES;
+					CLANG_WARN_COMMA = YES;
+					CLANG_WARN_CONSTANT_CONVERSION = YES;
+					CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+					CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+					CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+					CLANG_WARN_EMPTY_BODY = YES;
+					CLANG_WARN_ENUM_CONVERSION = YES;
+					CLANG_WARN_INFINITE_RECURSION = YES;
+					CLANG_WARN_INT_CONVERSION = YES;
+					CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+					CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+					CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+					CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+					CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+					CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+					CLANG_WARN_STRICT_PROTOTYPES = YES;
+					CLANG_WARN_SUSPICIOUS_MOVE = YES;
+					CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+					CLANG_WARN_UNREACHABLE_CODE = YES;
+					CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+					COPY_PHASE_STRIP = NO;
+					DEBUG_INFORMATION_FORMAT = dwarf;
+					ENABLE_STRICT_OBJC_MSGSEND = YES;
+					ENABLE_TESTABILITY = YES;
+					ENABLE_USER_SCRIPT_SANDBOXING = YES;
+					GCC_C_LANGUAGE_STANDARD = gnu17;
+					GCC_DYNAMIC_NO_PIC = NO;
+					GCC_NO_COMMON_BLOCKS = YES;
+					GCC_OPTIMIZATION_LEVEL = 0;
+					GCC_PREPROCESSOR_DEFINITIONS = (
+						"DEBUG=1",
+						"$(inherited)",
+					);
+					GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+					GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+					GCC_WARN_UNDECLARED_SELECTOR = YES;
+					GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+					GCC_WARN_UNUSED_FUNCTION = YES;
+					GCC_WARN_UNUSED_VARIABLE = YES;
+					GENERATE_INFOPLIST_FILE = YES;
+					LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+					MACOSX_DEPLOYMENT_TARGET = 14.0;
+					MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+					MTL_FAST_MATH = YES;
+					ONLY_ACTIVE_ARCH = YES;
+					SDKROOT = macosx;
+					SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+					SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				};
+				name = Debug;
 			};
-			name = Debug;
-		};
-		CL1000002 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				SDKROOT = macosx;
-				SWIFT_COMPILATION_MODE = wholemodule;
+			CL1000002 /* Release */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ALWAYS_SEARCH_USER_PATHS = NO;
+					ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+					CLANG_ANALYZER_NONNULL = YES;
+					CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+					CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+					CLANG_ENABLE_MODULES = YES;
+					CLANG_ENABLE_OBJC_ARC = YES;
+					CLANG_ENABLE_OBJC_WEAK = YES;
+					CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+					CLANG_WARN_BOOL_CONVERSION = YES;
+					CLANG_WARN_COMMA = YES;
+					CLANG_WARN_CONSTANT_CONVERSION = YES;
+					CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+					CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+					CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+					CLANG_WARN_EMPTY_BODY = YES;
+					CLANG_WARN_ENUM_CONVERSION = YES;
+					CLANG_WARN_INFINITE_RECURSION = YES;
+					CLANG_WARN_INT_CONVERSION = YES;
+					CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+					CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+					CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+					CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+					CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+					CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+					CLANG_WARN_STRICT_PROTOTYPES = YES;
+					CLANG_WARN_SUSPICIOUS_MOVE = YES;
+					CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+					CLANG_WARN_UNREACHABLE_CODE = YES;
+					CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+					COPY_PHASE_STRIP = NO;
+					DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+					ENABLE_NS_ASSERTIONS = NO;
+					ENABLE_STRICT_OBJC_MSGSEND = YES;
+					ENABLE_USER_SCRIPT_SANDBOXING = YES;
+					GCC_C_LANGUAGE_STANDARD = gnu17;
+					GCC_NO_COMMON_BLOCKS = YES;
+					GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+					GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+					GCC_WARN_UNDECLARED_SELECTOR = YES;
+					GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+					GCC_WARN_UNUSED_FUNCTION = YES;
+					GCC_WARN_UNUSED_VARIABLE = YES;
+					GENERATE_INFOPLIST_FILE = YES;
+					LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+					MACOSX_DEPLOYMENT_TARGET = 14.0;
+					MTL_ENABLE_DEBUG_INFO = NO;
+					MTL_FAST_MATH = YES;
+					SDKROOT = macosx;
+					SWIFT_COMPILATION_MODE = wholemodule;
+				};
+				name = Release;
 			};
-			name = Release;
-		};
-		CM1000001 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = NexusTools/NexusTools.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = NexusTools/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 NexusTools. All rights reserved.";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nexus.NexusTools;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+			CM1000001 /* Debug */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+					CODE_SIGN_ENTITLEMENTS = NexusTools/NexusTools.entitlements;
+					CODE_SIGN_STYLE = Automatic;
+					COMBINE_HIDPI_IMAGES = YES;
+					CURRENT_PROJECT_VERSION = 1;
+					DEVELOPMENT_ASSET_PATHS = "";
+					DEVELOPMENT_TEAM = "";
+					ENABLE_HARDENED_RUNTIME = YES;
+					ENABLE_PREVIEWS = YES;
+					GENERATE_INFOPLIST_FILE = YES;
+					INFOPLIST_FILE = NexusTools/Info.plist;
+					INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 NexusTools. All rights reserved.";
+					INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+					LD_RUNPATH_SEARCH_PATHS = (
+						"$(inherited)",
+						"@executable_path/../Frameworks",
+					);
+					MARKETING_VERSION = 1.0;
+					PRODUCT_BUNDLE_IDENTIFIER = com.nexus.NexusTools;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SWIFT_EMIT_LOC_STRINGS = YES;
+					SWIFT_VERSION = 5.0;
+				};
+				name = Debug;
 			};
-			name = Debug;
-		};
-		CM1000002 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = NexusTools/NexusTools.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = NexusTools/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 NexusTools. All rights reserved.";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nexus.NexusTools;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+			CM1000002 /* Release */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+					CODE_SIGN_ENTITLEMENTS = NexusTools/NexusTools.entitlements;
+					CODE_SIGN_STYLE = Automatic;
+					COMBINE_HIDPI_IMAGES = YES;
+					CURRENT_PROJECT_VERSION = 1;
+					DEVELOPMENT_ASSET_PATHS = "";
+					DEVELOPMENT_TEAM = "";
+					ENABLE_HARDENED_RUNTIME = YES;
+					ENABLE_PREVIEWS = YES;
+					GENERATE_INFOPLIST_FILE = YES;
+					INFOPLIST_FILE = NexusTools/Info.plist;
+					INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 NexusTools. All rights reserved.";
+					INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+					LD_RUNPATH_SEARCH_PATHS = (
+						"$(inherited)",
+						"@executable_path/../Frameworks",
+					);
+					MARKETING_VERSION = 1.0;
+					PRODUCT_BUNDLE_IDENTIFIER = com.nexus.NexusTools;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SWIFT_EMIT_LOC_STRINGS = YES;
+					SWIFT_VERSION = 5.0;
+				};
+				name = Release;
 			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		CK1000001 /* Build configuration list for PBXProject "NexusTools" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CL1000001 /* Debug */,
-				CL1000002 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CG1000001 /* Build configuration list for PBXNativeTarget "NexusTools" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CM1000001 /* Debug */,
-				CM1000002 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
+			CK1000001 /* Build configuration list for PBXProject "NexusTools" */ = {
+				isa = XCConfigurationList;
+				buildConfigurations = (
+					CL1000001 /* Debug */,
+					CL1000002 /* Release */,
+				);
+				defaultConfigurationIsVisible = 0;
+				defaultConfigurationName = Release;
+			};
+			CG1000001 /* Build configuration list for PBXNativeTarget "NexusTools" */ = {
+				isa = XCConfigurationList;
+				buildConfigurations = (
+					CM1000001 /* Debug */,
+					CM1000002 /* Release */,
+				);
+				defaultConfigurationIsVisible = 0;
+				defaultConfigurationName = Release;
+			};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/groue/GRDB.swift.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.24.0;
+			CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+				isa = XCRemoteSwiftPackageReference;
+				repositoryURL = "https://github.com/groue/GRDB.swift.git";
+				requirement = {
+					kind = upToNextMajorVersion;
+					minimumVersion = 6.24.0;
+				};
 			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CN1000001 /* GRDB */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
-			productName = GRDB;
-		};
+			CN1000001 /* GRDB */ = {
+				isa = XCSwiftPackageProductDependency;
+				package = CQ1000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+				productName = GRDB;
+			};
 /* End XCSwiftPackageProductDependency section */
-	};
+		};
 	rootObject = CJ1000001 /* Project object */;
 }
