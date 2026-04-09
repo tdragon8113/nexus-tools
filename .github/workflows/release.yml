@@ -69,12 +69,21 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo "Extracting changelog for $VERSION"
+
+          # 获取上一个版本
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
           CHANGELOG=$(awk -v ver="$VERSION" '
             /^## \[/{ found=0 }
             /^## \['"$VERSION"'\]/ { found=1; next }
             found && /^## / { exit }
             found { print }
           ' CHANGELOG.md | sed '/^$/d')
+
+          FULL_CHANGELOG=""
+          if [ -n "$PREV_TAG" ]; then
+            FULL_CHANGELOG="\n\n---\n\n**Full Changelog**: https://github.com/tdragon8113/nexus-tools/compare/${PREV_TAG}...${VERSION}"
+          fi
 
           if [ -z "$CHANGELOG" ]; then
             echo "use_auto=true" >> $GITHUB_OUTPUT
@@ -83,6 +92,7 @@ jobs:
             {
               echo 'body<<EOF'
               echo "$CHANGELOG"
+              echo -e "$FULL_CHANGELOG"
               echo 'EOF'
             } >> $GITHUB_OUTPUT
           fi
