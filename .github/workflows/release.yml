@@ -61,6 +61,32 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "Extracting changelog for $VERSION"
+          CHANGELOG=$(awk -v ver="$VERSION" '
+            /^## \[/{ found=0 }
+            /^## \['"$VERSION"'\]/ { found=1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md | sed '/^$/d')
+
+          if [ -z "$CHANGELOG" ]; then
+            echo "use_auto=true" >> $GITHUB_OUTPUT
+          else
+            echo "use_auto=false" >> $GITHUB_OUTPUT
+            {
+              echo 'body<<EOF'
+              echo "$CHANGELOG"
+              echo 'EOF'
+            } >> $GITHUB_OUTPUT
+          fi
+
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
@@ -71,7 +97,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/NexusTools.dmg
-          generate_release_notes: true
+          body: ${{ steps.changelog.outputs.body }}
+          generate_release_notes: ${{ steps.changelog.outputs.use_auto == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
