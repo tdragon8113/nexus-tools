@@ -1,69 +1,67 @@
 # Nexus Tools
 
-一款专为开发者打造的工具箱，集开发工具和个人效率管理于一体。
+开发者工具箱项目。
+
+## 技术栈
+
+| 模块 | 技术 |
+|------|------|
+| Mac 应用 | SwiftUI + GRDB.swift (macOS 14.0+) |
+| 后端 | Spring Boot 3.x + Gateway + MyBatis (Java 21) |
+| 中间件 | MySQL, Redis, Nacos, RabbitMQ |
 
 ## 项目结构
 
 ```
 nexus-tools/
-├── mac-app/          # Mac 应用（SwiftUI）
-├── backend/          # 后端微服务
-│   ├── nexus-gateway/
-│   ├── nexus-user-service/
-│   ├── nexus-workspace-service/
-│   └── nexus-common/
-├── docker/           # Docker 配置
-└── docs/             # 文档
+├── mac-app/                    # Mac 应用
+├── backend/                    # 后端微服务
+│   ├── nexus-gateway/          # 网关 (:8080)
+│   ├── nexus-user-service/     # 用户服务 (:8081)
+│   └── nexus-workspace-service/ # 工作区服务 (:8082)
+└── docker/                     # Docker 配置
 ```
 
-## 技术栈
+## 本地开发
 
-- Mac 应用: SwiftUI + GRDB.swift (macOS Sonoma 14.0+)
-- 后端: Spring Boot 3.x + Spring Cloud Gateway + MyBatis (Java 21)
-- 中间件: MySQL, Redis, Nacos, RabbitMQ
-
-## 开发指南
-
-### 后端启动
-
-1. 确保中间件已启动
-2. 创建数据库：
-   ```sql
-   CREATE DATABASE nexus_user;
-   CREATE DATABASE nexus_workspace;
-   ```
-3. 运行 SQL 初始化脚本（见 docs/sql/）
-4. 启动服务：
-   ```bash
-   cd backend
-   mvn clean install
-   java -jar nexus-gateway/target/nexus-gateway-*.jar
-   java -jar nexus-user-service/target/nexus-user-service-*.jar
-   java -jar nexus-workspace-service/target/nexus-workspace-service-*.jar
-   ```
-
-### Mac 应用启动
-
-1. 打开 `mac-app/NexusTools.xcodeproj`
-2. Build & Run
-
-### Docker 部署
+### 后端
 
 ```bash
-cd docker
-cp .env.example .env
-# 编辑 .env 配置中间件地址
-docker-compose up --build
+source ~/.sdkman/bin/sdkman-init.sh && sdk use java 21.0.10-tem
+cd backend && mvn clean install -DskipTests
+
+java -jar nexus-gateway/target/*.jar --spring.profiles.active=local
+java -jar nexus-user-service/target/*.jar --spring.profiles.active=local
+java -jar nexus-workspace-service/target/*.jar --spring.profiles.active=local
 ```
 
-## API 基础路径
+### Mac 应用
 
-- Gateway: http://localhost:8080/api/v1
-- User Service: http://localhost:8081 (内部)
-- Workspace Service: http://localhost:8082 (内部)
+打开 `mac-app/NexusTools.xcodeproj`，Build & Run。
 
-## 测试要求
+## 生产部署
 
-- 单元测试覆盖率: 80%+
-- 使用 JUnit 5 + Mockito (后端)
-- 使用 XCTest (Mac)
+### 后端服务
+
+推送 tag 触发 GitHub Actions 自动构建：
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+服务器仅需配置 Nacos 环境变量，MySQL/Redis/RabbitMQ 配置在 Nacos 配置中心管理。
+
+### Mac 应用
+
+同样通过推送 tag 发布（与后端共用同一 tag）：
+
+- 构建 DMG 并上传到 GitHub Releases
+- 自动更新 Homebrew Tap (`brew install tdragon8113/tap/nexus-tools`)
+
+需要配置 GitHub Secrets：`TAP_TOKEN`（有 homebrew-tap 写权限的 PAT）
+
+## 注意事项
+
+- 数据库连接等敏感配置通过 Nacos 读取，禁止硬编码
+- 测试覆盖率要求 80%+
+- 禁止跳过测试提交
