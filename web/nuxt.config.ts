@@ -36,8 +36,12 @@ export default defineNuxtConfig({
     }
   },
 
-  // 生产优化
+  // 预渲染页面为静态 HTML + 生产优化
   nitro: {
+    prerender: {
+      crawlLinks: true,
+      routes: ['/', '/auth/login', '/auth/register', '/profile']
+    },
     compressPublicAssets: true
   },
 
