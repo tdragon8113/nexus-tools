@@ -9,9 +9,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - NACOS_SERVER_ADDR=${NACOS_ADDR}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
+      - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
     networks:
       - nexus-network
     depends_on:
@@ -26,13 +27,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - NACOS_SERVER_ADDR=${NACOS_ADDR}
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_PORT=${MYSQL_PORT}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
+      - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
     networks:
       - nexus-network
 
@@ -44,13 +42,10 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - NACOS_SERVER_ADDR=${NACOS_ADDR}
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_PORT=${MYSQL_PORT}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR}
+      - NACOS_USERNAME=${NACOS_USERNAME}
+      - NACOS_PASSWORD=${NACOS_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
     networks:
       - nexus-network
 

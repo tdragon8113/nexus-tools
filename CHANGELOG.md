@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.3] - 2026-04-10
+
+### 新增
+
+- 仓库根目录 `.env.example`，本地用环境变量联调 Nacos / Redis / MySQL / RabbitMQ（与 `application.yml` 占位符一致）
+
+### 改进
+
+- Nacos `spring.config.import` 按 **`nexus-*-${spring.profiles.active}.yml`** 拉取对应环境配置（默认 `prod`）
+- `docker-compose.yml` / `docker-compose.prod.yml` 仅注入 **Nacos 与 `SPRING_PROFILES_ACTIVE`**，与「中间件配置在 Nacos」的生产方式对齐；统一使用 `NACOS_SERVER_ADDR`
+- `nexus-workspace-service` RabbitMQ 默认用户名与 **user-service** 一致（`rabbitmq`）
+- `CLAUDE.md` 补充本地 `.env` 与生产 Nacos 的分工说明；`docker/.env.example` 补充注释
+
 ## [v1.0.2] - 2026-04-09
 
 ### 新增

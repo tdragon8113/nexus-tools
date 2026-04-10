@@ -41,5 +41,5 @@ logs/
 # Environment
 .env
 .env.local
-# Local config files with secrets
+# Local Spring profile files often contain secrets
 **/application-local.yml
