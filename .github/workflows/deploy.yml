@@ -45,13 +45,20 @@ jobs:
         working-directory: web
         run: npm ci
 
+      - name: Clean cache
+        working-directory: web
+        run: rm -rf node_modules/.cache .nuxt .output
+
       - name: Build
         working-directory: web
         run: npm run build
 
       - name: Verify build output
         working-directory: web
-        run: ls -la .output/
+        run: |
+          echo "Checking .output directory..."
+          ls -la .output/ || echo "No .output directory found"
+          ls -la .output/public/ || echo "No .output/public directory found"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
