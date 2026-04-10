@@ -12,8 +12,9 @@ on:
         default: 'latest'
 
 jobs:
-  build:
-    name: Build Microservices
+  # ==================== 前端构建 ====================
+  build-frontend:
+    name: Build Frontend
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.get_tag.outputs.tag }}
@@ -31,7 +32,51 @@ jobs:
             TAG="${GITHUB_REF#refs/tags/}"
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Building version: $TAG"
+          echo "Building frontend version: $TAG"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Build
+        working-directory: web
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: web/.output
+          retention-days: 1
+
+  # ==================== 后端构建 ====================
+  build-backend:
+    name: Build Backend Services
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.get_tag.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get tag version
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Building backend version: $TAG"
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -55,9 +100,47 @@ jobs:
             backend/nexus-workspace-service/target/nexus-workspace-service-*.jar
           retention-days: 1
 
-  push-images:
-    name: Push Docker Images to ACR
-    needs: build
+  # ==================== 推送前端镜像 ====================
+  push-frontend:
+    name: Push Frontend Image
+    needs: build-frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: web/.output
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Aliyun ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web
+          push: true
+          tags: |
+            ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/nexus-frontend:${{ needs.build-frontend.outputs.image_tag }}
+            ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/nexus-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==================== 推送后端镜像 ====================
+  push-backend:
+    name: Push Backend Images
+    needs: build-backend
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -99,14 +182,15 @@ jobs:
           file: ${{ steps.dockerfile.outputs.path }}
           push: true
           tags: |
-            ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ matrix.service }}:${{ needs.build.outputs.image_tag }}
+            ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ matrix.service }}:${{ needs.build-backend.outputs.image_tag }}
             ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ matrix.service }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # ==================== 部署 ====================
   deploy:
     name: Deploy to Server
-    needs: push-images
+    needs: [build-frontend, build-backend, push-frontend, push-backend]
     runs-on: ubuntu-latest
 
     steps:
@@ -139,22 +223,24 @@ jobs:
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
           scp docker/docker-compose.prod.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
-      - name: Deploy services
+      - name: Deploy all services
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
             export ALIYUN_REGISTRY=${{ secrets.ALIYUN_REGISTRY }} && \
             export ALIYUN_NAMESPACE=${{ secrets.ALIYUN_NAMESPACE }} && \
             export IMAGE_TAG=${{ steps.get_tag.outputs.tag }} && \
+            docker login --username ${{ secrets.ALIYUN_USERNAME }} --password ${{ secrets.ALIYUN_PASSWORD }} ${{ secrets.ALIYUN_REGISTRY }} && \
             docker-compose pull && \
             docker-compose up -d && \
+            echo 'Waiting for services...' && \
+            sleep 20 && \
             docker-compose ps"
 
       - name: Health check
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
-            echo 'Waiting for services...' && \
-            sleep 20 && \
-            for i in 1 2 3; do \
-              curl -sf http://localhost:8080/actuator/health > /dev/null && break || sleep 10; \
-            done && \
+            echo 'Checking frontend...' && \
+            curl -sf http://localhost:8888 > /dev/null && echo 'Frontend: OK' && \
+            echo 'Checking gateway...' && \
+            curl -sf http://localhost:8080/actuator/health > /dev/null && echo 'Gateway: OK' && \
             docker-compose ps"

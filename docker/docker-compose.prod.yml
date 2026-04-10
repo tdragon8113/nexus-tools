@@ -1,4 +1,15 @@
 services:
+  nexus-frontend:
+    image: ${ALIYUN_REGISTRY}/${ALIYUN_NAMESPACE}/nexus-frontend:${IMAGE_TAG}
+    container_name: nexus-frontend
+    ports:
+      - "8888:80"
+    networks:
+      - nexus-network
+    depends_on:
+      - nexus-gateway
+    restart: unless-stopped
+
   nexus-gateway:
     image: ${ALIYUN_REGISTRY}/${ALIYUN_NAMESPACE}/nexus-gateway:${IMAGE_TAG}
     container_name: nexus-gateway
