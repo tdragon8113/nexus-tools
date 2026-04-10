@@ -49,11 +49,16 @@ jobs:
         working-directory: web
         run: npm run build
 
+      - name: Verify build output
+        working-directory: web
+        run: ls -la .output/
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: web/.output
+          if-no-files-found: error
           retention-days: 1
 
   # ==================== 后端构建 ====================
