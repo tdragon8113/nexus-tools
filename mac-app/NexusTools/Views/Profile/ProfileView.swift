@@ -7,25 +7,26 @@ struct ProfileView: View {
 
     @State private var showDeleteConfirmation = false
     @State private var isDeleting = false
-
+    
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 16) {
             // Header
             HStack {
                 Text("个人中心")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .font(.system(size: 14, weight: .semibold))
                 Spacer()
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
             }
-
+            
+            Divider()
+            
             if let user = authService.currentUser {
-                // User Info Card
-                VStack(spacing: 16) {
+                // User Info
+                VStack(spacing: 12) {
                     // Avatar
                     if let avatarUrl = user.avatarUrl, !avatarUrl.isEmpty {
                         AsyncImage(url: URL(string: avatarUrl)) { image in
@@ -33,7 +34,7 @@ struct ProfileView: View {
                         } placeholder: {
                             avatarPlaceholder
                         }
-                        .frame(width: 80, height: 80)
+                        .frame(width: 64, height: 64)
                         .clipShape(Circle())
                     } else {
                         avatarPlaceholder
@@ -41,42 +42,46 @@ struct ProfileView: View {
 
                     // Username
                     Text(user.username)
-                        .font(.title3)
-                        .fontWeight(.medium)
+                        .font(.system(size: 15, weight: .medium))
 
                     // Email
                     Text(user.email)
-                        .font(.subheadline)
+                        .font(.system(size: 12))
                         .foregroundColor(.secondary)
 
-                    // Nickname (if exists)
+                    // Nickname
                     if let nickname = user.nickname, !nickname.isEmpty {
                         Text(nickname)
-                            .font(.subheadline)
+                            .font(.system(size: 12))
                             .foregroundColor(.secondary)
                     }
                 }
-                .padding()
-                .background(Color(nsColor: .controlBackgroundColor))
-                .cornerRadius(12)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(Color.secondary.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
+                Divider()
+                
                 // Actions
-                VStack(spacing: 12) {
-                    // Logout Button
+                VStack(spacing: 10) {
                     Button(action: logout) {
                         HStack {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .font(.system(size: 12))
                             Text("退出登录")
+                                .font(.system(size: 13))
                         }
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
 
-                    // Delete Account Button
                     Button(role: .destructive, action: { showDeleteConfirmation = true }) {
                         HStack {
                             Image(systemName: "trash")
+                                .font(.system(size: 12))
                             Text("注销账号")
+                                .font(.system(size: 13))
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -88,8 +93,8 @@ struct ProfileView: View {
 
             Spacer()
         }
-        .padding(24)
-        .frame(width: 320, height: 400)
+        .padding()
+        .frame(width: 280, height: 360)
         .confirmationDialog("确定要注销账号吗？", isPresented: $showDeleteConfirmation) {
             Button("注销账号", role: .destructive) {
                 deleteAccount()
@@ -102,8 +107,8 @@ struct ProfileView: View {
 
     private var avatarPlaceholder: some View {
         Image(systemName: "person.circle.fill")
-            .font(.system(size: 80))
-            .foregroundColor(.gray)
+            .font(.system(size: 64))
+            .foregroundColor(.accentColor)
     }
 
     private func logout() {

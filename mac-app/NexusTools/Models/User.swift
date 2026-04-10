@@ -10,7 +10,7 @@ struct User: Codable, FetchableRecord, PersistableRecord, Identifiable {
     var avatarUrl: String?
     var sessionToken: String?
     var lastSyncAt: Date?
-    var createdAt: Date
+    var createdAt: Date?
 
     static let databaseTableName = "users"
 

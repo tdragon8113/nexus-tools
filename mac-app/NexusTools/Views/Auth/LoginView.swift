@@ -3,71 +3,83 @@ import SwiftUI
 /// 登录视图
 struct LoginView: View {
     @Environment(AuthService.self) private var authService
-
+    
     @State private var username = ""
     @State private var password = ""
-
+    
     var onSwitchToRegister: () -> Void
-
+    
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 12) {
             // Header
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Image(systemName: "person.circle.fill")
-                    .font(.system(size: 48))
+                    .font(.system(size: 40))
                     .foregroundColor(.accentColor)
-                Text("登录")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                
+                Text("Nexus Tools")
+                    .font(.system(size: 16, weight: .semibold))
             }
-            .padding(.bottom, 10)
-
+            .padding(.bottom, 8)
+            
             // Form
-            VStack(spacing: 16) {
-                TextField("用户名", text: $username)
-                    .textFieldStyle(.roundedBorder)
-                    .textContentType(.username)
-
-                SecureField("密码", text: $password)
-                    .textFieldStyle(.roundedBorder)
-                    .textContentType(.password)
+            VStack(spacing: 10) {
+                AuthInputField(
+                    icon: "person",
+                    placeholder: "用户名",
+                    text: $username
+                )
+                
+                AuthInputField(
+                    icon: "lock",
+                    placeholder: "密码",
+                    text: $password,
+                    isSecure: true
+                )
             }
-
+            
             // Error Message
             if let error = authService.errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-                    .font(.caption)
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 10))
+                    Text(error)
+                        .font(.system(size: 11))
+                }
+                .foregroundColor(.red)
             }
-
+            
             // Login Button
             Button(action: login) {
-                if authService.isLoading {
-                    ProgressView()
-                        .controlSize(.small)
-                } else {
-                    Text("登录")
-                        .frame(maxWidth: .infinity)
+                HStack {
+                    if authService.isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Text("登录")
+                    }
                 }
+                .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(username.isEmpty || password.isEmpty || authService.isLoading)
-
+            
+            Divider()
+            
             // Switch to Register
             HStack(spacing: 4) {
-                Text("没有账号？")
+                Text("还没有账号？")
+                    .font(.system(size: 12))
                     .foregroundColor(.secondary)
                 Button("注册") {
                     onSwitchToRegister()
                 }
-                .buttonStyle(.plain)
-                .foregroundColor(.accentColor)
+                .buttonStyle(.borderless)
+                .font(.system(size: 12))
             }
         }
-        .padding(24)
-        .frame(width: 300)
     }
-
+    
     private func login() {
         Task {
             await authService.login(username: username, password: password)

@@ -7,7 +7,17 @@
       "Bash(git commit:*)",
       "Bash(git:*)",
       "Bash(mvn compile:*)",
-      "Bash(java -version)"
+      "Bash(java -version)",
+      "mcp__xcode__XcodeListWindows",
+      "mcp__xcode__XcodeRead",
+      "mcp__xcode__XcodeUpdate",
+      "mcp__xcode__BuildProject",
+      "mcp__idea__get_file_text_by_path",
+      "mcp__idea__find_files_by_name_keyword",
+      "mcp__xcode__XcodeGrep",
+      "Bash(curl -s http://localhost:8080/actuator/health)",
+      "WebSearch",
+      "mcp__xcode__XcodeWrite"
     ]
   }
 }

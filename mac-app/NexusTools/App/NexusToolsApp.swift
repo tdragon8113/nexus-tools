@@ -3,10 +3,14 @@ import SwiftUI
 @main
 struct NexusToolsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @State private var authService = AuthService.shared
 
     var body: some Scene {
-        Settings {
-            EmptyView()
+        MenuBarExtra("Nexus Tools", systemImage: "wrench.and.screwdriver") {
+            QuickLaunchView()
+                .environment(authService)
         }
+        .menuBarExtraStyle(.window)
+        .windowStyle(.hiddenTitleBar)
     }
 }

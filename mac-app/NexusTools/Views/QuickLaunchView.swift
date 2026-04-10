@@ -6,6 +6,13 @@ struct QuickLaunchView: View {
 
     @State private var searchText = ""
     @State private var selectedCategory: ToolCategory?
+    @State private var currentView: ViewMode = .main
+
+    enum ViewMode {
+        case main
+        case auth
+        case settings
+    }
 
     // MARK: - Tool Data
 
@@ -42,6 +49,25 @@ struct QuickLaunchView: View {
     // MARK: - Body
 
     var body: some View {
+        Group {
+            switch currentView {
+            case .main:
+                mainView
+            case .auth:
+                AuthView(onBack: { currentView = .main })
+            case .settings:
+                SettingsView(onBack: { currentView = .main })
+            }
+        }
+        .frame(width: 280)
+        .onChange(of: authService.isLoggedIn) { _, isLoggedIn in
+            if isLoggedIn {
+                currentView = .main
+            }
+        }
+    }
+
+    private var mainView: some View {
         VStack(spacing: 0) {
             // User Info Header
             if let user = authService.currentUser {
@@ -54,80 +80,103 @@ struct QuickLaunchView: View {
             categoryFilter
             Divider()
             toolList
+            
+            Divider()
+            
+            // Footer
+            HStack {
+                Button(action: { currentView = .settings }) {
+                    Image(systemName: "gearshape")
+                }
+                .buttonStyle(.borderless)
+                .help("设置")
+                
+                Spacer()
+                
+                if authService.isLoggedIn {
+                    Button("退出登录") {
+                        Task { await authService.logout() }
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.system(size: 12))
+                } else {
+                    Button(action: { currentView = .auth }) {
+                        Label("登录同步", systemImage: "icloud")
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.system(size: 12))
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
         }
-        .frame(width: 400)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     // MARK: - View Components
 
     private func userInfoHeader(_ user: User) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: "person.circle.fill")
-                .font(.title2)
+                .font(.system(size: 20))
                 .foregroundColor(.accentColor)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.username)
-                    .font(.headline)
+                    .font(.system(size: 13, weight: .medium))
                 Text(user.email)
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundColor(.secondary)
             }
 
             Spacer()
-
-            Button(action: openProfile) {
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.secondary)
-            }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(nsColor: .controlBackgroundColor))
     }
 
     private var searchBar: some View {
-        HStack {
+        HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
             TextField("搜索工具...", text: $searchText)
-                .textFieldStyle(.plain)
+                .textFieldStyle(.roundedBorder)
+                .font(.system(size: 12))
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
             }
         }
-        .padding(12)
-        .background(Color(nsColor: .controlBackgroundColor))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
     }
 
     private var categoryFilter: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             categoryChip(label: "全部", category: nil)
             ForEach(ToolCategory.allCases, id: \.self) { category in
                 categoryChip(label: category.rawValue, category: category)
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
     }
 
     private func categoryChip(label: String, category: ToolCategory?) -> some View {
         Button(action: { selectedCategory = category }) {
             Text(label)
-                .font(.system(size: 12))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(selectedCategory == category ? Color.accentColor : Color(nsColor: .controlBackgroundColor))
+                .font(.system(size: 11))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(selectedCategory == category ? Color.accentColor : Color.secondary.opacity(0.2))
                 .foregroundColor(selectedCategory == category ? .white : .primary)
-                .cornerRadius(12)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
     }
 
     private var toolList: some View {
@@ -140,26 +189,146 @@ struct QuickLaunchView: View {
                 }
             }
         }
-        .frame(maxHeight: 400)
+        .frame(maxHeight: 300)
     }
 
     // MARK: - Actions
 
     private func openTool(_ tool: ToolItem) {
         print("Opening: \(tool.name)")
-        // TODO: 实现工具打开逻辑
-    }
-
-    private func openProfile() {
-        // Post notification to open profile
-        NotificationCenter.default.post(name: .showProfile, object: nil)
     }
 }
 
-// MARK: - Notification Extension
+// MARK: - Settings View
 
-extension Notification.Name {
-    static let showProfile = Notification.Name("showProfile")
+struct SettingsView: View {
+    @Environment(AuthService.self) private var authService
+    var onBack: () -> Void
+    @State private var showDeleteConfirmation = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14))
+                }
+                .buttonStyle(.borderless)
+                
+                Spacer()
+                
+                Text("设置")
+                    .font(.system(size: 14, weight: .semibold))
+                
+                Spacer()
+                
+                // Placeholder for symmetry
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 14))
+                    .opacity(0)
+            }
+            .padding()
+            
+            Divider()
+            
+            ScrollView {
+                VStack(spacing: 16) {
+                    if let user = authService.currentUser {
+                        // User Info
+                        VStack(spacing: 12) {
+                            Image(systemName: "person.circle.fill")
+                                .font(.system(size: 64))
+                                .foregroundColor(.accentColor)
+
+                            Text(user.username)
+                                .font(.system(size: 15, weight: .medium))
+
+                            Text(user.email)
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+
+                            if let nickname = user.nickname, !nickname.isEmpty {
+                                Text(nickname)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.secondary.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                        Divider()
+
+                        // Actions
+                        VStack(spacing: 10) {
+                            Button(action: logout) {
+                                HStack {
+                                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                                        .font(.system(size: 12))
+                                    Text("退出登录")
+                                        .font(.system(size: 13))
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+
+                            Button(role: .destructive, action: { showDeleteConfirmation = true }) {
+                                HStack {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 12))
+                                    Text("注销账号")
+                                        .font(.system(size: 13))
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    } else {
+                        // Not logged in
+                        VStack(spacing: 16) {
+                            Image(systemName: "icloud")
+                                .font(.system(size: 48))
+                                .foregroundColor(.secondary)
+
+                            Text("登录以同步数据")
+                                .font(.system(size: 14, weight: .medium))
+
+                            Text("登录后可在多设备间同步您的数据")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.vertical, 24)
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+            }
+        }
+        .confirmationDialog("确定要注销账号吗？", isPresented: $showDeleteConfirmation) {
+            Button("注销账号", role: .destructive) {
+                deleteAccount()
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("此操作不可撤销，您的所有数据将被永久删除。")
+        }
+    }
+
+    private func logout() {
+        Task {
+            await authService.logout()
+        }
+    }
+
+    private func deleteAccount() {
+        Task {
+            try? await authService.deleteAccount()
+        }
+    }
 }
 
 #Preview {

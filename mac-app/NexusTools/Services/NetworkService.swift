@@ -98,8 +98,11 @@ actor NetworkService {
         // Extract session cookie from response
         extractSessionCookie(from: httpResponse)
 
-        // Handle HTTP status codes
-        try validateStatusCode(httpResponse.statusCode)
+        // Handle HTTP error status codes - try to extract error message from response
+        if !(200..<300).contains(httpResponse.statusCode) {
+            let errorMessage = try? extractErrorMessage(from: data)
+            throw mapStatusCode(httpResponse.statusCode, message: errorMessage)
+        }
 
         // Decode response
         do {
@@ -114,29 +117,36 @@ actor NetworkService {
         }
     }
 
+    private func extractErrorMessage(from data: Data) throws -> String? {
+        struct ErrorResponse: Codable {
+            let code: Int?
+            let message: String?
+        }
+        let response = try JSONDecoder().decode(ErrorResponse.self, from: data)
+        return response.message
+    }
+
+    private func mapStatusCode(_ statusCode: Int, message: String?) -> NetworkError {
+        switch statusCode {
+        case 401:
+            return .sessionExpired
+        case 403:
+            return .forbidden
+        case 404:
+            return .notFound
+        case 400..<500:
+            return .validationError(message ?? "请求参数错误")
+        case 500..<600:
+            return .serverError(statusCode)
+        default:
+            return .serverError(statusCode)
+        }
+    }
+
     private func extractSessionCookie(from response: HTTPURLResponse) {
         guard let cookies = response.value(forHTTPHeaderField: "Set-Cookie") else { return }
         if let match = cookies.range(of: "SESSION=([^;]+)", options: .regularExpression) {
             sessionCookie = String(cookies[match].dropFirst("SESSION=".count))
-        }
-    }
-
-    private func validateStatusCode(_ statusCode: Int) throws {
-        switch statusCode {
-        case 200..<300:
-            return
-        case 401:
-            throw NetworkError.sessionExpired
-        case 403:
-            throw NetworkError.forbidden
-        case 404:
-            throw NetworkError.notFound
-        case 400..<500:
-            throw NetworkError.validationError("请求参数错误")
-        case 500..<600:
-            throw NetworkError.serverError(statusCode)
-        default:
-            throw NetworkError.serverError(statusCode)
         }
     }
 
