@@ -27,7 +27,7 @@ target/
 .project
 .classpath
 
-# IntelliJ IDEA
+# IntelliJ IDEA (keep .idea/.gitignore for project-specific)
 .idea/
 *.iml
 
@@ -41,5 +41,23 @@ logs/
 # Environment
 .env
 .env.local
+.env.*.local
 # Local Spring profile files often contain secrets
 **/application-local.yml
+
+# Node.js / Nuxt
+node_modules/
+.nuxt/
+.output/
+.nitro/
+dist/
+
+# Claude Code
+.claude/settings.local.json
+.claude/plans/
+.claude/sessions/
+.claude/tasks/
+.claude/memory/
+
+# Documentation generated files
+docs/CODEMAPS/
