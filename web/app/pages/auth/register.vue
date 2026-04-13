@@ -12,6 +12,11 @@
 
       <!-- Register Form -->
       <div class="bg-white rounded-2xl shadow-sm p-6">
+        <!-- Error Message -->
+        <div v-if="errorMessage" class="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center">
+          {{ errorMessage }}
+        </div>
+
         <van-form @submit="handleRegister">
           <van-cell-group inset class="!mx-0">
             <van-field
@@ -87,9 +92,13 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthApi } from '../../../lib/api'
+
 definePageMeta({
   layout: false
 })
+
+const { register } = useAuthApi()
 
 const form = reactive({
   username: '',
@@ -99,6 +108,7 @@ const form = reactive({
 })
 
 const loading = ref(false)
+const errorMessage = ref('')
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -106,12 +116,16 @@ const validateConfirmPassword = (val: string) => val === form.password
 
 const handleRegister = async () => {
   loading.value = true
+  errorMessage.value = ''
   try {
-    // TODO: 调用注册 API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    navigateTo('/auth/login')
+    const response = await register(form.username, form.email, form.password)
+    if (response.code === 200) {
+      await navigateTo('/auth/login')
+    } else {
+      errorMessage.value = response.message || '注册失败'
+    }
   } catch (error) {
-    // TODO: 显示错误提示
+    errorMessage.value = '网络错误，请稍后重试'
   } finally {
     loading.value = false
   }

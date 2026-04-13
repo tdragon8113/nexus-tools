@@ -7,6 +7,8 @@ struct QuickLaunchView: View {
     @State private var searchText = ""
     @State private var selectedCategory: ToolCategory?
     @State private var currentView: ViewMode = .main
+    @State private var selectedTool: ToolItem?  // 用于触发 Sheet
+    @State private var showToolSheet = false    // Sheet 状态
 
     enum ViewMode {
         case main
@@ -16,22 +18,10 @@ struct QuickLaunchView: View {
 
     // MARK: - Tool Data
 
-    private let tools: [ToolItem] = [
-        // 开发工具
-        ToolItem(name: "JSON 工具", icon: "doc.text", shortcut: "⌘J", category: .developer),
-        ToolItem(name: "Base64 编解码", icon: "key", shortcut: "⌘B", category: .developer),
-        ToolItem(name: "Hash 生成", icon: "hash", shortcut: "⌘H", category: .developer),
-        ToolItem(name: "JWT 解析", icon: "key.fill", shortcut: "⌘W", category: .developer),
-        ToolItem(name: "URL 编解码", icon: "link", shortcut: "⌘U", category: .developer),
-        ToolItem(name: "正则测试", icon: "chevron.left.forwardslash.chevron.right", shortcut: "⌘R", category: .developer),
-        // 效率工具
-        ToolItem(name: "待办事项", icon: "checklist", shortcut: "⌘T", category: .productivity),
-        ToolItem(name: "时间追踪", icon: "clock", shortcut: "⌘⇧T", category: .productivity),
-        ToolItem(name: "Markdown 编辑", icon: "doc.richtext", shortcut: "⌘M", requiresLargeWindow: true, category: .productivity),
-        // 实用工具
-        ToolItem(name: "剪贴板历史", icon: "doc.on.clipboard", shortcut: "⌘V", category: .utility),
-        ToolItem(name: "统计报告", icon: "chart.bar", shortcut: "⌘S", requiresLargeWindow: true, category: .utility),
-    ]
+    /// 所有可用工具（从 ToolItem.allTools 获取）
+    private var tools: [ToolItem] {
+        ToolItem.allTools
+    }
 
     // MARK: - Computed Properties
 
@@ -64,6 +54,10 @@ struct QuickLaunchView: View {
             if isLoggedIn {
                 currentView = .main
             }
+        }
+        // 工具详情 Sheet
+        .sheet(item: $selectedTool) { tool in
+            ToolDetailView(tool: tool)
         }
     }
 
@@ -142,6 +136,16 @@ struct QuickLaunchView: View {
             TextField("搜索工具...", text: $searchText)
                 .textFieldStyle(.roundedBorder)
                 .font(.system(size: 12))
+            
+            // 快捷搜索按钮
+            Button(action: { QuickSearchWindow.shared.toggleWindow() }) {
+                Image(systemName: "sparkle.magnifyingglass")
+                    .font(.system(size: 11))
+                    .foregroundColor(.accentColor)
+            }
+            .buttonStyle(.borderless)
+            .help("智能搜索 (⌥空格)")
+            
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
@@ -195,7 +199,7 @@ struct QuickLaunchView: View {
     // MARK: - Actions
 
     private func openTool(_ tool: ToolItem) {
-        print("Opening: \(tool.name)")
+        selectedTool = tool
     }
 }
 

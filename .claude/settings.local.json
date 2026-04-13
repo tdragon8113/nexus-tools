@@ -17,7 +17,16 @@
       "mcp__xcode__XcodeGrep",
       "Bash(curl -s http://localhost:8080/actuator/health)",
       "WebSearch",
-      "mcp__xcode__XcodeWrite"
+      "mcp__xcode__XcodeWrite",
+      "Bash(gh run:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"test\",\"password\":\"test123\"}')",
+      "mcp__idea__list_directory_tree",
+      "mcp__xcode__XcodeLS",
+      "mcp__xcode__XcodeMakeDir",
+      "mcp__xcode__XcodeRM",
+      "mcp__xcode__XcodeRefreshCodeIssuesInFile",
+      "mcp__xcode__XcodeGlob"
     ]
   }
 }

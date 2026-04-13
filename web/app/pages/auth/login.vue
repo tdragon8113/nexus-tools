@@ -12,6 +12,11 @@
 
       <!-- Login Form -->
       <div class="bg-white rounded-2xl shadow-sm p-6">
+        <!-- Error Message -->
+        <div v-if="errorMessage" class="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center">
+          {{ errorMessage }}
+        </div>
+
         <van-form @submit="handleLogin">
           <van-cell-group inset class="!mx-0">
             <van-field
@@ -64,9 +69,13 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthApi } from '../../../lib/api'
+
 definePageMeta({
   layout: false
 })
+
+const { login } = useAuthApi()
 
 const form = reactive({
   username: '',
@@ -74,15 +83,20 @@ const form = reactive({
 })
 
 const loading = ref(false)
+const errorMessage = ref('')
 
 const handleLogin = async () => {
   loading.value = true
+  errorMessage.value = ''
   try {
-    // TODO: 调用登录 API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    navigateTo('/profile')
+    const response = await login(form.username, form.password)
+    if (response.code === 200) {
+      await navigateTo('/profile')
+    } else {
+      errorMessage.value = response.message || '登录失败'
+    }
   } catch (error) {
-    // TODO: 显示错误提示
+    errorMessage.value = '网络错误，请稍后重试'
   } finally {
     loading.value = false
   }

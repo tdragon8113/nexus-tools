@@ -7,7 +7,7 @@ struct NexusToolsApp: App {
 
     var body: some Scene {
         MenuBarExtra("Nexus Tools", systemImage: "wrench.and.screwdriver") {
-            QuickLaunchView()
+            MenuBarSettingsView()
                 .environment(authService)
         }
         .menuBarExtraStyle(.window)

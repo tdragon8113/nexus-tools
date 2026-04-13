@@ -9,23 +9,27 @@ struct RegisterView: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     
+    var showHeader: Bool = true
+    var compact: Bool = false  // 紧凑模式（用于菜单栏嵌入）
     var onSwitchToLogin: () -> Void
     
     var body: some View {
-        VStack(spacing: 10) {
-            // Header
-            VStack(spacing: 6) {
-                Image(systemName: "person.badge.plus")
-                    .font(.system(size: 40))
-                    .foregroundColor(.green)
-                
-                Text("创建账号")
-                    .font(.system(size: 16, weight: .semibold))
+        VStack(spacing: compact ? 6 : 10) {
+            // Header - 可隐藏（用于菜单栏嵌入）
+            if showHeader {
+                VStack(spacing: 6) {
+                    Image(systemName: "person.badge.plus")
+                        .font(.system(size: 40))
+                        .foregroundColor(.green)
+                    
+                    Text("创建账号")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .padding(.bottom, 4)
             }
-            .padding(.bottom, 4)
             
             // Form
-            VStack(spacing: 8) {
+            VStack(spacing: compact ? 6 : 8) {
                 AuthInputField(
                     icon: "person",
                     placeholder: "用户名 (3-50字符)",
@@ -74,6 +78,9 @@ struct RegisterView: View {
                 }
                 .foregroundColor(.orange)
             }
+            
+            Spacer()
+                .frame(height: compact ? 6 : 10)
             
             // Register Button
             Button(action: register) {

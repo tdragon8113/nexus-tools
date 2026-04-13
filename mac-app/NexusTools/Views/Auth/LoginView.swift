@@ -7,23 +7,27 @@ struct LoginView: View {
     @State private var username = ""
     @State private var password = ""
     
+    var showHeader: Bool = true
+    var compact: Bool = false  // 紧凑模式（用于菜单栏嵌入）
     var onSwitchToRegister: () -> Void
     
     var body: some View {
-        VStack(spacing: 12) {
-            // Header
-            VStack(spacing: 6) {
-                Image(systemName: "person.circle.fill")
-                    .font(.system(size: 40))
-                    .foregroundColor(.accentColor)
-                
-                Text("Nexus Tools")
-                    .font(.system(size: 16, weight: .semibold))
+        VStack(spacing: compact ? 8 : 12) {
+            // Header - 可隐藏（用于菜单栏嵌入）
+            if showHeader {
+                VStack(spacing: 6) {
+                    Image(systemName: "person.circle.fill")
+                        .font(.system(size: 40))
+                        .foregroundColor(.accentColor)
+                    
+                    Text("Nexus Tools")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .padding(.bottom, 8)
             }
-            .padding(.bottom, 8)
             
             // Form
-            VStack(spacing: 10) {
+            VStack(spacing: compact ? 8 : 10) {
                 AuthInputField(
                     icon: "person",
                     placeholder: "用户名",
@@ -48,6 +52,9 @@ struct LoginView: View {
                 }
                 .foregroundColor(.red)
             }
+            
+            Spacer()
+                .frame(height: compact ? 8 : 12)
             
             // Login Button
             Button(action: login) {

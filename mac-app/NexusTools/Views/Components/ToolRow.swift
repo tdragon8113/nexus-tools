@@ -45,10 +45,6 @@ struct ToolRow: View {
 }
 
 #Preview {
-    ToolRow(tool: ToolItem(
-        name: "JSON 工具",
-        icon: "doc.text",
-        shortcut: "Cmd+J"
-    ))
-    .padding()
+    ToolRow(tool: ToolItem(type: .json))
+        .padding()
 }
