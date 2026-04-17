@@ -5,6 +5,9 @@
 ._*
 
 # Xcode
+# Nested projects (e.g. mac-app/*.xcodeproj): * alone does not match path segments
+**/xcuserdata/
+*.xcuserstate
 *.xcodeproj/project.xcworkspace/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
