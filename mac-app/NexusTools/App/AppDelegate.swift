@@ -1,66 +1,34 @@
 import SwiftUI
 import AppKit
 
+/// 工具窗口宿主： accessory 应用里普通 `NSPanel` 容易在切前台时自动隐藏或不成第一响应者，导致点击后卡住、光标移出才恢复。
+private final class ToolHostPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 /// 应用代理 - 管理后台任务和数据库初始化
 class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Properties
 
-    private var authService = AuthService.shared
-    
-    /// 快捷搜索窗口
-    private var quickSearchWindow: QuickSearchWindow?
+    /// 每种工具类型一个面板，避免重复创建
+    private var toolWindows: [ToolType: NSPanel] = [:]
 
     // MARK: - Lifecycle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        setupKeyboardShortcut()
+        NSApp.setActivationPolicy(.accessory)
 
         Task {
             await initializeDatabase()
         }
 
-        NSApp.setActivationPolicy(.accessory)
-        
-        // 监听工具打开通知
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleOpenToolWithInput(_:)),
-            name: NSNotification.Name("OpenToolWithInput"),
+            name: Constants.Notification.openToolWithInput,
             object: nil
         )
-    }
-
-    // MARK: - Setup Methods
-
-    private func setupKeyboardShortcut() {
-        // Option + Space (keyCode 49) 打开快捷搜索
-        // 使用 Option 而非 Control，避免与系统快捷键冲突
-        
-        // 全局监听（应用不在前台时）- 需要辅助功能权限
-        NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { event in
-            if event.modifierFlags.contains(.option) && event.keyCode == 49 {
-                DispatchQueue.main.async {
-                    self.toggleQuickSearch()
-                }
-            }
-        }
-        
-        // 本地监听（应用激活时）
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if event.modifierFlags.contains(.option) && event.keyCode == 49 {
-                self.toggleQuickSearch()
-                return nil // 消费事件
-            }
-            return event
-        }
-    }
-    
-    /// 切换快捷搜索窗口
-    private func toggleQuickSearch() {
-        if quickSearchWindow == nil {
-            quickSearchWindow = QuickSearchWindow.shared
-        }
-        quickSearchWindow?.toggleWindow()
     }
 
     private func initializeDatabase() async {
@@ -72,34 +40,83 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // MARK: - Notification Handlers
+    // MARK: - Notifications
     
-    /// 处理工具打开通知（带预填充输入）
+    /// 从快捷搜索打开工具（带预填输入）
     @objc private func handleOpenToolWithInput(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let tool = userInfo["tool"] as? ToolItem,
               let input = userInfo["input"] as? String else {
             return
         }
-        
-        // 创建工具详情窗口并预填充输入
-        openToolWindow(tool, withInput: input)
+        scheduleOpenTool(tool, input: input)
     }
     
-    /// 打开工具窗口
+    /// 与 `orderOut` / 手势错开，避免菜单栏应用里抢焦点卡顿
+    private func scheduleOpenTool(_ tool: ToolItem, input: String) {
+        DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                NSApp.unhide(nil)
+                NSApp.activate(ignoringOtherApps: true)
+                self.openToolWindow(tool, withInput: input)
+            }
+        }
+    }
+    
+    /// 打开工具窗口 - 复用缓存窗口
     private func openToolWindow(_ tool: ToolItem, withInput input: String) {
-        let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 400, height: 500),
-                            styleMask: [.titled, .closable, .resizable],
-                            backing: .buffered,
-                            defer: false)
+        // 检查是否有缓存窗口
+        if let existingPanel = toolWindows[tool.type] {
+            // 复用现有窗口，更新内容
+            configureToolPanel(existingPanel)
+            existingPanel.title = tool.name
+            let contentView = ToolDetailViewWithInput(
+                tool: tool,
+                initialInput: input,
+                onClose: { existingPanel.close() }
+            )
+            existingPanel.contentView = NSHostingView(rootView: contentView)
+            existingPanel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
         
+        // 创建新窗口并缓存
+        let panel = ToolHostPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 500),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        
+        configureToolPanel(panel)
         panel.title = tool.name
         panel.center()
         
-        let contentView = ToolDetailViewWithInput(tool: tool, initialInput: input)
+        let contentView = ToolDetailViewWithInput(
+            tool: tool,
+            initialInput: input,
+            onClose: { [weak self] in
+                // 关闭窗口并从缓存中移除
+                panel.close()
+                self?.toolWindows.removeValue(forKey: tool.type)
+            }
+        )
         panel.contentView = NSHostingView(rootView: contentView)
+        
+        // 缓存窗口
+        toolWindows[tool.type] = panel
         
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    private func configureToolPanel(_ panel: NSPanel) {
+        panel.isFloatingPanel = true
+        panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.hidesOnDeactivate = false
+        panel.becomesKeyOnlyIfNeeded = false
+        panel.isReleasedWhenClosed = false
     }
 }

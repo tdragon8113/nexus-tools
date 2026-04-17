@@ -40,7 +40,13 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/auth/login', '/auth/register', '/profile']
+      routes: [
+        '/',
+        '/auth/login',
+        '/auth/register',
+        '/profile',
+        '/tools/json'
+      ]
     },
     compressPublicAssets: true
   },

@@ -22,7 +22,7 @@ struct User: Codable, FetchableRecord, PersistableRecord, Identifiable {
         case avatarUrl
         case sessionToken = "session_token"
         case lastSyncAt = "last_sync_at"
-        case createdAt = "created_at"
+        case createdAt = "/Users/tangdinglong/PersonalProjects/nexus-tools/mac-app/NexusTools/Models/User.swiftcreated_at"
     }
 
     // MARK: - Column definitions for queries

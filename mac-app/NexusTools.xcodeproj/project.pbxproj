@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8AE65C662F8A7683005A5F2F /* ToolDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65C652F8A7683005A5F2F /* ToolDetailView.swift */; };
 		8AE65C682F8A76D7005A5F2F /* JSONToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65C672F8A76D7005A5F2F /* JSONToolView.swift */; };
 		8AE65C6A2F8A76D7005A5F2F /* Base64ToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65C692F8A76D7005A5F2F /* Base64ToolView.swift */; };
 		8AE65C6C2F8A76D7005A5F2F /* HashToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65C6B2F8A76D7005A5F2F /* HashToolView.swift */; };
@@ -24,8 +23,6 @@
 		CA1000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000002 /* AppDelegate.swift */; };
 		CA1000003 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000003 /* User.swift */; };
 		CA1000004 /* AppSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000004 /* AppSetting.swift */; };
-		CA1000005 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000005 /* MainView.swift */; };
-		CA1000006 /* QuickLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000006 /* QuickLaunchView.swift */; };
 		CA1000007 /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000007 /* DatabaseService.swift */; };
 		CA1000008 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000008 /* NetworkService.swift */; };
 		CA1000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB1000009 /* Assets.xcassets */; };
@@ -44,11 +41,9 @@
 		CA1000032 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000032 /* LoginView.swift */; };
 		CA1000033 /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000033 /* RegisterView.swift */; };
 		CA1000034 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000034 /* AuthView.swift */; };
-		CA1000035 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000035 /* ProfileView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8AE65C652F8A7683005A5F2F /* ToolDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolDetailView.swift; sourceTree = "<group>"; };
 		8AE65C672F8A76D7005A5F2F /* JSONToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONToolView.swift; sourceTree = "<group>"; };
 		8AE65C692F8A76D7005A5F2F /* Base64ToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base64ToolView.swift; sourceTree = "<group>"; };
 		8AE65C6B2F8A76D7005A5F2F /* HashToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashToolView.swift; sourceTree = "<group>"; };
@@ -65,8 +60,6 @@
 		CB1000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CB1000003 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		CB1000004 /* AppSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSetting.swift; sourceTree = "<group>"; };
-		CB1000005 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
-		CB1000006 /* QuickLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLaunchView.swift; sourceTree = "<group>"; };
 		CB1000007 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
 		CB1000008 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		CB1000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -86,7 +79,6 @@
 		CB1000032 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		CB1000033 /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		CB1000034 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
-		CB1000035 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		CC1000001 /* NexusTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NexusTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -116,7 +108,6 @@
 				CE1000004 /* App */,
 				CE1000005 /* Models */,
 				CE1000006 /* Views */,
-				CE1000007 /* ViewModels */,
 				CE1000008 /* Services */,
 				CE1000009 /* Utils */,
 				CE1000010 /* Resources */,
@@ -159,12 +150,8 @@
 		CE1000006 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				CB1000005 /* MainView.swift */,
-				CB1000006 /* QuickLaunchView.swift */,
 				CE1000011 /* Components */,
 				CE1000014 /* Auth */,
-				CE1000015 /* Profile */,
-				8AE65C652F8A7683005A5F2F /* ToolDetailView.swift */,
 				8AE65C672F8A76D7005A5F2F /* JSONToolView.swift */,
 				8AE65C692F8A76D7005A5F2F /* Base64ToolView.swift */,
 				8AE65C6B2F8A76D7005A5F2F /* HashToolView.swift */,
@@ -179,13 +166,6 @@
 				8AE65C7D2F8A8222005A5F2F /* MenuBarSettingsView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		CE1000007 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		CE1000008 /* Services */ = {
@@ -250,14 +230,6 @@
 				CB1000034 /* AuthView.swift */,
 			);
 			path = Auth;
-			sourceTree = "<group>";
-		};
-		CE1000015 /* Profile */ = {
-			isa = PBXGroup;
-			children = (
-				CB1000035 /* ProfileView.swift */,
-			);
-			path = Profile;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -343,8 +315,6 @@
 				CA1000003 /* User.swift in Sources */,
 				8AE65C722F8A7728005A5F2F /* QRCodeToolView.swift in Sources */,
 				CA1000004 /* AppSetting.swift in Sources */,
-				CA1000005 /* MainView.swift in Sources */,
-				CA1000006 /* QuickLaunchView.swift in Sources */,
 				CA1000007 /* DatabaseService.swift in Sources */,
 				8AE65C742F8A7760005A5F2F /* JWTToolView.swift in Sources */,
 				CA1000008 /* NetworkService.swift in Sources */,
@@ -352,7 +322,6 @@
 				CA1000012 /* ApiResponse.swift in Sources */,
 				CA1000013 /* ToolItem.swift in Sources */,
 				8AE65C682F8A76D7005A5F2F /* JSONToolView.swift in Sources */,
-				8AE65C662F8A7683005A5F2F /* ToolDetailView.swift in Sources */,
 				8AE65C7E2F8A8222005A5F2F /* MenuBarSettingsView.swift in Sources */,
 				8AE65C7C2F8A7E9F005A5F2F /* ToolDetailViewWithInput.swift in Sources */,
 				CA1000014 /* ToolRow.swift in Sources */,
@@ -369,7 +338,6 @@
 				CA1000032 /* LoginView.swift in Sources */,
 				CA1000033 /* RegisterView.swift in Sources */,
 				CA1000034 /* AuthView.swift in Sources */,
-				CA1000035 /* ProfileView.swift in Sources */,
 				8AE65C702F8A7728005A5F2F /* TimestampToolView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -30,7 +30,7 @@ enum Constants {
 
     // MARK: - Notifications
     enum Notification {
-        static let sessionExpired = NSNotification.Name("SessionExpiredNotification")
-        static let dataSynced = NSNotification.Name("DataSyncedNotification")
+        /// 快捷搜索选择工具并携带输入
+        static let openToolWithInput = NSNotification.Name("OpenToolWithInput")
     }
 }

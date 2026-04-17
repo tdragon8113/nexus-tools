@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// 菜单栏设置视图 - 简洁的设置面板
 struct MenuBarSettingsView: View {
@@ -12,7 +13,7 @@ struct MenuBarSettingsView: View {
         case register
         case settings
     }
-
+    
     var body: some View {
         Group {
             switch currentView {
@@ -48,7 +49,9 @@ struct MenuBarSettingsView: View {
     private var mainView: some View {
         VStack(spacing: 0) {
             // 快捷搜索按钮
-            Button(action: { QuickSearchWindow.shared.toggleWindow() }) {
+            Button(action: {
+                QuickSearchWindow.shared.toggleWindow()
+            }) {
                 HStack(spacing: 10) {
                     Image(systemName: "sparkle.magnifyingglass")
                         .font(.system(size: 16))
@@ -57,7 +60,7 @@ struct MenuBarSettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("智能搜索")
                             .font(.system(size: 13, weight: .medium))
-                        Text("⌥空格 快速打开")
+                        Text("从菜单打开")
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
                     }

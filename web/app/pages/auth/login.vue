@@ -69,8 +69,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthApi } from '../../../lib/api'
-
 definePageMeta({
   layout: false
 })

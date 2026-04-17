@@ -9,7 +9,6 @@ struct ToolRow: View {
             iconView
             nameView
             Spacer()
-            shortcutBadge
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -26,16 +25,6 @@ struct ToolRow: View {
     private var nameView: some View {
         Text(tool.name)
             .font(.system(size: 14, weight: .medium))
-    }
-
-    private var shortcutBadge: some View {
-        Text(tool.shortcut)
-            .font(.system(size: 12))
-            .foregroundColor(.secondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color(nsColor: .controlBackgroundColor))
-            .cornerRadius(4)
     }
 
     private var rowBackground: some View {

@@ -59,24 +59,6 @@ enum ToolType: String, CaseIterable, Codable {
         }
     }
 
-    /// 快捷键
-    var shortcut: String {
-        switch self {
-        case .json: return "⌘J"
-        case .base64: return "⌘B"
-        case .hash: return "⌘H"
-        case .url: return "⌘U"
-        case .timestamp: return "⌘T"
-        case .qrcode: return "⌘Q"
-        case .jwt: return "⌘W"
-        case .regex: return "⌘R"
-        case .markdown: return "⌘M"
-        case .clipboard: return "⌘V"
-        case .todo: return "⌘D"
-        case .timeTracker: return "⌘⇧T"
-        }
-    }
-
     /// 所属分类
     var category: ToolCategory {
         switch self {
@@ -214,11 +196,6 @@ struct ToolItem: Identifiable, Hashable, Codable {
     /// 工具图标
     var icon: String {
         type.icon
-    }
-
-    /// 快捷键
-    var shortcut: String {
-        type.shortcut
     }
 
     /// 所属分类

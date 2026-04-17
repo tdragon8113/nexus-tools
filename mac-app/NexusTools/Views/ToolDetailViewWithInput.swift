@@ -4,7 +4,7 @@ import SwiftUI
 struct ToolDetailViewWithInput: View {
     let tool: ToolItem
     let initialInput: String
-    @Environment(\.dismiss) private var dismiss
+    var onClose: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -30,16 +30,26 @@ struct ToolDetailViewWithInput: View {
 
             Spacer()
 
-            Button(action: { dismiss() }) {
+            Button(action: { closeWindow() }) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 18))
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.borderless)
-            .keyboardShortcut(.escape, modifiers: [])
+            .help("关闭窗口")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+    }
+    
+    // MARK: - Actions
+    
+    private func closeWindow() {
+        if let onClose = onClose {
+            onClose()
+        } else {
+            NSApp.keyWindow?.close()
+        }
     }
 
     // MARK: - Tool Content

@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NUXT_PUBLIC_API_URL || 'http://localhost:8080'
+const API_BASE_URL = () =>
+  (useRuntimeConfig().public.apiBase as string | undefined) ?? 'http://localhost:8080'
 
 interface ApiResponse<T> {
   code: number
@@ -14,48 +15,44 @@ export interface User {
   avatarUrl: string | null
 }
 
-export const useApi = () => {
+function useApiRequest () {
   const token = useCookie('token')
   const userId = useCookie('userId')
 
-  const request = async <T>(
-    path: string,
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> => {
-    const headers: HeadersInit = {
+  const request = async <T> (path: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers
+      ...(options.headers as Record<string, string> | undefined)
     }
 
     if (token.value) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token.value}`
+      headers.Authorization = `Bearer ${token.value}`
     }
-
     if (userId.value) {
-      (headers as Record<string, string>)['X-User-Id'] = String(userId.value)
+      headers['X-User-Id'] = String(userId.value)
     }
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await fetch(`${API_BASE_URL()}${path}`, {
       ...options,
       headers,
-      credentials: 'include' // 保存 session cookie
+      credentials: 'include'
     })
 
     return response.json()
   }
 
   return {
-    get: <T>(path: string) => request<T>(path, { method: 'GET' }),
-    post: <T>(path: string, body?: unknown) =>
+    get: <T> (path: string) => request<T>(path, { method: 'GET' }),
+    post: <T> (path: string, body?: unknown) =>
       request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-    put: <T>(path: string, body?: unknown) =>
+    put: <T> (path: string, body?: unknown) =>
       request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
-    delete: <T>(path: string) => request<T>(path, { method: 'DELETE' })
+    delete: <T> (path: string) => request<T>(path, { method: 'DELETE' })
   }
 }
 
-export const useAuthApi = () => {
-  const api = useApi()
+export function useAuthApi () {
+  const api = useApiRequest()
   const token = useCookie('token')
   const userId = useCookie('userId')
   const user = useState<User | null>('user', () => null)

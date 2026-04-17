@@ -150,41 +150,35 @@ struct QuickSearchView: View {
     // MARK: - Tool Row
     
     private func toolRow(_ tool: ToolItem, isRecommended: Bool) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: tool.icon)
-                .font(.system(size: 16))
-                .foregroundColor(.accentColor)
-                .frame(width: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(tool.name)
-                    .font(.system(size: 14, weight: .medium))
+        Button(action: { openToolWithInput(tool) }) {
+            HStack(spacing: 12) {
+                Image(systemName: tool.icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
                 
-                if isRecommended && !searchText.isEmpty {
-                    Text(matchReason(tool))
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(tool.name)
+                        .font(.system(size: 14, weight: .medium))
+                    
+                    if isRecommended && !searchText.isEmpty {
+                        Text(matchReason(tool))
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
                 }
+                
+                Spacer()
             }
-            
-            Spacer()
-            
-            Text(tool.shortcut)
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.secondary.opacity(0.15))
-                .cornerRadius(4)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 0)
+                    .fill(selectedTool?.id == tool.id ? Color.accentColor.opacity(0.1) : Color.clear)
+            )
+            .contentShape(Rectangle())
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 0)
-                .fill(selectedTool?.id == tool.id ? Color.accentColor.opacity(0.1) : Color.clear)
-        )
-        .contentShape(Rectangle())
-        .onTapGesture { openToolWithInput(tool) }
+        .buttonStyle(.plain)
         .onHover { hovering in
             if hovering {
                 selectedTool = tool
@@ -218,16 +212,14 @@ struct QuickSearchView: View {
     // MARK: - Actions
     
     private func openToolWithInput(_ tool: ToolItem) {
+        let input = searchText
         onClose()
-        
-        // 打开工具并预填充输入
-        // 使用 NotificationCenter 传递数据
         NotificationCenter.default.post(
-            name: NSNotification.Name("OpenToolWithInput"),
+            name: Constants.Notification.openToolWithInput,
             object: nil,
             userInfo: [
                 "tool": tool,
-                "input": searchText
+                "input": input
             ]
         )
     }

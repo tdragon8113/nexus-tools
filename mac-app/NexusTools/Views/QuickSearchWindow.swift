@@ -88,15 +88,4 @@ class QuickSearchWindow: NSPanel {
     override var canBecomeMain: Bool {
         return true
     }
-    
-    /// 处理键盘事件
-    override func keyDown(with event: NSEvent) {
-        // ESC 关闭窗口
-        if event.keyCode == 53 {
-            hideWindow()
-            return
-        }
-        
-        super.keyDown(with: event)
-    }
 }
