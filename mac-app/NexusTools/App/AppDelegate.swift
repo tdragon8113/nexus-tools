@@ -83,7 +83,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // 创建新窗口并缓存
         let panel = ToolHostPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 500),
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 440),
             styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false

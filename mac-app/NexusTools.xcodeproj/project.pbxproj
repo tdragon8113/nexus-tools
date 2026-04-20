@@ -19,6 +19,8 @@
 		8AE65C7A2F8A7E0B005A5F2F /* QuickSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65C792F8A7E0B005A5F2F /* QuickSearchView.swift */; };
 		8AE65C7C2F8A7E9F005A5F2F /* ToolDetailViewWithInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65C7B2F8A7E9F005A5F2F /* ToolDetailViewWithInput.swift */; };
 		8AE65C7E2F8A8222005A5F2F /* MenuBarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65C7D2F8A8222005A5F2F /* MenuBarSettingsView.swift */; };
+		8AE65CA12F8AA002005A5F2F /* PlainTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65CA02F8AA002005A5F2F /* PlainTextEditor.swift */; };
+		8AE65CB12F8AA003005A5F2F /* LineNumberGutterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE65CB02F8AA003005A5F2F /* LineNumberGutterView.swift */; };
 		CA1000001 /* NexusToolsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000001 /* NexusToolsApp.swift */; };
 		CA1000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000002 /* AppDelegate.swift */; };
 		CA1000003 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1000003 /* User.swift */; };
@@ -56,6 +58,8 @@
 		8AE65C792F8A7E0B005A5F2F /* QuickSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickSearchView.swift; sourceTree = "<group>"; };
 		8AE65C7B2F8A7E9F005A5F2F /* ToolDetailViewWithInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolDetailViewWithInput.swift; sourceTree = "<group>"; };
 		8AE65C7D2F8A8222005A5F2F /* MenuBarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarSettingsView.swift; sourceTree = "<group>"; };
+		8AE65CA02F8AA002005A5F2F /* PlainTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlainTextEditor.swift; sourceTree = "<group>"; };
+		8AE65CB02F8AA003005A5F2F /* LineNumberGutterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineNumberGutterView.swift; sourceTree = "<group>"; };
 		CB1000001 /* NexusToolsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NexusToolsApp.swift; sourceTree = "<group>"; };
 		CB1000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CB1000003 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
@@ -200,6 +204,8 @@
 		CE1000011 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8AE65CB02F8AA003005A5F2F /* LineNumberGutterView.swift */,
+				8AE65CA02F8AA002005A5F2F /* PlainTextEditor.swift */,
 				CB1000015 /* ToolRow.swift */,
 			);
 			path = Components;
@@ -321,6 +327,8 @@
 				CA1000011 /* NetworkError.swift in Sources */,
 				CA1000012 /* ApiResponse.swift in Sources */,
 				CA1000013 /* ToolItem.swift in Sources */,
+				8AE65CB12F8AA003005A5F2F /* LineNumberGutterView.swift in Sources */,
+				8AE65CA12F8AA002005A5F2F /* PlainTextEditor.swift in Sources */,
 				8AE65C682F8A76D7005A5F2F /* JSONToolView.swift in Sources */,
 				8AE65C7E2F8A8222005A5F2F /* MenuBarSettingsView.swift in Sources */,
 				8AE65C7C2F8A7E9F005A5F2F /* ToolDetailViewWithInput.swift in Sources */,
