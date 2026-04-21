@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.12] - 2026-04-21
+
+### 修复（部署）
+
+- GitHub Actions `deploy.yml`：网关健康检查改为 **`/actuator/health/liveness`**（避免聚合健康在 Redis/Nacos 未就绪时返回 503 导致 `curl -sf` 失败）；并增加 `curl --retry` 等待容器就绪
+
 ## [v1.0.11] - 2026-04-21
 
 ### 修复（网关 / 部署）

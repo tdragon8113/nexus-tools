@@ -257,6 +257,6 @@ jobs:
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
             echo 'Checking frontend...' && \
             curl -sf http://localhost:8888 > /dev/null && echo 'Frontend: OK' && \
-            echo 'Checking gateway...' && \
-            curl -sf http://localhost:8080/actuator/health > /dev/null && echo 'Gateway: OK' && \
+            echo 'Checking gateway (liveness; /health 在 Redis 等未就绪时可能 503)...' && \
+            curl -sf --retry 12 --retry-delay 5 --retry-all-errors http://localhost:8080/actuator/health/liveness > /dev/null && echo 'Gateway: OK' && \
             docker-compose ps"
