@@ -11,10 +11,14 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      Inter: [400, 500, 600, 700]
+      Inter: [400, 500, 600, 700],
+      'Noto Serif SC': [400, 600, 700],
+      'JetBrains Mono': [400, 500, 600]
     },
     display: 'swap'
   },
+
+  css: ['~~/assets/css/main.css'],
 
   vant: {
     lazyload: true
@@ -45,7 +49,9 @@ export default defineNuxtConfig({
         '/auth/login',
         '/auth/register',
         '/profile',
-        '/tools/json'
+        '/tools/json',
+        '/manage',
+        '/manage/time'
       ]
     },
     compressPublicAssets: true

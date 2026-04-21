@@ -3,17 +3,31 @@
 @tailwind utilities;
 
 :root {
+  /* 与初版站点一致的蓝紫主色 */
   --primary: #3b82f6;
   --primary-dark: #2563eb;
-  --secondary: #64748b;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --accent-purple: #7c3aed;
+  --doc-bg: #f8fafc;
+  --doc-surface: #ffffff;
+  --doc-ink: #0f172a;
+  --doc-muted: #64748b;
+  --doc-faint: #94a3b8;
+  --doc-border: #e2e8f0;
+  --doc-accent: #3b82f6;
+  --doc-accent-hover: #2563eb;
+  --doc-accent-muted: rgba(59, 130, 246, 0.12);
+  --doc-code-bg: #f1f5f9;
+  --font-display: 'Noto Serif SC', 'Songti SC', 'STSong', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #f8fafc;
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--doc-bg);
+    color: var(--doc-ink);
+  }
 }
 
 /* 自定义滚动条 */
@@ -35,21 +49,24 @@ body {
   background: #94a3b8;
 }
 
-/* 工具卡片悬浮效果 */
-.tool-card {
-  @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer;
-}
+@layer components {
+  .doc-surface {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
+  }
 
-.tool-card:hover {
-  @apply -translate-y-1;
-}
+  .doc-prose-muted {
+    @apply text-slate-600 leading-relaxed;
+  }
 
-/* 渐变背景 */
-.gradient-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
+  .doc-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600/80;
+  }
 
-/* 按钮渐变 */
-.btn-gradient {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  .doc-page-gradient {
+    @apply min-h-screen bg-gradient-to-br from-slate-50 to-blue-50;
+  }
+
+  .doc-cta-gradient {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm hover:opacity-90 transition-opacity;
+  }
 }

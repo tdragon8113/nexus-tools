@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.10] - 2026-04-20
+
+### 新增（Web）
+
+- JSON 工具：CodeMirror 输入/输出编辑区、代码折叠与行号、文本 / 树 / 表格 / 类型 / 对比视图
+- JSON 本地历史（IndexedDB，约 50 条）
+- 顶栏工具搜索与从首页「打开工具」预填 JSON 等能力
+- 管理端基础页面（如时间工具入口）
+
+### 改进（Web）
+
+- JSON：Tab 与 Shift-Tab 按「缩进」选项（1～4 空格或 Tab）缩进
+- JSON：同一对象内重复键名校验（`JSON.parse` 静默覆盖的问题会明确报错）
+- JSON：解析错误波浪线悬停显示完整说明（`@codemirror/lint` 诊断提示）
+- 首页、站点工具目录、认证与个人中心相关布局与样式
+
+### 修复（Web）
+
+- CodeMirror 6：`indentWithTab` 需包在 `keymap.of([...])` 中，避免初始化报错
+
 ## [v1.0.3] - 2026-04-10
 
 ### 新增
