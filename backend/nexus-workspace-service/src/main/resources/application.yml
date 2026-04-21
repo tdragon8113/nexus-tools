@@ -36,7 +36,7 @@ spring:
     password: ${RABBITMQ_PASSWORD:}
 
 mybatis-plus:
-  mapper-locations: classpath:mapper/*.xml
+  mapper-locations: classpath:mapper/*.xml,classpath:mapper/infrastructure/*.xml
   configuration:
     map-underscore-to-camel-case: true
   global-config:

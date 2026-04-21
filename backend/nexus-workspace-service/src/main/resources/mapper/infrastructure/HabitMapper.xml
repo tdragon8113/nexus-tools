@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.workspace.infrastructure.repository.HabitMapper">
+
+    <resultMap id="HabitResultMap" type="com.nexus.workspace.domain.model.habit.Habit">
+        <id column="id" property="idValue"/>
+        <result column="user_id" property="userId"/>
+        <result column="name" property="name"/>
+        <result column="icon" property="icon"/>
+        <result column="target" property="targetFromString"/>
+        <result column="custom_days" property="customDays"/>
+        <result column="version" property="version"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findByUserId" resultMap="HabitResultMap">
+        SELECT * FROM habits WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+</mapper>
