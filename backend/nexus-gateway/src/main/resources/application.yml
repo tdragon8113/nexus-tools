@@ -1,6 +1,17 @@
 server:
   port: 8080
 
+# CI 与运维健康检查：deploy.yml 使用 curl http://localhost:8080/actuator/health
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
 spring:
   application:
     name: nexus-gateway

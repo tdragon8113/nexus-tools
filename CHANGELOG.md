@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.11] - 2026-04-21
+
+### 修复（网关 / 部署）
+
+- `nexus-gateway` 增加 **Spring Boot Actuator**，暴露 `/actuator/health`，与 `deploy.yml` 中 `curl http://localhost:8080/actuator/health` 健康检查一致，避免部署在网关检查步骤失败
+
 ## [v1.0.10] - 2026-04-20
 
 ### 新增（Web）
