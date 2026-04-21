@@ -38,7 +38,20 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ApiResponse<UserResponse> getCurrentUser(@RequestHeader("X-User-Id") Long userId) {
+    public ApiResponse<UserResponse> getCurrentUser(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            HttpSession session) {
+        // 优先从 header 获取，否则从 session 获取
+        if (userId == null) {
+            Object sessionUserId = session.getAttribute("userId");
+            if (sessionUserId != null) {
+                userId = Long.parseLong(sessionUserId.toString());
+            }
+        }
+        if (userId == null) {
+            log.warn("getCurrentUser called without userId");
+            return ApiResponse.error(401, "未登录");
+        }
         return ApiResponse.success(authService.getCurrentUser(userId));
     }
 

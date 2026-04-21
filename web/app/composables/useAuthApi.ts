@@ -17,7 +17,7 @@ export interface User {
 
 function useApiRequest () {
   const token = useCookie('token')
-  const userId = useCookie('userId')
+  const userId = useCookie('userId', { decode: (value) => value })
 
   const request = async <T> (path: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
     const headers: Record<string, string> = {
@@ -29,7 +29,9 @@ function useApiRequest () {
       headers.Authorization = `Bearer ${token.value}`
     }
     if (userId.value) {
-      headers['X-User-Id'] = String(userId.value)
+      // 移除可能的 JSON 引号
+      const rawUserId = String(userId.value).replace(/^"|"$/g, '')
+      headers['X-User-Id'] = rawUserId
     }
 
     const response = await fetch(`${API_BASE_URL()}${path}`, {
@@ -59,9 +61,11 @@ export function useAuthApi () {
 
   const login = async (username: string, password: string) => {
     const response = await api.post<User>('/api/v1/auth/login', { username, password })
+    console.log('[Auth] Login response:', response)
     if (response.code === 200 && response.data) {
       user.value = response.data
       userId.value = String(response.data.id)
+      console.log('[Auth] UserId cookie set:', userId.value)
     }
     return response
   }
@@ -78,7 +82,9 @@ export function useAuthApi () {
   }
 
   const getCurrentUser = async () => {
+    console.log('[Auth] GetCurrentUser - userId cookie:', userId.value)
     const response = await api.get<User>('/api/v1/auth/me')
+    console.log('[Auth] GetCurrentUser response:', response)
     if (response.code === 200 && response.data) {
       user.value = response.data
     }

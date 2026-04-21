@@ -96,7 +96,12 @@ const showDeleteConfirm = ref(false)
 const loading = ref(false)
 
 onMounted(async () => {
+  // 等待 cookie 在客户端生效
+  await nextTick()
+  console.log('[Profile] userId cookie:', userId.value)
+
   if (!userId.value) {
+    console.log('[Profile] No userId, redirecting to login')
     await navigateTo('/auth/login')
     return
   }
@@ -104,6 +109,7 @@ onMounted(async () => {
   try {
     await getCurrentUser()
   } catch (error) {
+    console.log('[Profile] getCurrentUser failed:', error)
     await navigateTo('/auth/login')
   } finally {
     loading.value = false

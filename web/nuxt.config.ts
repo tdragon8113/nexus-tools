@@ -51,7 +51,13 @@ export default defineNuxtConfig({
         '/profile',
         '/tools/json',
         '/manage',
-        '/manage/time'
+        '/manage/time',
+        '/manage/time/clock',
+        '/manage/time/timestamp',
+        '/manage/time/pomodoro',
+        '/manage/time/habits',
+        '/manage/time/schedule',
+        '/manage/time/stats'
       ]
     },
     compressPublicAssets: true
