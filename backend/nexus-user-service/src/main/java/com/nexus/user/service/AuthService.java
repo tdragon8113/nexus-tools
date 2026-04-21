@@ -73,7 +73,7 @@ public class AuthService {
     }
 
     public UserResponse getCurrentUser(Long userId) {
-        User user = userMapper.findById(userId);
+        User user = userMapper.selectById(userId);
         if (user == null) {
             throw BusinessException.userNotFound();
         }
@@ -82,7 +82,7 @@ public class AuthService {
 
     @Transactional
     public void deleteAccount(Long userId, HttpSession session) {
-        User user = userMapper.findById(userId);
+        User user = userMapper.selectById(userId);
         if (user == null) {
             throw BusinessException.userNotFound();
         }

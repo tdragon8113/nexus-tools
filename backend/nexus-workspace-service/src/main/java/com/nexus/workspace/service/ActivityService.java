@@ -95,7 +95,7 @@ public class ActivityService {
 
     @Transactional
     public void deleteActivity(Long userId, Long activityId) {
-        Activity activity = activityMapper.findById(activityId);
+        Activity activity = activityMapper.selectById(activityId);
         if (activity == null || !activity.getUserId().equals(userId)) {
             throw new BusinessException(404, "记录不存在");
         }

@@ -52,7 +52,7 @@ public class HabitService {
     }
 
     public HabitResponse getHabit(Long userId, Long habitId) {
-        Habit habit = habitMapper.findById(habitId);
+        Habit habit = habitMapper.selectById(habitId);
         if (habit == null || !habit.getUserId().equals(userId)) {
             throw new BusinessException(404, "习惯不存在");
         }
@@ -61,7 +61,7 @@ public class HabitService {
 
     @Transactional
     public HabitResponse updateHabit(Long userId, Long habitId, UpdateHabitRequest request) {
-        Habit habit = habitMapper.findById(habitId);
+        Habit habit = habitMapper.selectById(habitId);
         if (habit == null || !habit.getUserId().equals(userId)) {
             throw new BusinessException(404, "习惯不存在");
         }
@@ -72,7 +72,7 @@ public class HabitService {
         habit.setCustomDays(request.getCustomDays());
         habit.setUpdatedAt(LocalDateTime.now());
 
-        habitMapper.update(habit);
+        habitMapper.updateById(habit);
         log.info("Habit updated: habitId={}", habitId);
 
         return toResponse(habit);
@@ -80,7 +80,7 @@ public class HabitService {
 
     @Transactional
     public void deleteHabit(Long userId, Long habitId) {
-        Habit habit = habitMapper.findById(habitId);
+        Habit habit = habitMapper.selectById(habitId);
         if (habit == null || !habit.getUserId().equals(userId)) {
             throw new BusinessException(404, "习惯不存在");
         }
@@ -91,7 +91,7 @@ public class HabitService {
 
     @Transactional
     public CheckinResponse checkin(Long userId, Long habitId) {
-        Habit habit = habitMapper.findById(habitId);
+        Habit habit = habitMapper.selectById(habitId);
         if (habit == null || !habit.getUserId().equals(userId)) {
             throw new BusinessException(404, "习惯不存在");
         }
@@ -125,7 +125,7 @@ public class HabitService {
     }
 
     public List<CheckinResponse> getCheckins(Long userId, Long habitId, LocalDate startDate, LocalDate endDate) {
-        Habit habit = habitMapper.findById(habitId);
+        Habit habit = habitMapper.selectById(habitId);
         if (habit == null || !habit.getUserId().equals(userId)) {
             throw new BusinessException(404, "习惯不存在");
         }

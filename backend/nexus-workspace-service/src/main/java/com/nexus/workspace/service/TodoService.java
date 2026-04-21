@@ -57,7 +57,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponse updateTodo(Long userId, Long todoId, UpdateTodoRequest request) {
-        Todo todo = todoMapper.findById(todoId);
+        Todo todo = todoMapper.selectById(todoId);
         if (todo == null || !todo.getUserId().equals(userId)) {
             throw new BusinessException(404, "日程不存在");
         }
@@ -74,7 +74,7 @@ public class TodoService {
         todo.setDueDate(request.getDueDate());
         todo.setUpdatedAt(LocalDateTime.now());
 
-        todoMapper.update(todo);
+        todoMapper.updateById(todo);
         log.info("Todo updated: todoId={}", todoId);
 
         return toResponse(todo);
@@ -82,7 +82,7 @@ public class TodoService {
 
     @Transactional
     public void deleteTodo(Long userId, Long todoId) {
-        Todo todo = todoMapper.findById(todoId);
+        Todo todo = todoMapper.selectById(todoId);
         if (todo == null || !todo.getUserId().equals(userId)) {
             throw new BusinessException(404, "日程不存在");
         }
