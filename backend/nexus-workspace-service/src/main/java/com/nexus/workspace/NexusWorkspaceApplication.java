@@ -7,7 +7,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@MapperScan("com.nexus.workspace.mapper")
+@MapperScan("com.nexus.workspace.infrastructure.persistence.mapper")
 public class NexusWorkspaceApplication {
     public static void main(String[] args) {
         SpringApplication.run(NexusWorkspaceApplication.class, args);

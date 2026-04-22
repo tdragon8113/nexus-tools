@@ -8,7 +8,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class}, scanBasePackages = "com.nexus")
 @EnableDiscoveryClient
-@MapperScan("com.nexus.user.mapper")
+@MapperScan("com.nexus.user.infrastructure.persistence.mapper")
 public class NexusUserApplication {
     public static void main(String[] args) {
         SpringApplication.run(NexusUserApplication.class, args);
