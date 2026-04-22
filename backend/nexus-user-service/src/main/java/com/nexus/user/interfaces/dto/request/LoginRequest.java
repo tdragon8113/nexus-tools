@@ -1,8 +1,13 @@
-package com.nexus.user.dto;
+package com.nexus.user.interfaces.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * 登录请求 DTO
+ */
 @Data
 public class LoginRequest {
     @NotBlank(message = "用户名不能为空")

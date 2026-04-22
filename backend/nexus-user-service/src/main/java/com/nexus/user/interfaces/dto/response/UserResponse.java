@@ -1,7 +1,10 @@
-package com.nexus.user.dto;
+package com.nexus.user.interfaces.dto.response;
 
 import lombok.Data;
 
+/**
+ * 用户响应 DTO
+ */
 @Data
 public class UserResponse {
     private Long id;

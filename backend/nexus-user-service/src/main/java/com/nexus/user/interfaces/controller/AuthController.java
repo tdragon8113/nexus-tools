@@ -1,39 +1,50 @@
-package com.nexus.user.controller;
+package com.nexus.user.interfaces.controller;
 
 import com.nexus.common.dto.ApiResponse;
-import com.nexus.user.dto.LoginRequest;
-import com.nexus.user.dto.RegisterRequest;
-import com.nexus.user.dto.UserResponse;
-import com.nexus.user.service.AuthService;
+import com.nexus.user.application.command.LoginCommand;
+import com.nexus.user.application.command.RegisterCommand;
+import com.nexus.user.application.service.AuthApplicationService;
+import com.nexus.user.interfaces.dto.request.LoginRequest;
+import com.nexus.user.interfaces.dto.request.RegisterRequest;
+import com.nexus.user.interfaces.dto.response.UserResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 认证控制器（接口层）
+ */
 @Slf4j
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthApplicationService authApplicationService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AuthApplicationService authApplicationService) {
+        this.authApplicationService = authApplicationService;
     }
 
     @PostMapping("/register")
     public ApiResponse<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ApiResponse.success(authService.register(request));
+        RegisterCommand command = new RegisterCommand(
+            request.getUsername(),
+            request.getEmail(),
+            request.getPassword()
+        );
+        return ApiResponse.success(authApplicationService.register(command));
     }
 
     @PostMapping("/login")
     public ApiResponse<UserResponse> login(@Valid @RequestBody LoginRequest request, HttpSession session) {
-        return ApiResponse.success(authService.login(request, session));
+        LoginCommand command = new LoginCommand(request.getUsername(), request.getPassword());
+        return ApiResponse.success(authApplicationService.login(command, session));
     }
 
     @PostMapping("/logout")
     public ApiResponse<Void> logout(HttpSession session) {
-        authService.logout(session);
+        authApplicationService.logout(session);
         return ApiResponse.success();
     }
 
@@ -41,7 +52,6 @@ public class AuthController {
     public ApiResponse<UserResponse> getCurrentUser(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
             HttpSession session) {
-        // 优先从 header 获取，否则从 session 获取
         if (userId == null) {
             Object sessionUserId = session.getAttribute("userId");
             if (sessionUserId != null) {
@@ -52,12 +62,12 @@ public class AuthController {
             log.warn("getCurrentUser called without userId");
             return ApiResponse.error(401, "未登录");
         }
-        return ApiResponse.success(authService.getCurrentUser(userId));
+        return ApiResponse.success(authApplicationService.getCurrentUser(userId));
     }
 
     @DeleteMapping("/account")
     public ApiResponse<Void> deleteAccount(@RequestHeader("X-User-Id") Long userId, HttpSession session) {
-        authService.deleteAccount(userId, session);
+        authApplicationService.deleteAccount(userId, session);
         return ApiResponse.success();
     }
 }
