@@ -29,11 +29,6 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       database: 0
-  session:
-    store-type: redis
-    redis:
-      namespace: nexus-tools:sessions
-    timeout: 7d
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}

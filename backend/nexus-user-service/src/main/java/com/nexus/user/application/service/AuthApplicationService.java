@@ -8,9 +8,11 @@ import com.nexus.user.domain.event.UserRegisteredEvent;
 import com.nexus.user.domain.model.User;
 import com.nexus.user.domain.model.UserId;
 import com.nexus.user.domain.repository.UserRepository;
+import com.nexus.user.domain.service.JwtService;
 import com.nexus.user.domain.service.PasswordService;
+import com.nexus.user.domain.service.RefreshTokenService;
+import com.nexus.user.interfaces.dto.response.TokenResponse;
 import com.nexus.user.interfaces.dto.response.UserResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,39 +26,43 @@ public class AuthApplicationService {
 
     private final UserRepository userRepository;
     private final PasswordService passwordService;
+    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthApplicationService(UserRepository userRepository, PasswordService passwordService) {
+    public AuthApplicationService(
+            UserRepository userRepository,
+            PasswordService passwordService,
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
+        this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Transactional
     public UserResponse register(RegisterCommand command) {
-        // 检查用户名是否已存在
         if (userRepository.existsByUsername(command.username())) {
             throw BusinessException.userAlreadyExists();
         }
 
-        // 检查邮箱是否已存在
         if (userRepository.existsByEmail(command.email())) {
             throw new BusinessException(1005, "邮箱已被注册");
         }
 
-        // 创建用户
         String encodedPassword = passwordService.encode(command.password());
         User user = User.create(command.username(), command.email(), encodedPassword);
         userRepository.save(user);
 
-        // 发布领域事件
         UserRegisteredEvent event = new UserRegisteredEvent(user.getId(), user.getUsername(), user.getEmail());
         log.info("User registered: {}", user.getUsername());
 
         return toResponse(user);
     }
 
-    public UserResponse login(LoginCommand command, HttpSession session) {
+    public TokenResponse login(LoginCommand command) {
         User user = userRepository.findByUsername(command.username())
-            .orElseThrow(BusinessException::userNotFound);
+                .orElseThrow(BusinessException::userNotFound);
 
         if (!user.canLogin()) {
             throw new BusinessException(403, "用户已被禁用");
@@ -66,19 +72,33 @@ public class AuthApplicationService {
             throw BusinessException.invalidPassword();
         }
 
-        session.setAttribute("userId", user.getIdValue());
-        session.setAttribute("username", user.getUsername());
+        String accessToken = jwtService.generateAccessToken(user.getIdValue(), user.getUsername());
+        String refreshToken = refreshTokenService.generateRefreshToken(user.getId());
 
         UserLoggedInEvent event = new UserLoggedInEvent(user.getId(), user.getUsername());
         log.info("User logged in: {}", user.getUsername());
 
-        return toResponse(user);
+        return new TokenResponse(accessToken, refreshToken, toResponse(user));
     }
 
-    public void logout(HttpSession session) {
-        String username = (String) session.getAttribute("username");
-        session.invalidate();
-        log.info("User logged out: {}", username);
+    public TokenResponse refreshToken(String refreshToken) {
+        UserId userId = refreshTokenService.validateRefreshToken(refreshToken)
+                .orElseThrow(() -> new BusinessException(401, "无效的 Refresh Token"));
+
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+
+        String accessToken = jwtService.generateAccessToken(userId.value(), user.getUsername());
+        log.info("Token refreshed for user: {}", user.getUsername());
+
+        return TokenResponse.forRefresh(accessToken);
+    }
+
+    public void logout(String refreshToken) {
+        refreshTokenService.revokeRefreshToken(refreshToken);
+        log.info("User logged out, refresh token revoked");
     }
 
     public UserResponse getCurrentUser(Long userId) {
@@ -90,14 +110,14 @@ public class AuthApplicationService {
     }
 
     @Transactional
-    public void deleteAccount(Long userId, HttpSession session) {
+    public void deleteAccount(Long userId, String refreshToken) {
         User user = userRepository.findById(new UserId(userId));
         if (user == null) {
             throw BusinessException.userNotFound();
         }
 
+        refreshTokenService.revokeAllUserTokens(new UserId(userId));
         userRepository.delete(new UserId(userId));
-        session.invalidate();
         log.info("User account deleted: {}", user.getUsername());
     }
 

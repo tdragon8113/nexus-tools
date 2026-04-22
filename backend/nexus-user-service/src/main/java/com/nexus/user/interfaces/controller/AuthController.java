@@ -5,9 +5,10 @@ import com.nexus.user.application.command.LoginCommand;
 import com.nexus.user.application.command.RegisterCommand;
 import com.nexus.user.application.service.AuthApplicationService;
 import com.nexus.user.interfaces.dto.request.LoginRequest;
+import com.nexus.user.interfaces.dto.request.RefreshTokenRequest;
 import com.nexus.user.interfaces.dto.request.RegisterRequest;
+import com.nexus.user.interfaces.dto.response.TokenResponse;
 import com.nexus.user.interfaces.dto.response.UserResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -37,27 +38,24 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<UserResponse> login(@Valid @RequestBody LoginRequest request, HttpSession session) {
+    public ApiResponse<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginCommand command = new LoginCommand(request.getUsername(), request.getPassword());
-        return ApiResponse.success(authApplicationService.login(command, session));
+        return ApiResponse.success(authApplicationService.login(command));
+    }
+
+    @PostMapping("/refresh")
+    public ApiResponse<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return ApiResponse.success(authApplicationService.refreshToken(request.getRefreshToken()));
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(HttpSession session) {
-        authApplicationService.logout(session);
+    public ApiResponse<Void> logout(@RequestBody RefreshTokenRequest request) {
+        authApplicationService.logout(request.getRefreshToken());
         return ApiResponse.success();
     }
 
     @GetMapping("/me")
-    public ApiResponse<UserResponse> getCurrentUser(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            HttpSession session) {
-        if (userId == null) {
-            Object sessionUserId = session.getAttribute("userId");
-            if (sessionUserId != null) {
-                userId = Long.parseLong(sessionUserId.toString());
-            }
-        }
+    public ApiResponse<UserResponse> getCurrentUser(@RequestHeader("X-User-Id") Long userId) {
         if (userId == null) {
             log.warn("getCurrentUser called without userId");
             return ApiResponse.error(401, "未登录");
@@ -66,8 +64,10 @@ public class AuthController {
     }
 
     @DeleteMapping("/account")
-    public ApiResponse<Void> deleteAccount(@RequestHeader("X-User-Id") Long userId, HttpSession session) {
-        authApplicationService.deleteAccount(userId, session);
+    public ApiResponse<Void> deleteAccount(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestBody RefreshTokenRequest request) {
+        authApplicationService.deleteAccount(userId, request.getRefreshToken());
         return ApiResponse.success();
     }
 }

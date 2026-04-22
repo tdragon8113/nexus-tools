@@ -15,9 +15,43 @@ export interface User {
   avatarUrl: string | null
 }
 
+export interface TokenResponse {
+  accessToken: string
+  refreshToken?: string
+  user?: User
+}
+
 function useApiRequest () {
-  const token = useCookie('token')
-  const userId = useCookie('userId', { decode: (value) => value })
+  const accessToken = useState<string | null>('accessToken', () => null)
+  const refreshToken = useCookie('refreshToken')
+  const user = useState<User | null>('user', () => null)
+
+  const refreshAccessToken = async (): boolean => {
+    if (!refreshToken.value) return false
+
+    try {
+      const response = await fetch(`${API_BASE_URL()}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: refreshToken.value })
+      })
+
+      const result: ApiResponse<TokenResponse> = await response.json()
+      if (result.code === 200 && result.data?.accessToken) {
+        accessToken.value = result.data.accessToken
+        return true
+      }
+    } catch (e) {
+      console.error('[Auth] Refresh token failed:', e)
+    }
+
+    // Refresh Token 失效，清除状态并跳转登录页
+    accessToken.value = null
+    refreshToken.value = null
+    user.value = null
+    navigateTo('/auth/login')
+    return false
+  }
 
   const request = async <T> (path: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
     const headers: Record<string, string> = {
@@ -25,65 +59,77 @@ function useApiRequest () {
       ...(options.headers as Record<string, string> | undefined)
     }
 
-    if (token.value) {
-      headers.Authorization = `Bearer ${token.value}`
-    }
-    if (userId.value) {
-      // 移除可能的 JSON 引号
-      const rawUserId = String(userId.value).replace(/^"|"$/g, '')
-      headers['X-User-Id'] = rawUserId
+    if (accessToken.value) {
+      headers.Authorization = `Bearer ${accessToken.value}`
     }
 
     const response = await fetch(`${API_BASE_URL()}${path}`, {
       ...options,
-      headers,
-      credentials: 'include'
+      headers
     })
+
+    // 401 时尝试刷新 Token
+    if (response.status === 401 && refreshToken.value && !path.includes('/auth/refresh')) {
+      const refreshed = await refreshAccessToken()
+      if (refreshed) {
+        // 重试请求
+        headers.Authorization = `Bearer ${accessToken.value}`
+        const retryResponse = await fetch(`${API_BASE_URL()}${path}`, { ...options, headers })
+        return retryResponse.json()
+      }
+      return { code: 401, message: 'Token expired', data: null as T }
+    }
 
     return response.json()
   }
 
-  return {
-    get: <T> (path: string) => request<T>(path, { method: 'GET' }),
-    post: <T> (path: string, body?: unknown) =>
-      request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-    put: <T> (path: string, body?: unknown) =>
-      request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
-    delete: <T> (path: string) => request<T>(path, { method: 'DELETE' })
-  }
+  return { request, accessToken, refreshToken, user, refreshAccessToken }
 }
 
 export function useAuthApi () {
-  const api = useApiRequest()
-  const token = useCookie('token')
-  const userId = useCookie('userId')
-  const user = useState<User | null>('user', () => null)
+  const { request, accessToken, refreshToken, user } = useApiRequest()
 
   const login = async (username: string, password: string) => {
-    const response = await api.post<User>('/api/v1/auth/login', { username, password })
+    const response = await request<TokenResponse>('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    })
     console.log('[Auth] Login response:', response)
     if (response.code === 200 && response.data) {
-      user.value = response.data
-      userId.value = String(response.data.id)
-      console.log('[Auth] UserId cookie set:', userId.value)
+      accessToken.value = response.data.accessToken
+      if (response.data.refreshToken) {
+        refreshToken.value = response.data.refreshToken
+      }
+      if (response.data.user) {
+        user.value = response.data.user
+      }
+      console.log('[Auth] Token stored, userId:', user.value?.id)
     }
     return response
   }
 
   const register = async (username: string, email: string, password: string) => {
-    return api.post<User>('/api/v1/auth/register', { username, email, password })
+    return request<User>('/api/v1/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, email, password })
+    })
   }
 
   const logout = async () => {
-    await api.post<void>('/api/v1/auth/logout')
+    if (refreshToken.value) {
+      await request<void>('/api/v1/auth/logout', {
+        method: 'POST',
+        body: JSON.stringify({ refreshToken: refreshToken.value })
+      })
+    }
+    accessToken.value = null
+    refreshToken.value = null
     user.value = null
-    token.value = null
-    userId.value = null
   }
 
   const getCurrentUser = async () => {
-    console.log('[Auth] GetCurrentUser - userId cookie:', userId.value)
-    const response = await api.get<User>('/api/v1/auth/me')
+    console.log('[Auth] GetCurrentUser - accessToken:', accessToken.value)
+    const response = await request<User>('/api/v1/auth/me')
     console.log('[Auth] GetCurrentUser response:', response)
     if (response.code === 200 && response.data) {
       user.value = response.data
@@ -92,11 +138,16 @@ export function useAuthApi () {
   }
 
   const deleteAccount = async () => {
-    await api.delete<void>('/api/v1/auth/account')
+    if (refreshToken.value) {
+      await request<void>('/api/v1/auth/account', {
+        method: 'DELETE',
+        body: JSON.stringify({ refreshToken: refreshToken.value })
+      })
+    }
+    accessToken.value = null
+    refreshToken.value = null
     user.value = null
-    token.value = null
-    userId.value = null
   }
 
-  return { login, register, logout, getCurrentUser, deleteAccount, user }
+  return { login, register, logout, getCurrentUser, deleteAccount, user, accessToken }
 }
