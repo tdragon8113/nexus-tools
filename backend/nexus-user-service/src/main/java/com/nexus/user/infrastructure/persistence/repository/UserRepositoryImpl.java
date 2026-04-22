@@ -1,15 +1,16 @@
-package com.nexus.user.infrastructure.repository;
+package com.nexus.user.infrastructure.persistence.repository;
 
 import com.nexus.user.domain.model.User;
 import com.nexus.user.domain.model.UserId;
 import com.nexus.user.domain.repository.UserRepository;
+import com.nexus.user.infrastructure.persistence.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 /**
- * 用户仓储实现（基础设施层）
+ * 用户仓储实现（持久化层）
  */
 @Slf4j
 @Repository

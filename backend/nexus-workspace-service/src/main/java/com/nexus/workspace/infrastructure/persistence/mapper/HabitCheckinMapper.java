@@ -1,4 +1,4 @@
-package com.nexus.workspace.infrastructure.repository;
+package com.nexus.workspace.infrastructure.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nexus.workspace.domain.model.habit.HabitCheckin;
@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 习惯打卡 Mapper（基础设施层）
+ * 习惯打卡 Mapper（持久化层）
  */
 @Mapper
 public interface HabitCheckinMapper extends BaseMapper<HabitCheckin> {

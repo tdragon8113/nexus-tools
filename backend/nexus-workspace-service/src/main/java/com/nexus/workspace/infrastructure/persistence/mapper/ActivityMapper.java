@@ -1,4 +1,4 @@
-package com.nexus.workspace.infrastructure.repository;
+package com.nexus.workspace.infrastructure.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nexus.workspace.domain.model.activity.Activity;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Activity Mapper（基础设施层）
+ * Activity Mapper（持久化层）
  */
 @Mapper
 public interface ActivityMapper extends BaseMapper<Activity> {

@@ -1,7 +1,8 @@
-package com.nexus.workspace.infrastructure.repository;
+package com.nexus.workspace.infrastructure.persistence.repository;
 
 import com.nexus.workspace.domain.model.todo.Todo;
 import com.nexus.workspace.domain.repository.TodoRepository;
+import com.nexus.workspace.infrastructure.persistence.mapper.TodoMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Todo 仓储实现（基础设施层）
+ * Todo 仓储实现（持久化层）
  */
 @Slf4j
 @Repository

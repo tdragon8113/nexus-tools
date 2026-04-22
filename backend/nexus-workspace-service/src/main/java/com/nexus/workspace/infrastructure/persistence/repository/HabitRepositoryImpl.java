@@ -1,9 +1,11 @@
-package com.nexus.workspace.infrastructure.repository;
+package com.nexus.workspace.infrastructure.persistence.repository;
 
 import com.nexus.workspace.domain.model.habit.Habit;
 import com.nexus.workspace.domain.model.habit.HabitCheckin;
 import com.nexus.workspace.domain.model.habit.HabitId;
 import com.nexus.workspace.domain.repository.HabitRepository;
+import com.nexus.workspace.infrastructure.persistence.mapper.HabitCheckinMapper;
+import com.nexus.workspace.infrastructure.persistence.mapper.HabitMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 习惯仓储实现（基础设施层）
+ * 习惯仓储实现（持久化层）
  */
 @Slf4j
 @Repository
@@ -29,7 +31,6 @@ public class HabitRepositoryImpl implements HabitRepository {
     public Habit findById(HabitId id) {
         Habit habit = habitMapper.selectById(id.value());
         if (habit != null) {
-            // 加载打卡记录（聚合内部）
             List<HabitCheckin> checkins = checkinMapper.findByHabitId(id.value());
             habit.setCheckins(checkins);
         }
@@ -39,7 +40,6 @@ public class HabitRepositoryImpl implements HabitRepository {
     @Override
     public List<Habit> findByUserId(Long userId) {
         List<Habit> habits = habitMapper.findByUserId(userId);
-        // 批量加载打卡记录
         for (Habit habit : habits) {
             List<HabitCheckin> checkins = checkinMapper.findByHabitId(habit.getIdValue());
             habit.setCheckins(checkins);
