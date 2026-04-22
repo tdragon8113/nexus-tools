@@ -64,3 +64,6 @@ logging:
   level:
     DEFAULT: DEBUG
     com.nexus.gateway: DEBUG
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY:nexus-tools-default-secret-key-please-change-in-production}

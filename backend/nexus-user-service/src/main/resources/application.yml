@@ -49,3 +49,8 @@ mybatis-plus:
 logging:
   level:
     com.nexus.user: INFO
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY:nexus-tools-default-secret-key-please-change-in-production}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:900}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800}
