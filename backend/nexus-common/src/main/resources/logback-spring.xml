@@ -3,9 +3,9 @@
     <!-- 包含 Spring Boot 默认配置 -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <!-- 定义日志格式，包含 TraceId -->
+    <!-- 定义日志格式，包含 TraceId 和 SpanId -->
     <property name="LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%blue(%X{traceId:-NO_TRACE})] %yellow([%thread]) %green(%logger{36}) - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%blue(%X{traceId:-NO_TRACE})/%X{spanId:-NO_SPAN}] %yellow([%thread]) %green(%logger{36}) - %msg%n"/>
 
     <!-- 控制台日志 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
