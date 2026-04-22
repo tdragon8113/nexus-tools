@@ -1,6 +1,7 @@
 package com.nexus.workspace.domain.service;
 
 import com.nexus.workspace.domain.model.habit.HabitCheckin;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * 连续打卡计算领域服务
  */
+@Service
 public class StreakCalculator {
 
     /**
