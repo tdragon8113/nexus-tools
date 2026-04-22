@@ -1,24 +1,24 @@
-package com.nexus.user.domain.service;
+package com.nexus.common.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 /**
- * JWT 服务（领域服务）
+ * JWT 工具类（通用组件）
  */
-@Service
-public class JwtService {
+@Component
+public class JwtUtils {
 
     private final SecretKey secretKey;
     private final long accessTokenExpiration;
 
-    public JwtService(
+    public JwtUtils(
             @Value("${jwt.secret-key}") String secretKey,
             @Value("${jwt.access-token-expiration:900}") long accessTokenExpiration) {
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -28,22 +28,19 @@ public class JwtService {
     /**
      * 生成 Access Token
      */
-    public String generateAccessToken(Long userId, String username) {
+    public String generateToken(Long userId, String username) {
         long now = System.currentTimeMillis();
-        Date issuedAt = new Date(now);
-        Date expiration = new Date(now + accessTokenExpiration * 1000);
-
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("username", username)
-                .issuedAt(issuedAt)
-                .expiration(expiration)
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + accessTokenExpiration * 1000))
                 .signWith(secretKey)
                 .compact();
     }
 
     /**
-     * 解析并验证 Token
+     * 解析 Token 获取 Claims
      */
     public Claims parseToken(String token) {
         return Jwts.parser()
@@ -54,19 +51,24 @@ public class JwtService {
     }
 
     /**
-     * 从 Token 中提取 userId
+     * 提取 userId（返回 Long）
      */
     public Long extractUserId(String token) {
-        Claims claims = parseToken(token);
-        return Long.parseLong(claims.getSubject());
+        return Long.parseLong(parseToken(token).getSubject());
     }
 
     /**
-     * 从 Token 中提取 username
+     * 提取 userId（返回 String，供 Gateway 使用）
+     */
+    public String extractUserIdAsString(String token) {
+        return parseToken(token).getSubject();
+    }
+
+    /**
+     * 提取 username
      */
     public String extractUsername(String token) {
-        Claims claims = parseToken(token);
-        return claims.get("username", String.class);
+        return parseToken(token).get("username", String.class);
     }
 
     /**

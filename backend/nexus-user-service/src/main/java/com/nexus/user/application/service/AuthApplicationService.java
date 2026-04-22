@@ -1,6 +1,7 @@
 package com.nexus.user.application.service;
 
 import com.nexus.common.exception.BusinessException;
+import com.nexus.common.security.JwtUtils;
 import com.nexus.user.application.command.LoginCommand;
 import com.nexus.user.application.command.RegisterCommand;
 import com.nexus.user.domain.event.UserLoggedInEvent;
@@ -8,7 +9,6 @@ import com.nexus.user.domain.event.UserRegisteredEvent;
 import com.nexus.user.domain.model.User;
 import com.nexus.user.domain.model.UserId;
 import com.nexus.user.domain.repository.UserRepository;
-import com.nexus.user.domain.service.JwtService;
 import com.nexus.user.domain.service.PasswordService;
 import com.nexus.user.domain.service.RefreshTokenService;
 import com.nexus.user.interfaces.dto.response.TokenResponse;
@@ -26,17 +26,17 @@ public class AuthApplicationService {
 
     private final UserRepository userRepository;
     private final PasswordService passwordService;
-    private final JwtService jwtService;
+    private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
 
     public AuthApplicationService(
             UserRepository userRepository,
             PasswordService passwordService,
-            JwtService jwtService,
+            JwtUtils jwtUtils,
             RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
-        this.jwtService = jwtService;
+        this.jwtUtils = jwtUtils;
         this.refreshTokenService = refreshTokenService;
     }
 
@@ -72,7 +72,7 @@ public class AuthApplicationService {
             throw BusinessException.invalidPassword();
         }
 
-        String accessToken = jwtService.generateAccessToken(user.getIdValue(), user.getUsername());
+        String accessToken = jwtUtils.generateToken(user.getIdValue(), user.getUsername());
         String refreshToken = refreshTokenService.generateRefreshToken(user.getId());
 
         UserLoggedInEvent event = new UserLoggedInEvent(user.getId(), user.getUsername());
@@ -90,7 +90,7 @@ public class AuthApplicationService {
             throw BusinessException.userNotFound();
         }
 
-        String accessToken = jwtService.generateAccessToken(userId.value(), user.getUsername());
+        String accessToken = jwtUtils.generateToken(userId.value(), user.getUsername());
         log.info("Token refreshed for user: {}", user.getUsername());
 
         return TokenResponse.forRefresh(accessToken);

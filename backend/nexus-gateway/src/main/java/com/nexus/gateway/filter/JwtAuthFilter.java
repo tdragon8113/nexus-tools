@@ -1,6 +1,6 @@
 package com.nexus.gateway.filter;
 
-import com.nexus.gateway.service.JwtService;
+import com.nexus.common.security.JwtUtils;
 import io.jsonwebtoken.JwtException;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
-    private final JwtService jwtService;
+    private final JwtUtils jwtUtils;
 
     private static final List<String> WHITE_LIST = List.of(
             "/api/v1/auth/login",
@@ -27,8 +27,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/api/v1/auth/refresh"
     );
 
-    public JwtAuthFilter(JwtService jwtService) {
-        this.jwtService = jwtService;
+    public JwtAuthFilter(JwtUtils jwtUtils) {
+        this.jwtUtils = jwtUtils;
     }
 
     @Override
@@ -36,14 +36,12 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getPath().value();
 
-        // 白名单路径直接放行
         if (WHITE_LIST.stream().anyMatch(path::equals)) {
             return chain.filter(exchange);
         }
 
         String authHeader = request.getHeaders().getFirst("Authorization");
 
-        // 没有 Authorization header 或格式错误
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return unauthorized(exchange);
         }
@@ -51,7 +49,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         String token = authHeader.substring(7);
 
         try {
-            String userId = jwtService.extractUserId(token);
+            String userId = jwtUtils.extractUserIdAsString(token);
 
             ServerHttpRequest mutatedRequest = request.mutate()
                     .header("X-User-Id", userId)
