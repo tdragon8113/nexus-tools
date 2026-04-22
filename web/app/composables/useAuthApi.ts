@@ -21,34 +21,74 @@ export interface TokenResponse {
   user?: User
 }
 
+// localStorage keys
+const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'nexus_access_token',
+  REFRESH_TOKEN: 'nexus_refresh_token',
+  USER_ID: 'nexus_user_id',
+  USER: 'nexus_user'
+}
+
+// Client-side storage helpers
+function getStorageItem<T> (key: string, defaultValue: T): T {
+  if (typeof window === 'undefined') return defaultValue
+  const item = localStorage.getItem(key)
+  if (!item) return defaultValue
+  try {
+    return JSON.parse(item) as T
+  } catch {
+    return defaultValue
+  }
+}
+
+function setStorageItem<T> (key: string, value: T | null) {
+  if (typeof window === 'undefined') return
+  if (value === null) {
+    localStorage.removeItem(key)
+  } else {
+    localStorage.setItem(key, JSON.stringify(value))
+  }
+}
+
 function useApiRequest () {
-  const accessToken = useState<string | null>('accessToken', () => null)
-  const refreshToken = useCookie('refreshToken')
   const user = useState<User | null>('user', () => null)
 
+  const getAccessToken = () => getStorageItem<string | null>(STORAGE_KEYS.ACCESS_TOKEN, null)
+  const getRefreshToken = () => getStorageItem<string | null>(STORAGE_KEYS.REFRESH_TOKEN, null)
+  const getUserId = () => getStorageItem<number | null>(STORAGE_KEYS.USER_ID, null)
+
+  const setAccessToken = (token: string | null) => setStorageItem(STORAGE_KEYS.ACCESS_TOKEN, token)
+  const setRefreshToken = (token: string | null) => setStorageItem(STORAGE_KEYS.REFRESH_TOKEN, token)
+  const setUserId = (id: number | null) => setStorageItem(STORAGE_KEYS.USER_ID, id)
+
+  const clearAuth = () => {
+    setAccessToken(null)
+    setRefreshToken(null)
+    setUserId(null)
+    user.value = null
+  }
+
   const refreshAccessToken = async (): boolean => {
-    if (!refreshToken.value) return false
+    const refreshToken = getRefreshToken()
+    if (!refreshToken) return false
 
     try {
       const response = await fetch(`${API_BASE_URL()}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: refreshToken.value })
+        body: JSON.stringify({ refreshToken })
       })
 
       const result: ApiResponse<TokenResponse> = await response.json()
       if (result.code === 200 && result.data?.accessToken) {
-        accessToken.value = result.data.accessToken
+        setAccessToken(result.data.accessToken)
         return true
       }
     } catch (e) {
       console.error('[Auth] Refresh token failed:', e)
     }
 
-    // Refresh Token 失效，清除状态并跳转登录页
-    accessToken.value = null
-    refreshToken.value = null
-    user.value = null
+    clearAuth()
     navigateTo('/auth/login')
     return false
   }
@@ -59,8 +99,9 @@ function useApiRequest () {
       ...(options.headers as Record<string, string> | undefined)
     }
 
-    if (accessToken.value) {
-      headers.Authorization = `Bearer ${accessToken.value}`
+    const accessToken = getAccessToken()
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`
     }
 
     const response = await fetch(`${API_BASE_URL()}${path}`, {
@@ -69,11 +110,10 @@ function useApiRequest () {
     })
 
     // 401 时尝试刷新 Token
-    if (response.status === 401 && refreshToken.value && !path.includes('/auth/refresh')) {
+    if (response.status === 401 && getRefreshToken() && !path.includes('/auth/refresh')) {
       const refreshed = await refreshAccessToken()
       if (refreshed) {
-        // 重试请求
-        headers.Authorization = `Bearer ${accessToken.value}`
+        headers.Authorization = `Bearer ${getAccessToken()}`
         const retryResponse = await fetch(`${API_BASE_URL()}${path}`, { ...options, headers })
         return retryResponse.json()
       }
@@ -83,11 +123,47 @@ function useApiRequest () {
     return response.json()
   }
 
-  return { request, accessToken, refreshToken, user, refreshAccessToken }
+  // 初始化时从 localStorage 加载用户数据
+  const initUser = () => {
+    const storedUser = getStorageItem<User | null>(STORAGE_KEYS.USER, null)
+    if (storedUser) {
+      user.value = storedUser
+    }
+  }
+
+  return {
+    request,
+    user,
+    getAccessToken,
+    getRefreshToken,
+    getUserId,
+    setAccessToken,
+    setRefreshToken,
+    setUserId,
+    clearAuth,
+    refreshAccessToken,
+    initUser
+  }
 }
 
 export function useAuthApi () {
-  const { request, accessToken, refreshToken, user } = useApiRequest()
+  const {
+    request,
+    user,
+    getAccessToken,
+    getRefreshToken,
+    getUserId,
+    setAccessToken,
+    setRefreshToken,
+    setUserId,
+    clearAuth,
+    initUser
+  } = useApiRequest()
+
+  // 客户端初始化
+  if (typeof window !== 'undefined') {
+    initUser()
+  }
 
   const login = async (username: string, password: string) => {
     const response = await request<TokenResponse>('/api/v1/auth/login', {
@@ -96,14 +172,16 @@ export function useAuthApi () {
     })
     console.log('[Auth] Login response:', response)
     if (response.code === 200 && response.data) {
-      accessToken.value = response.data.accessToken
+      setAccessToken(response.data.accessToken)
       if (response.data.refreshToken) {
-        refreshToken.value = response.data.refreshToken
+        setRefreshToken(response.data.refreshToken)
       }
       if (response.data.user) {
         user.value = response.data.user
+        setUserId(response.data.user.id)
+        setStorageItem(STORAGE_KEYS.USER, response.data.user)
       }
-      console.log('[Auth] Token stored, userId:', user.value?.id)
+      console.log('[Auth] Token stored, userId:', getUserId())
     }
     return response
   }
@@ -116,38 +194,52 @@ export function useAuthApi () {
   }
 
   const logout = async () => {
-    if (refreshToken.value) {
+    const refreshToken = getRefreshToken()
+    if (refreshToken) {
       await request<void>('/api/v1/auth/logout', {
         method: 'POST',
-        body: JSON.stringify({ refreshToken: refreshToken.value })
+        body: JSON.stringify({ refreshToken })
       })
     }
-    accessToken.value = null
-    refreshToken.value = null
-    user.value = null
+    clearAuth()
   }
 
   const getCurrentUser = async () => {
-    console.log('[Auth] GetCurrentUser - accessToken:', accessToken.value)
+    console.log('[Auth] GetCurrentUser - accessToken:', getAccessToken())
     const response = await request<User>('/api/v1/auth/me')
     console.log('[Auth] GetCurrentUser response:', response)
     if (response.code === 200 && response.data) {
       user.value = response.data
+      setUserId(response.data.id)
+      setStorageItem(STORAGE_KEYS.USER, response.data)
     }
     return response
   }
 
   const deleteAccount = async () => {
-    if (refreshToken.value) {
+    const refreshToken = getRefreshToken()
+    if (refreshToken) {
       await request<void>('/api/v1/auth/account', {
         method: 'DELETE',
-        body: JSON.stringify({ refreshToken: refreshToken.value })
+        body: JSON.stringify({ refreshToken })
       })
     }
-    accessToken.value = null
-    refreshToken.value = null
-    user.value = null
+    clearAuth()
   }
 
-  return { login, register, logout, getCurrentUser, deleteAccount, user, accessToken }
+  const isLoggedIn = () => {
+    return !!getAccessToken() && !!getUserId()
+  }
+
+  return {
+    login,
+    register,
+    logout,
+    getCurrentUser,
+    deleteAccount,
+    user,
+    isLoggedIn,
+    getUserId,
+    getAccessToken
+  }
 }

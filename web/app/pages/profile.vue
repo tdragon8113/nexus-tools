@@ -89,19 +89,18 @@ definePageMeta({
   layout: false
 })
 
-const { user, logout, deleteAccount, getCurrentUser } = useAuthApi()
-const userId = useCookie('userId')
+const { user, logout, deleteAccount, getCurrentUser, isLoggedIn, getUserId } = useAuthApi()
 
 const showDeleteConfirm = ref(false)
 const loading = ref(false)
 
 onMounted(async () => {
-  // 等待 cookie 在客户端生效
+  // 等待客户端初始化
   await nextTick()
-  console.log('[Profile] userId cookie:', userId.value)
+  console.log('[Profile] isLoggedIn:', isLoggedIn())
 
-  if (!userId.value) {
-    console.log('[Profile] No userId, redirecting to login')
+  if (!isLoggedIn()) {
+    console.log('[Profile] Not logged in, redirecting to login')
     await navigateTo('/auth/login')
     return
   }

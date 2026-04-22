@@ -1,6 +1,7 @@
 package com.nexus.user.domain.model;
 
-import com.nexus.common.exception.BusinessException;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -9,12 +10,14 @@ import java.time.LocalDateTime;
  * 用户聚合根（富领域模型）
  */
 @Getter
+@TableName("users")
 public class User {
     private UserId id;
     private String username;
     private String email;
     private String password;
     private String nickname;
+    @TableField("avatar")
     private String avatarUrl;
     private UserStatus status;
     private LocalDateTime createdAt;
