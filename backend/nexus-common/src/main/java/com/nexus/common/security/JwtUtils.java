@@ -3,24 +3,20 @@ package com.nexus.common.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 /**
- * JWT 工具类（通用组件）
+ * JWT 工具类
+ * 通过 JwtAutoConfiguration 注册为 Bean
  */
-@Component
 public class JwtUtils {
 
     private final SecretKey secretKey;
     private final long accessTokenExpiration;
 
-    public JwtUtils(
-            @Value("${jwt.secret-key}") String secretKey,
-            @Value("${jwt.access-token-expiration:900}") long accessTokenExpiration) {
+    public JwtUtils(String secretKey, long accessTokenExpiration) {
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.accessTokenExpiration = accessTokenExpiration;
     }
