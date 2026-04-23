@@ -1,7 +1,7 @@
 package com.nexus.common.filter;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import org.apache.skywalking.apm.toolkit.trace.TraceContext;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.ServerWebExchange;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
  * WebFlux 请求日志过滤器
  * - 记录请求/响应信息
  * - 计算请求耗时
- * - TraceId 由 Micrometer Tracing 自动注入 MDC
+ * - TraceId 由 SkyWalking Agent 提供
  */
 @Slf4j
 public class RequestLoggingWebFilter implements WebFilter {
@@ -35,7 +35,8 @@ public class RequestLoggingWebFilter implements WebFilter {
                 .doFinally(signalType -> {
                     long duration = System.currentTimeMillis() - startTime;
                     ServerHttpResponse response = exchange.getResponse();
-                    String traceId = MDC.get("traceId");
+                    // SkyWalking toolkit 获取 traceId
+                    String traceId = TraceContext.traceId();
                     logRequest(request, response, duration, traceId);
                 });
     }
@@ -59,11 +60,11 @@ public class RequestLoggingWebFilter implements WebFilter {
 
         if (status >= 400) {
             log.warn("[{}] {} {} {} - {}ms | Status: {}",
-                    traceId != null ? traceId : "NO_TRACE",
+                    traceId != null && !traceId.isEmpty() ? traceId : "NO_TRACE",
                     clientIp, method, uri, duration, status);
         } else {
             log.info("[{}] {} {} {} - {}ms | Status: {}",
-                    traceId != null ? traceId : "NO_TRACE",
+                    traceId != null && !traceId.isEmpty() ? traceId : "NO_TRACE",
                     clientIp, method, uri, duration, status);
         }
     }

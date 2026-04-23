@@ -16,7 +16,7 @@ import java.io.IOException;
  * 请求日志过滤器
  * - 记录请求/响应信息
  * - 计算请求耗时
- * - TraceId 由 Micrometer Tracing 自动注入 MDC
+ * - TraceId 由 SkyWalking Agent 自动注入 MDC（key: tid）
  */
 @Slf4j
 public class RequestLoggingFilter extends OncePerRequestFilter {
@@ -43,8 +43,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         } finally {
             long duration = System.currentTimeMillis() - startTime;
 
-            // TraceId 由 Micrometer Tracing 自动注入 MDC，无需手动设置
-            String traceId = MDC.get("traceId");
+            // SkyWalking Agent 自动注入 MDC，key 为 "tid"
+            String traceId = MDC.get("tid");
             logRequest(wrappedRequest, wrappedResponse, duration, traceId);
 
             wrappedResponse.copyBodyToResponse();

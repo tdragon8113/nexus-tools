@@ -54,13 +54,3 @@ jwt:
   secret-key: ${JWT_SECRET_KEY:7LPLHy7D99svwAmalkRgAbl2dhYstwRlRTiUyEyOYsU=}
   access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:900}
   refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800}
-
-# Micrometer Tracing 配置
-management:
-  tracing:
-    enabled: ${TRACING_ENABLED:true}
-    sampling:
-      probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
-  zipkin:
-    tracing:
-      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}

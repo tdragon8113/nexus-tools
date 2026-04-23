@@ -30,6 +30,9 @@ target/
 .project
 .classpath
 
+# SkyWalking Agent (external dependency)
+skywalking-agent/
+
 # IntelliJ IDEA (keep .idea/.gitignore for project-specific)
 .idea/
 *.iml
