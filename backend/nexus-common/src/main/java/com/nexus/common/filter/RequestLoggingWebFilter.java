@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
  * WebFlux 请求日志过滤器
  * - 记录请求/响应信息
  * - 计算请求耗时
- * - TraceId 由 SkyWalking Agent 提供
+ * - TraceId 由 TraceIdPatternLogbackLayout 自动注入（%tid pattern）
  */
 @Slf4j
 public class RequestLoggingWebFilter implements WebFilter {
@@ -35,9 +35,7 @@ public class RequestLoggingWebFilter implements WebFilter {
                 .doFinally(signalType -> {
                     long duration = System.currentTimeMillis() - startTime;
                     ServerHttpResponse response = exchange.getResponse();
-                    // SkyWalking toolkit 获取 traceId
-                    String traceId = TraceContext.traceId();
-                    logRequest(request, response, duration, traceId);
+                    logRequest(request, response, duration);
                 });
     }
 
@@ -51,20 +49,19 @@ public class RequestLoggingWebFilter implements WebFilter {
     }
 
     private void logRequest(ServerHttpRequest request, ServerHttpResponse response,
-                            long duration, String traceId) {
+                            long duration) {
 
         String method = request.getMethod().name();
         String uri = request.getPath().value();
         String clientIp = getClientIp(request);
         int status = response.getStatusCode() != null ? response.getStatusCode().value() : 0;
 
+        // traceId 由 SkyWalking TraceIdPatternLogbackLayout 自动注入
         if (status >= 400) {
-            log.warn("[{}] {} {} {} - {}ms | Status: {}",
-                    traceId != null && !traceId.isEmpty() ? traceId : "NO_TRACE",
+            log.warn("{} {} {} - {}ms | Status: {}",
                     clientIp, method, uri, duration, status);
         } else {
-            log.info("[{}] {} {} {} - {}ms | Status: {}",
-                    traceId != null && !traceId.isEmpty() ? traceId : "NO_TRACE",
+            log.info("{} {} {} - {}ms | Status: {}",
                     clientIp, method, uri, duration, status);
         }
     }

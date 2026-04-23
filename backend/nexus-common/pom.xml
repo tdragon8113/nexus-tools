@@ -49,11 +49,15 @@
             <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- SkyWalking Toolkit (获取 traceId) -->
+        <!-- SkyWalking Toolkit (traceId API，logback converter 内部使用) -->
         <dependency>
             <groupId>org.apache.skywalking</groupId>
             <artifactId>apm-toolkit-trace</artifactId>
-            <optional>true</optional>
+        </dependency>
+        <!-- SkyWalking Logback (TraceIdPatternLogConverter，%tid 自动获取 traceId) -->
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-logback-1.x</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

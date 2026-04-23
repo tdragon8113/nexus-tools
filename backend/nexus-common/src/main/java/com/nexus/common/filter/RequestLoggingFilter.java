@@ -5,7 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -16,7 +15,7 @@ import java.io.IOException;
  * 请求日志过滤器
  * - 记录请求/响应信息
  * - 计算请求耗时
- * - TraceId 由 SkyWalking Agent 自动注入 MDC（key: tid）
+ * - TraceId 由 SkyWalking Agent 自动注入（logback %tid pattern）
  */
 @Slf4j
 public class RequestLoggingFilter extends OncePerRequestFilter {
@@ -42,11 +41,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             filterChain.doFilter(wrappedRequest, wrappedResponse);
         } finally {
             long duration = System.currentTimeMillis() - startTime;
-
-            // SkyWalking Agent 自动注入 MDC，key 为 "tid"
-            String traceId = MDC.get("tid");
-            logRequest(wrappedRequest, wrappedResponse, duration, traceId);
-
+            logRequest(wrappedRequest, wrappedResponse, duration);
             wrappedResponse.copyBodyToResponse();
         }
     }
@@ -62,7 +57,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
     private void logRequest(ContentCachingRequestWrapper request,
                             ContentCachingResponseWrapper response,
-                            long duration, String traceId) {
+                            long duration) {
 
         String method = request.getMethod();
         String uri = request.getRequestURI();
@@ -72,14 +67,13 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         String requestBody = getRequestBody(request);
         String responseBody = getResponseBody(response);
 
+        // traceId 由 SkyWalking 自动注入 logback %tid pattern
         if (status >= 400) {
-            log.warn("[{}] {} {} {} - {}ms | Status: {} | Req: {} | Res: {}",
-                    traceId != null ? traceId : "NO_TRACE",
+            log.warn("{} {} {} - {}ms | Status: {} | Req: {} | Res: {}",
                     clientIp, method, uri, duration, status,
                     truncate(requestBody, 500), truncate(responseBody, 500));
         } else {
-            log.info("[{}] {} {} {} - {}ms | Status: {}",
-                    traceId != null ? traceId : "NO_TRACE",
+            log.info("{} {} {} - {}ms | Status: {}",
                     clientIp, method, uri, duration, status);
         }
     }

@@ -25,8 +25,8 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.2.5</spring-boot.version>
-        <spring-cloud.version>2023.0.1</spring-cloud.version>
-        <nacos.version>2023.0.1.0</nacos.version>
+        <spring-cloud.version>2023.0.2</spring-cloud.version>
+        <nacos.version>2023.0.3.2</nacos.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <skywalking.version>9.6.0</skywalking.version>
     </properties>
@@ -71,6 +71,12 @@
             <dependency>
                 <groupId>org.apache.skywalking</groupId>
                 <artifactId>apm-toolkit-trace</artifactId>
+                <version>${skywalking.version}</version>
+            </dependency>
+            <!-- SkyWalking Logback (自动注入 MDC) -->
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-logback-1.x</artifactId>
                 <version>${skywalking.version}</version>
             </dependency>
 
