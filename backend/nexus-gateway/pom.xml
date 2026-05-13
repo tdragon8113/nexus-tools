@@ -44,6 +44,16 @@
             <groupId>com.nexus</groupId>
             <artifactId>nexus-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- SkyWalking WebFlux Toolkit -->
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-webflux</artifactId>
+        </dependency>
         <!-- macOS DNS resolver (native) -->
         <dependency>
             <groupId>io.netty</groupId>

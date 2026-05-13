@@ -1,3 +1,2 @@
 com.nexus.common.config.LoggingAutoConfiguration
-com.nexus.common.config.ReactiveLoggingAutoConfiguration
 com.nexus.common.security.config.JwtAutoConfiguration

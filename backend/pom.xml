@@ -73,6 +73,12 @@
                 <artifactId>apm-toolkit-trace</artifactId>
                 <version>${skywalking.version}</version>
             </dependency>
+            <!-- SkyWalking WebFlux Toolkit (Reactor context propagation) -->
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-webflux</artifactId>
+                <version>${skywalking.version}</version>
+            </dependency>
             <!-- SkyWalking Logback (自动注入 MDC) -->
             <dependency>
                 <groupId>org.apache.skywalking</groupId>
