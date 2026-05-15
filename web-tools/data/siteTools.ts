@@ -24,29 +24,13 @@ export const siteTools: SiteTool[] = [
     keywords: ['json', 'JSON', '格式化', '美化', '压缩', '校验', 'parse', 'stringify']
   },
   {
-    id: 'timehub',
-    name: '时间管理',
-    desc: '番茄、日程、习惯（独立站点，可登录同步）',
-    icon: 'notes-o',
-    bgColor: 'bg-indigo-100',
-    iconColor: 'text-indigo-600',
-    keywords: [
-      '时间管理',
-      '番茄钟',
-      'pomodoro',
-      '专注',
-      '日程',
-      '习惯',
-      '时钟'
-    ]
-  },
-  {
     id: 'base64',
     name: 'Base64',
     desc: '编解码',
     icon: 'shield-o',
     bgColor: 'bg-green-100',
     iconColor: 'text-green-500',
+    path: '/tools/base64',
     keywords: ['base64', 'b64', '编解码', '编码', '解码']
   },
   {
@@ -56,6 +40,7 @@ export const siteTools: SiteTool[] = [
     icon: 'clock-o',
     bgColor: 'bg-orange-100',
     iconColor: 'text-orange-500',
+    path: '/tools/timestamp',
     keywords: ['时间戳', 'timestamp', 'unix', '毫秒', '秒', '日期转换']
   },
   {
@@ -65,6 +50,7 @@ export const siteTools: SiteTool[] = [
     icon: 'qr',
     bgColor: 'bg-purple-100',
     iconColor: 'text-purple-500',
+    path: '/tools/qrcode',
     keywords: ['二维码', 'qr', 'qrcode', '条码']
   },
   {
@@ -74,6 +60,7 @@ export const siteTools: SiteTool[] = [
     icon: 'brush-o',
     bgColor: 'bg-pink-100',
     iconColor: 'text-pink-500',
+    path: '/tools/color',
     keywords: ['颜色', 'hex', 'rgb', 'hsl', '色值']
   },
   {
@@ -83,6 +70,7 @@ export const siteTools: SiteTool[] = [
     icon: 'search',
     bgColor: 'bg-cyan-100',
     iconColor: 'text-cyan-500',
+    path: '/tools/regex',
     keywords: ['正则', 'regex', 'regexp', '表达式']
   },
   {
@@ -92,6 +80,7 @@ export const siteTools: SiteTool[] = [
     icon: 'cluster-o',
     bgColor: 'bg-indigo-100',
     iconColor: 'text-indigo-500',
+    path: '/tools/http',
     keywords: ['http', 'https', 'api', '请求', 'rest', 'curl']
   },
   {
@@ -101,7 +90,28 @@ export const siteTools: SiteTool[] = [
     icon: 'gift-o',
     bgColor: 'bg-amber-100',
     iconColor: 'text-amber-500',
+    path: '/tools/uuid',
     keywords: ['uuid', 'guid', '唯一标识']
+  },
+  {
+    id: 'password',
+    name: '随机密码',
+    desc: '安全生成',
+    icon: 'closed-eye',
+    bgColor: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    path: '/tools/password',
+    keywords: ['密码', '随机密码', 'password', '口令', '生成密码', '强密码']
+  },
+  {
+    id: 'calculator',
+    name: '计算器',
+    desc: '四则运算',
+    icon: 'records',
+    bgColor: 'bg-sky-100',
+    iconColor: 'text-sky-600',
+    path: '/tools/calculator',
+    keywords: ['计算器', '计算', 'calculator', '算术', '加减乘除', '幂', '乘方']
   },
   {
     id: 'hash',
@@ -110,6 +120,7 @@ export const siteTools: SiteTool[] = [
     icon: 'lock',
     bgColor: 'bg-red-100',
     iconColor: 'text-red-500',
+    path: '/tools/hash',
     keywords: ['md5', 'sha', 'sha256', '哈希', 'hash', '摘要']
   },
   {
@@ -119,6 +130,7 @@ export const siteTools: SiteTool[] = [
     icon: 'link-o',
     bgColor: 'bg-teal-100',
     iconColor: 'text-teal-500',
+    path: '/tools/url',
     keywords: ['url', 'encode', 'decode', '编码', 'URIComponent', '链接']
   },
   {
@@ -128,6 +140,7 @@ export const siteTools: SiteTool[] = [
     icon: 'coupon-o',
     bgColor: 'bg-violet-100',
     iconColor: 'text-violet-500',
+    path: '/tools/code',
     keywords: ['prettier', '代码格式化', 'eslint', 'format']
   },
   {

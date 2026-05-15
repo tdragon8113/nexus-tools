@@ -1,8 +1,3 @@
-<script setup lang="ts">
-const config = useRuntimeConfig()
-const timeAppUrl = computed(() => String(config.public.timeAppUrl || '/'))
-</script>
-
 <template>
   <header
     class="sticky top-0 z-50 border-b border-slate-200/90 bg-white/85 backdrop-blur-md"
@@ -26,15 +21,6 @@ const timeAppUrl = computed(() => String(config.public.timeAppUrl || '/'))
             </span>
           </div>
         </NuxtLink>
-
-        <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-          <a
-            :href="timeAppUrl"
-            class="px-2 sm:px-3 py-2 text-sm text-indigo-600 hover:text-indigo-700 rounded-md hover:bg-indigo-50/60 transition-colors"
-          >
-            时间管理
-          </a>
-        </div>
       </div>
 
       <ToolSearchBar class="w-full min-w-0" />

@@ -58,28 +58,6 @@
             </div>
             <van-icon name="arrow" class="shrink-0 text-slate-400 mt-2" size="14" />
           </button>
-          <button
-            v-else-if="tool.id === 'timehub'"
-            type="button"
-            class="group w-full text-left doc-card-interactive rounded-xl px-4 py-3 flex gap-3 items-start border-indigo-100"
-            @click="goTimeApp"
-          >
-            <div
-              class="w-10 h-10 shrink-0 rounded-lg border border-indigo-100 bg-indigo-50 flex items-center justify-center"
-            >
-              <van-icon :name="tool.icon" size="20" class="text-indigo-600" />
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="font-medium text-slate-900 text-sm">{{ tool.name }}</span>
-                <span
-                  class="text-[10px] font-semibold text-indigo-700 bg-indigo-500/10 px-1.5 py-0.5 rounded"
-                >独立站点</span>
-              </div>
-              <p class="text-xs text-slate-500 mt-0.5">{{ tool.desc }}</p>
-            </div>
-            <van-icon name="arrow" class="shrink-0 text-indigo-400 mt-2" size="14" />
-          </button>
           <div
             v-else
             role="note"
@@ -104,29 +82,6 @@
     </section>
 
     <template v-else>
-      <section class="mb-8" aria-labelledby="time-promo-heading">
-        <h2 id="time-promo-heading" class="sr-only">
-          时间管理
-        </h2>
-        <a
-          :href="timeAppUrl"
-          class="doc-card-interactive rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-white"
-        >
-          <div
-            class="w-12 h-12 shrink-0 rounded-xl bg-indigo-100 border border-indigo-100 flex items-center justify-center"
-          >
-            <van-icon name="notes-o" size="26" class="text-indigo-600" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <span class="font-medium text-slate-900">时间管理</span>
-            <p class="text-sm text-slate-600 mt-1">
-              番茄钟、日程、习惯与统计在独立站点使用，支持登录与云端同步。
-            </p>
-          </div>
-          <span class="text-sm font-medium text-indigo-600 shrink-0">前往 →</span>
-        </a>
-      </section>
-
       <section aria-labelledby="dev-tools-heading">
         <h2 id="dev-tools-heading" class="text-sm font-semibold text-slate-800 mb-3">
           开发者工具
@@ -149,26 +104,6 @@
                 <div class="flex items-center gap-2">
                   <span class="font-medium text-slate-900 text-sm">{{ tool.name }}</span>
                   <span class="text-[10px] font-semibold text-blue-700 bg-blue-500/10 px-1.5 py-0.5 rounded">可用</span>
-                </div>
-                <p class="text-xs text-slate-500 mt-1">{{ tool.desc }}</p>
-              </div>
-            </button>
-            <button
-              v-else-if="tool.id === 'timehub'"
-              type="button"
-              class="doc-card-interactive rounded-xl p-4 text-left flex gap-3 items-start cursor-pointer border-indigo-100 w-full"
-              @click="goTimeApp"
-            >
-              <div
-                class="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center"
-                :class="tool.bgColor"
-              >
-                <van-icon :name="tool.icon" size="20" :class="tool.iconColor" />
-              </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <span class="font-medium text-slate-900 text-sm">{{ tool.name }}</span>
-                  <span class="text-[10px] font-semibold text-indigo-700 bg-indigo-500/10 px-1.5 py-0.5 rounded">独立站点</span>
                 </div>
                 <p class="text-xs text-slate-500 mt-1">{{ tool.desc }}</p>
               </div>
@@ -208,9 +143,6 @@ useHead({
   title: '小工具工作台 - Nexus Tools'
 })
 
-const config = useRuntimeConfig()
-const timeAppUrl = computed(() => String(config.public.timeAppUrl || '/'))
-
 const developerTools = computed(() => siteTools)
 
 const availableCount = computed(
@@ -219,6 +151,7 @@ const availableCount = computed(
 
 const { matchedTools, normalizedQuery, contentHint, jsonDetected, query, clearQuery } = useToolSearch()
 const { setJsonPrefill } = useJsonPrefill()
+const { setPlainPrefill } = usePlainToolPrefill()
 
 const highlightId = computed(() => {
   if (jsonDetected.value) return 'json'
@@ -229,25 +162,29 @@ const showComingSoon = () => {
   showToast('该工具即将上线')
 }
 
-const goTimeApp = () => {
-  if (import.meta.client) {
-    window.location.href = timeAppUrl.value
-  }
-}
-
 const handleToolClick = (tool: SiteTool) => {
-  if (tool.id === 'timehub') {
-    goTimeApp()
-    return
-  }
   if (!tool.path) {
     showComingSoon()
     return
   }
-  if (tool.id === 'json' && jsonDetected.value) {
-    setJsonPrefill(query.value.trim())
+
+  const q = query.value.trim()
+
+  if (tool.id === 'json' && jsonDetected.value && q) {
+    setJsonPrefill(q)
     clearQuery()
+  } else if (q) {
+    const hint = detectContentHint(q)
+    if (hint?.toolId === tool.id) {
+      if (hint.kind === 'json') {
+        setJsonPrefill(q)
+      } else if (hint.kind === 'url' || hint.kind === 'timestamp' || hint.kind === 'uuid') {
+        setPlainPrefill(hint.kind, q)
+      }
+      clearQuery()
+    }
   }
+
   void navigateTo(tool.path)
 }
 </script>

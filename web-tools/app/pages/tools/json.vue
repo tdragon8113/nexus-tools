@@ -3,7 +3,6 @@
     <PageBreadcrumb
       :items="[
         { to: '/', label: '首页' },
-        { label: '工具' },
         { label: 'JSON 格式化' }
       ]"
     />

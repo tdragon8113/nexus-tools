@@ -1,5 +1,6 @@
 import { showToast } from 'vant'
 import { siteTools, type SiteTool } from '~~/data/siteTools'
+import { usePlainToolPrefill } from './usePlainToolPrefill'
 
 export type ContentHintKind = 'json' | 'url' | 'timestamp' | 'uuid'
 
@@ -75,6 +76,8 @@ export function useJsonPrefill() {
 
 export function useToolSearch() {
   const query = useState('tool-search-query', () => '')
+  const { setPlainPrefill } = usePlainToolPrefill()
+
 
   const normalizedQuery = computed(() => query.value.trim())
 
@@ -134,6 +137,8 @@ export function useToolSearch() {
 
     if (hint.kind === 'json' && jsonDetected.value) {
       setJsonPrefill(q)
+    } else if (hint.kind === 'url' || hint.kind === 'timestamp' || hint.kind === 'uuid') {
+      setPlainPrefill(hint.kind, q)
     }
 
     await navigateTo(tool.path)

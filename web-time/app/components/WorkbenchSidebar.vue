@@ -3,8 +3,6 @@ import type { WorkbenchNavItem } from '~~/data/workbenchNav'
 import { workbenchNavGroups } from '~~/data/workbenchNav'
 
 const route = useRoute()
-const config = useRuntimeConfig()
-const toolsAppUrl = computed(() => String(config.public.toolsAppUrl || 'http://localhost:3000'))
 
 function isActiveItem (item: WorkbenchNavItem) {
   const p = route.path
@@ -25,14 +23,6 @@ function isActiveItem (item: WorkbenchNavItem) {
     aria-label="时间管理导航"
   >
     <div class="py-4 px-3 space-y-4">
-      <a
-        :href="toolsAppUrl"
-        class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 transition-colors mx-1 border border-dashed border-slate-200"
-      >
-        <van-icon name="apps-o" size="18" class="shrink-0 opacity-80" />
-        <span class="truncate">开发者小工具</span>
-      </a>
-
       <div v-for="group in workbenchNavGroups" :key="group.title">
         <p class="px-2 mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           {{ group.title }}

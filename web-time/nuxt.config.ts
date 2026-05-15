@@ -16,9 +16,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080',
-      /** 小工具站点（纯静态）基址 */
-      toolsAppUrl: process.env.NUXT_PUBLIC_TOOLS_APP_URL || 'http://localhost:3000'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080'
     }
   },
 
@@ -75,6 +73,9 @@ export default defineNuxtConfig({
   vite: {
     build: {
       minify: 'esbuild'
+    },
+    optimizeDeps: {
+      include: ['@vue/devtools-core', '@vue/devtools-kit']
     }
   },
 

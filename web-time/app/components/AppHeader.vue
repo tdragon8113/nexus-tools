@@ -1,7 +1,5 @@
 <script setup lang="ts">
 const { user, isLoggedIn, logout } = useAuthApi()
-const config = useRuntimeConfig()
-const toolsAppUrl = computed(() => String(config.public.toolsAppUrl || 'http://localhost:3000'))
 
 const authed = computed(() => {
   if (user.value) return true
@@ -39,12 +37,6 @@ const handleLogout = async () => {
         </NuxtLink>
 
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-          <a
-            :href="toolsAppUrl"
-            class="px-2 sm:px-3 py-2 text-sm text-slate-600 hover:text-blue-600 rounded-md hover:bg-blue-50/60 transition-colors"
-          >
-            小工具
-          </a>
           <template v-if="authed">
             <NuxtLink
               to="/profile"

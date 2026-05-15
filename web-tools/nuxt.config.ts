@@ -8,13 +8,6 @@ export default defineNuxtConfig({
     '@vant/nuxt'
   ],
 
-  runtimeConfig: {
-    public: {
-      /** 时间管理站点基址（生产换为实际域名/端口） */
-      timeAppUrl: process.env.NUXT_PUBLIC_TIME_APP_URL || 'http://localhost:3001'
-    }
-  },
-
   googleFonts: {
     families: {
       Inter: [400, 500, 600, 700],
@@ -49,7 +42,22 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/tools/json']
+      routes: [
+        '/',
+        '/tools/json',
+        '/tools/base64',
+        '/tools/timestamp',
+        '/tools/url',
+        '/tools/uuid',
+        '/tools/password',
+        '/tools/calculator',
+        '/tools/qrcode',
+        '/tools/color',
+        '/tools/regex',
+        '/tools/http',
+        '/tools/hash',
+        '/tools/code'
+      ]
     },
     compressPublicAssets: true
   },
@@ -57,6 +65,29 @@ export default defineNuxtConfig({
   vite: {
     build: {
       minify: 'esbuild'
+    },
+    // 开发时预打包，避免首次打开 /tools/json 时 Vite 运行时发现并整页重载
+    optimizeDeps: {
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'codemirror',
+        '@codemirror/lang-json',
+        '@codemirror/commands',
+        '@codemirror/language',
+        '@codemirror/lint',
+        '@codemirror/state',
+        '@codemirror/view',
+        '@codemirror/autocomplete',
+        '@codemirror/search',
+        'jsonc-parser',
+        'diff',
+        'qrcode',
+        'jsqr',
+        'spark-md5',
+        'prettier',
+        'prettier/standalone'
+      ]
     }
   },
 

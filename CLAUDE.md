@@ -50,8 +50,6 @@ npm run dev     # http://localhost:3000
 npm run build
 ```
 
-`NUXT_PUBLIC_TIME_APP_URL`：开发默认 `http://localhost:3001`，生产填时间管理站点完整基址（无尾斜杠）。
-
 ### Web 时间管理（web-time）
 
 ```bash
@@ -61,10 +59,9 @@ npm run dev     # http://localhost:3001
 npm run build
 ```
 
-`NUXT_PUBLIC_API_BASE`：网关基址（默认本地 `http://localhost:8080`）。  
-`NUXT_PUBLIC_TOOLS_APP_URL`：小工具站点基址（开发默认 `http://localhost:3000`）。
+`NUXT_PUBLIC_API_BASE`：网关基址（默认本地 `http://localhost:8080`）。
 
-两站均为预渲染静态资源；仅 **web-time** 的 nginx 将 `/api/` 反向代理到网关。
+**web-time** 为预渲染静态资源，其 `nginx.conf` 将 `/api/` 反向代理到网关。
 
 ### 后端
 

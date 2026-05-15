@@ -222,13 +222,12 @@ nexus-tools/
 
 | 目录 | 职责 | 生产镜像 / 端口 |
 |------|------|-----------------|
-| `web-tools/` | JSON 等离线小工具，外链至时间管理站 | `nexus-frontend` → 8888 |
+| `web-tools/` | JSON 等离线小工具 | `nexus-frontend` → 8888 |
 | `web-time/` | 时间管理、登录注册、个人中心，`/api/` 走网关 | `nexus-frontend-time` → 8889 |
 
 **跨站环境变量（构建期 `NUXT_PUBLIC_*`）**：
 
-- `web-tools`：`NUXT_PUBLIC_TIME_APP_URL`
-- `web-time`：`NUXT_PUBLIC_TOOLS_APP_URL`、`NUXT_PUBLIC_API_BASE`
+- `web-time`：`NUXT_PUBLIC_API_BASE`
 
 仅 **web-time** 的 `nginx.conf` 含：
 

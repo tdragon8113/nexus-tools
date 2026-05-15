@@ -8,7 +8,7 @@
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-10">
         <PageBreadcrumb
           :items="[
-            { to: '/manage/time', label: '概览' },
+            { to: '/', label: '首页' },
             { label: '个人中心' }
           ]"
         />
