@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* 与初版站点一致的蓝紫主色 */
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --accent-purple: #7c3aed;
+  --doc-bg: #f8fafc;
+  --doc-surface: #ffffff;
+  --doc-ink: #0f172a;
+  --doc-muted: #64748b;
+  --doc-faint: #94a3b8;
+  --doc-border: #e2e8f0;
+  --doc-accent: #3b82f6;
+  --doc-accent-hover: #2563eb;
+  --doc-accent-muted: rgba(59, 130, 246, 0.12);
+  --doc-code-bg: #f1f5f9;
+  --font-display: 'Noto Serif SC', 'Songti SC', 'STSong', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* 语义令牌：圆角、阴影、焦点环（与 Tailwind focus 环对齐） */
+  --radius-card: 0.75rem;
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.06);
+  --ring-focus: rgb(59 130 246 / 0.45);
+  --ring-focus-offset: #fff;
+  --pb-safe: env(safe-area-inset-bottom, 0px);
+}
+
+/**
+ * 暗色令牌草案：在根节点加 class="dark" 时生效。
+ * Vant 4 需同步覆盖 --van-* 变量（见 https://vant-ui.github.io/vant/#/zh-CN/config-provider ），此处不默认启用。
+ */
+.dark {
+  --doc-bg: #0f172a;
+  --doc-surface: #1e293b;
+  --doc-ink: #f1f5f9;
+  --doc-muted: #94a3b8;
+  --doc-faint: #64748b;
+  --doc-border: #334155;
+  --doc-code-bg: #0f172a;
+  --doc-accent-muted: rgba(59, 130, 246, 0.2);
+  --ring-focus-offset: #0f172a;
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+  --shadow-card-hover: 0 8px 16px -4px rgb(0 0 0 / 0.45);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--doc-bg);
+    color: var(--doc-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring-focus);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@layer components {
+  .doc-surface {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
+  }
+
+  .doc-prose-muted {
+    @apply text-slate-600 leading-relaxed;
+  }
+
+  .doc-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600/80;
+  }
+
+  .doc-page-gradient {
+    @apply min-h-screen bg-gradient-to-br from-slate-50 to-blue-50;
+  }
+
+  .doc-cta-gradient {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm hover:opacity-90 transition-opacity;
+  }
+
+  /** 可点击卡片：仅 transform / opacity / shadow / border-color 参与过渡 */
+  .doc-card-interactive {
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    @apply transition-all border border-slate-200 bg-white;
+    transition-property: transform, opacity, box-shadow, border-color;
+  }
+
+  .doc-card-interactive:hover {
+    @apply -translate-y-0.5 border-blue-200/80;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .doc-skip-link {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    z-index: 100;
+  }
+
+  .doc-skip-link:focus {
+    position: fixed;
+    left: 0.5rem;
+    top: 0.5rem;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+    overflow: visible;
+    white-space: normal;
+    @apply rounded-md px-3 py-2 text-sm font-medium text-slate-900 shadow-md;
+    background: var(--doc-surface);
+    outline: 2px solid var(--ring-focus);
+    outline-offset: 2px;
+  }
+
+  .doc-page-shell {
+    padding-bottom: var(--pb-safe);
+  }
+}
+
+/*
+ * Vant 4 与暗色：启用 .dark 时建议在根组件使用 ConfigProvider 的 theme-vars，
+ * 或按 https://vant-ui.github.io/vant/#/zh-CN/config-provider 覆盖 --van-* CSS 变量，
+ * 与上方 .dark 中的 --doc-* 对齐，避免组件与页面背景脱节。
+ */

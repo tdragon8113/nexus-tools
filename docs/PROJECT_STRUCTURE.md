@@ -14,31 +14,20 @@ Nexus Tools 是一个多端开发者工具箱项目，包含：
 ```
 nexus-tools/
 │
-├── web/                          # [前端] Nuxt 4 Web 应用
-│   ├── app/                      # Nuxt 4 app 目录（核心代码）
-│   │   ├── app.vue               # 根组件，定义布局骨架
-│   │   └── pages/                # 页面路由（基于文件路由）
-│   │       ├── index.vue         # 首页 - 工具卡片网格
-│   │       ├── auth/             # 认证相关页面
-│   │       │   ├── login.vue     # 登录页
-│   │       │   └── register.vue  # 注册页
-│   │       └── profile.vue       # 个人中心页
-│   │
-│   ├── lib/                      # 共享库
-│   │   └── api.ts                # API 客户端（fetch 封装）
-│   │
-│   ├── public/                   # 静态资源
-│   │   ├── favicon.svg           # 网站图标
-│   │   └── favicon.ico           # 备用图标
-│   │
-│   ├── assets/css/               # 全局样式
-│   │   └── main.css              # Tailwind 入口 + 自定义样式
-│   │
-│   ├── nuxt.config.ts            # Nuxt 配置（模块、预渲染、SEO）
-│   ├── tailwind.config.js        # Tailwind 配置
-│   ├── package.json              # 前端依赖
-│   ├── Dockerfile                # 前端容器镜像（nginx）
-│   └── nginx.conf                # nginx 反向代理配置
+├── web-tools/                    # [前端] 纯静态小工具站（不接 /api）
+│   ├── app/                      # Nuxt 4 app
+│   ├── nginx.conf                # 仅 try_files，无 API 代理
+│   ├── Dockerfile                # 镜像 nexus-frontend
+│   ├── nuxt.config.ts
+│   └── package.json
+│
+├── web-time/                     # [前端] 时间管理 + 账号（nginx 代理网关）
+│   ├── app/
+│   │   └── pages/                # /manage/time/*、auth、profile 等
+│   ├── nginx.conf                # /api/ → nexus-gateway
+│   ├── Dockerfile                # 镜像 nexus-frontend-time
+│   ├── nuxt.config.ts
+│   └── package.json
 │
 ├── mac-app/                      # [Mac 应用] SwiftUI 原生应用
 │   ├── NexusTools.xcodeproj/     # Xcode 项目
@@ -227,34 +216,23 @@ nexus-tools/
 
 ## 各模块详解
 
-### 1. Web 前端 (web/)
+### 1. Web 前端（web-tools / web-time）
 
-**技术栈**: Nuxt 4 + Vue 3 + Tailwind CSS + Vant 4
+**拆分说明**：原单一 `web/` 已拆为两个独立 Nuxt 工程，便于单独部署与域名。
 
-**核心文件**:
+| 目录 | 职责 | 生产镜像 / 端口 |
+|------|------|-----------------|
+| `web-tools/` | JSON 等离线小工具，外链至时间管理站 | `nexus-frontend` → 8888 |
+| `web-time/` | 时间管理、登录注册、个人中心，`/api/` 走网关 | `nexus-frontend-time` → 8889 |
 
-| 文件 | 作用 |
-|------|------|
-| `nuxt.config.ts` | Nuxt 配置：模块加载、预渲染路由、SEO meta |
-| `app/app.vue` | 根组件，包含 header + main + footer 骨架 |
-| `app/pages/index.vue` | 首页，工具卡片网格布局 |
-| `app/pages/auth/login.vue` | 登录表单，Vant 组件 |
-| `lib/api.ts` | API 客户端，fetch 封装 + token 管理 |
+**跨站环境变量（构建期 `NUXT_PUBLIC_*`）**：
 
-**预渲染配置**:
-```typescript
-// nuxt.config.ts
-nitro: {
-  prerender: {
-    crawlLinks: true,
-    routes: ['/', '/auth/login', '/auth/register', '/profile']
-  }
-}
-```
+- `web-tools`：`NUXT_PUBLIC_TIME_APP_URL`
+- `web-time`：`NUXT_PUBLIC_TOOLS_APP_URL`、`NUXT_PUBLIC_API_BASE`
 
-**nginx 反向代理**:
+仅 **web-time** 的 `nginx.conf` 含：
+
 ```nginx
-# nginx.conf
 location /api/ {
     proxy_pass http://nexus-gateway:8080/;
 }
@@ -318,11 +296,12 @@ location /api/ {
 
 ### 4. Docker 部署 (docker/)
 
-**docker-compose.prod.yml** 定义 4 个服务:
+**docker-compose.prod.yml** 定义 5 个服务:
 
 | 服务 | 镜像 | 端口 |
 |------|------|------|
-| nexus-frontend | nginx + 预渲染静态页 | 8888:80 |
+| nexus-frontend | nginx + 小工具静态站 | 8888:80 |
+| nexus-frontend-time | nginx + 时间管理静态站 + API 代理 | 8889:80 |
 | nexus-gateway | Spring Gateway JAR | 8080:8080 |
 | nexus-user-service | Spring Boot JAR | 8081:8081 |
 | nexus-workspace-service | Spring Boot JAR | 8082:8082 |

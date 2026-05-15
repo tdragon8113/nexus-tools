@@ -6,7 +6,8 @@
 
 | 模块 | 技术 | 端口 |
 |------|------|------|
-| Web 前端 | Nuxt 4 + Vue 3 + Tailwind CSS + Vant 4 | 8888 |
+| Web 小工具 | Nuxt 4 + Vue 3 + Tailwind CSS + Vant 4 | 8888 |
+| Web 时间管理 | Nuxt 4 + Vue 3 + Tailwind CSS + Vant 4 | 8889 |
 | Mac 应用 | SwiftUI + GRDB.swift (macOS 14.0+) | - |
 | 网关 | Spring Cloud Gateway | 8080 |
 | 用户服务 | Spring Boot 3.x + MyBatis | 8081 |
@@ -17,13 +18,14 @@
 
 ```
 nexus-tools/
-├── web/                        # Web 前端（Nuxt 4）
-│   ├── app/                    # Nuxt app 目录
-│   │   ├── pages/              # 页面组件
-│   │   └── app.vue             # 根组件
-│   ├── lib/                    # API 客户端
-│   ├── nginx.conf              # nginx 反向代理配置
-│   └── Dockerfile              # 前端容器
+├── web-tools/                  # 纯静态小工具（不接网关 API）
+│   ├── app/
+│   ├── nginx.conf
+│   └── Dockerfile             # 镜像 nexus-frontend → :8888
+├── web-time/                   # 时间管理 + 登录/个人中心（nginx 代理 /api）
+│   ├── app/
+│   ├── nginx.conf
+│   └── Dockerfile             # 镜像 nexus-frontend-time → :8889
 ├── mac-app/                    # Mac 应用
 │   └── NexusTools.xcodeproj
 ├── backend/                    # 后端微服务
@@ -39,16 +41,30 @@ nexus-tools/
 
 ## 本地开发
 
-### Web 前端
+### Web 小工具（web-tools）
 
 ```bash
-cd web
+cd web-tools
 npm install
-npm run dev     # 开发模式 http://localhost:3000
-npm run build   # 生产构建（预渲染静态页面）
+npm run dev     # http://localhost:3000
+npm run build
 ```
 
-前端使用预渲染生成静态 HTML，nginx 反向代理 `/api/` 到网关。
+`NUXT_PUBLIC_TIME_APP_URL`：开发默认 `http://localhost:3001`，生产填时间管理站点完整基址（无尾斜杠）。
+
+### Web 时间管理（web-time）
+
+```bash
+cd web-time
+npm install
+npm run dev     # http://localhost:3001
+npm run build
+```
+
+`NUXT_PUBLIC_API_BASE`：网关基址（默认本地 `http://localhost:8080`）。  
+`NUXT_PUBLIC_TOOLS_APP_URL`：小工具站点基址（开发默认 `http://localhost:3000`）。
+
+两站均为预渲染静态资源；仅 **web-time** 的 nginx 将 `/api/` 反向代理到网关。
 
 ### 后端
 
@@ -85,11 +101,12 @@ git tag v1.0.0 && git push origin v1.0.0
 ```
 
 部署内容：
-- 前端 Docker 镜像 → Aliyun ACR → 端口 8888
+- 小工具前端镜像 `nexus-frontend` → 端口 **8888**
+- 时间管理前端镜像 `nexus-frontend-time` → 端口 **8889**
 - 后端服务镜像 → Aliyun ACR → 端口 8080/8081/8082
 - Mac DMG → GitHub Releases → Homebrew Tap
 
-访问地址：`https://your-server:8888/`
+访问地址示例：`https://your-server:8888/`（小工具）、`https://your-server:8889/`（时间管理）。部署后需在构建时注入上述 `NUXT_PUBLIC_*`，保证两站导航链接正确。
 
 ## 配置管理
 
@@ -137,16 +154,7 @@ git tag v1.0.0 && git push origin v1.0.0
 
 ### 前端显示 nginx 默认页面
 
-确保 `nuxt.config.ts` 配置了预渲染：
-
-```typescript
-nitro: {
-  prerender: {
-    crawlLinks: true,
-    routes: ['/', '/auth/login', '/auth/register', '/profile']
-  }
-}
-```
+确保 `nuxt.config.ts` 为需预渲染的路由配置了 `nitro.prerender.routes`（`web-tools` 仅首页与工具页；`web-time` 含认证与 `/manage/time` 子路由）。
 
 ### 后端服务启动失败
 
