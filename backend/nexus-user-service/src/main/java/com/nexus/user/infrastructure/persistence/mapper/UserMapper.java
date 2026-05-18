@@ -11,5 +11,12 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
     User findByUsername(@Param("username") String username);
+
     User findByEmail(@Param("email") String email);
+
+    /**
+     * By-primary-key load using XML {@code UserResultMap} so {@code UserId} is populated.
+     * {@link BaseMapper#selectById} does not map the DB {@code id} column into {@code UserId}.
+     */
+    User findUserByPk(@Param("id") Long id);
 }

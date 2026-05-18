@@ -24,7 +24,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findById(UserId id) {
-        return userMapper.selectById(id.value());
+        return userMapper.findUserByPk(id.value());
     }
 
     @Override
