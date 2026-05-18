@@ -22,9 +22,7 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      Inter: [400, 500, 600, 700],
-      'Noto Serif SC': [400, 600, 700],
-      'JetBrains Mono': [400, 500, 600]
+      Inter: [400, 500, 600, 700]
     },
     display: 'swap'
   },
@@ -39,11 +37,24 @@ export default defineNuxtConfig({
     head: {
       title: 'Nexus Time',
       meta: [
-        { name: 'description', content: '时间管理：番茄钟、日程与习惯，支持登录同步' },
-        { name: 'keywords', content: '时间管理,番茄钟,日程,习惯' },
+        {
+          name: 'viewport',
+          content: 'width=device-width, initial-scale=1, viewport-fit=cover'
+        },
+        { name: 'theme-color', content: '#4f46e5' },
+        {
+          name: 'apple-mobile-web-app-capable',
+          content: 'yes'
+        },
+        {
+          name: 'apple-mobile-web-app-status-bar-style',
+          content: 'default'
+        },
+        { name: 'description', content: 'Nexus Time：账号登录与个人中心' },
+        { name: 'keywords', content: 'Nexus Time,账号' },
         { name: 'author', content: 'Nexus Tools' },
         { property: 'og:title', content: 'Nexus Time' },
-        { property: 'og:description', content: '时间管理工作台' }
+        { property: 'og:description', content: 'Nexus Time 站点' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
@@ -56,11 +67,6 @@ export default defineNuxtConfig({
       crawlLinks: true,
       routes: [
         '/manage/time',
-        '/manage/time/clock',
-        '/manage/time/timestamp',
-        '/manage/time/pomodoro',
-        '/manage/time/habits',
-        '/manage/time/schedule',
         '/manage/time/stats',
         '/auth/login',
         '/auth/register',

@@ -1,67 +1,65 @@
 <template>
-  <div class="w-full flex flex-col items-stretch">
-    <div class="text-center mb-10">
-        <div
-          class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-500/30"
-        >
-          <span class="font-display font-semibold text-2xl text-white leading-none">N</span>
-        </div>
-        <p class="doc-eyebrow mb-3">账号</p>
-        <h1 class="font-display text-2xl sm:text-3xl font-semibold text-slate-900">欢迎回来</h1>
-        <p class="text-slate-600 mt-2 text-sm sm:text-base">登录 Nexus Tools，同步你的使用偏好（即将推出）。</p>
+  <div class="w-full flex flex-col">
+    <div class="text-center mb-8">
+      <AppBrandMark variant="auth" class="mx-auto mb-5" />
+      <p class="doc-eyebrow mb-2">账号</p>
+      <h1 class="font-sans text-2xl font-semibold text-slate-900">欢迎回来</h1>
+      <p class="text-slate-600 mt-2 text-sm">登录以使用个人中心等功能。</p>
+    </div>
+
+    <div class="doc-surface p-5">
+      <div
+        v-if="errorMessage"
+        class="mb-4 p-3 rounded-lg bg-red-50 border border-red-100 text-red-700 text-sm text-center"
+      >
+        {{ errorMessage }}
       </div>
 
-      <div class="doc-surface p-6 sm:p-8 rounded-lg">
-        <div v-if="errorMessage" class="mb-4 p-3 rounded-md bg-red-50 border border-red-100 text-red-700 text-sm text-center">
-          {{ errorMessage }}
+      <van-form @submit="handleLogin">
+        <van-cell-group inset class="!mx-0">
+          <van-field
+            v-model="form.username"
+            name="username"
+            placeholder="用户名"
+            left-icon="user-o"
+            :rules="[{ required: true, message: '请输入用户名' }]"
+          />
+          <van-field
+            v-model="form.password"
+            type="password"
+            name="password"
+            placeholder="密码"
+            left-icon="lock"
+            :rules="[{ required: true, message: '请输入密码' }]"
+          />
+        </van-cell-group>
+
+        <div class="mt-5">
+          <van-button
+            round
+            block
+            type="primary"
+            native-type="submit"
+            :loading="loading"
+            class="!bg-gradient-to-r !from-blue-500 !to-purple-600 !border-0"
+          >
+            登录
+          </van-button>
         </div>
+      </van-form>
 
-        <van-form @submit="handleLogin">
-          <van-cell-group inset class="!mx-0">
-            <van-field
-              v-model="form.username"
-              name="username"
-              placeholder="用户名"
-              left-icon="user-o"
-              :rules="[{ required: true, message: '请输入用户名' }]"
-            />
-            <van-field
-              v-model="form.password"
-              type="password"
-              name="password"
-              placeholder="密码"
-              left-icon="lock"
-              :rules="[{ required: true, message: '请输入密码' }]"
-            />
-          </van-cell-group>
-
-          <div class="mt-6">
-            <van-button
-              round
-              block
-              type="primary"
-              native-type="submit"
-              :loading="loading"
-              class="!bg-gradient-to-r !from-blue-500 !to-purple-600 !border-0"
-            >
-              登录
-            </van-button>
-          </div>
-        </van-form>
-
-        <div class="mt-6 flex flex-wrap justify-between gap-3 text-sm">
-          <a href="#" class="text-slate-600 hover:text-blue-600 underline-offset-2 hover:underline">忘记密码？</a>
-          <NuxtLink to="/auth/register" class="text-blue-600 font-medium hover:underline underline-offset-2">
-            没有账号？去注册
-          </NuxtLink>
-        </div>
-      </div>
-
-      <div class="text-center mt-8">
-        <NuxtLink to="/" class="text-sm text-slate-500 hover:text-slate-800 transition-colors">
-          ← 返回首页
+      <div class="mt-5 flex flex-col gap-2 text-sm text-center">
+        <NuxtLink to="/auth/register" class="text-blue-600 font-medium">
+          没有账号？去注册
         </NuxtLink>
       </div>
+    </div>
+
+    <div class="text-center mt-6">
+      <NuxtLink to="/manage/time" class="text-sm text-slate-500">
+        返回首页
+      </NuxtLink>
+    </div>
   </div>
 </template>
 
@@ -70,7 +68,7 @@ definePageMeta({
   layout: 'auth'
 })
 
-const { login } = useAuthApi()
+const { login, getCurrentUser } = useAuthApi()
 
 const form = reactive({
   username: '',
@@ -86,11 +84,12 @@ const handleLogin = async () => {
   try {
     const response = await login(form.username, form.password)
     if (response.code === 200) {
+      await getCurrentUser()
       await navigateTo('/profile')
     } else {
       errorMessage.value = response.message || '登录失败'
     }
-  } catch (error) {
+  } catch {
     errorMessage.value = '网络错误，请稍后重试'
   } finally {
     loading.value = false

@@ -68,7 +68,7 @@ function useApiRequest () {
     user.value = null
   }
 
-  const refreshAccessToken = async (): boolean => {
+  const refreshAccessToken = async (): Promise<boolean> => {
     const refreshToken = getRefreshToken()
     if (!refreshToken) return false
 
@@ -128,6 +128,9 @@ function useApiRequest () {
     const storedUser = getStorageItem<User | null>(STORAGE_KEYS.USER, null)
     if (storedUser) {
       user.value = storedUser
+      if (storedUser.id != null && getUserId() == null) {
+        setUserId(storedUser.id)
+      }
     }
   }
 
@@ -170,18 +173,17 @@ export function useAuthApi () {
       method: 'POST',
       body: JSON.stringify({ username, password })
     })
-    console.log('[Auth] Login response:', response)
     if (response.code === 200 && response.data) {
       setAccessToken(response.data.accessToken)
       if (response.data.refreshToken) {
         setRefreshToken(response.data.refreshToken)
       }
-      if (response.data.user) {
-        user.value = response.data.user
-        setUserId(response.data.user.id)
-        setStorageItem(STORAGE_KEYS.USER, response.data.user)
+      const u = response.data.user
+      if (u) {
+        user.value = u
+        setUserId(u.id)
+        setStorageItem(STORAGE_KEYS.USER, u)
       }
-      console.log('[Auth] Token stored, userId:', getUserId())
     }
     return response
   }
@@ -205,9 +207,7 @@ export function useAuthApi () {
   }
 
   const getCurrentUser = async () => {
-    console.log('[Auth] GetCurrentUser - accessToken:', getAccessToken())
     const response = await request<User>('/api/v1/auth/me')
-    console.log('[Auth] GetCurrentUser response:', response)
     if (response.code === 200 && response.data) {
       user.value = response.data
       setUserId(response.data.id)
@@ -228,7 +228,7 @@ export function useAuthApi () {
   }
 
   const isLoggedIn = () => {
-    return !!getAccessToken() && !!getUserId()
+    return !!getAccessToken()
   }
 
   return {
