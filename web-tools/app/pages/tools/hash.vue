@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
     <PageBreadcrumb
       :items="[
         { to: '/', label: '首页' },

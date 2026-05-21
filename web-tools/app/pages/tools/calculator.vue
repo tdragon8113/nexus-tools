@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-md mx-auto px-4 sm:px-6 py-8 md:py-10">
+  <div class="max-w-2xl px-4 sm:px-6 py-8 md:py-10">
     <PageBreadcrumb
       :items="[
         { to: '/', label: '首页' },
@@ -16,63 +16,144 @@
         </div>
       </template>
       <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        支持 + − × ÷、幂 ^（右结合，如 2^3^2）、取模 %、括号与小数；纯本地解析，不使用
-        <code class="text-xs bg-slate-100 px-1 rounded">eval</code>。
+        每条记录可直接修改算式并实时重算；底部输入新算式后按 Enter 追加记录。
       </p>
     </PageHero>
 
-    <div class="mt-6 space-y-3">
+    <div class="mt-6 flex flex-wrap items-center gap-2 text-sm">
+      <span class="text-slate-500 tabular-nums">{{ entries.length }} 条记录</span>
+      <span class="text-slate-300">·</span>
+      <button
+        type="button"
+        class="text-slate-600 hover:text-slate-900 disabled:opacity-40"
+        :disabled="entries.length === 0"
+        @click="copyAll"
+      >
+        复制全部
+      </button>
+      <button
+        type="button"
+        class="text-red-600 hover:text-red-700 disabled:opacity-40"
+        :disabled="entries.length === 0"
+        @click="clearHistory"
+      >
+        清空记录
+      </button>
+    </div>
+
+    <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <ul
+        v-if="entries.length > 0"
+        role="list"
+        class="max-h-[min(52vh,28rem)] divide-y divide-slate-100 overflow-y-auto overscroll-contain"
+      >
+        <li
+          v-for="(entry, index) in entries"
+          :key="entry.id"
+          class="group relative min-h-[4.25rem] px-4 py-3 transition-colors focus-within:bg-sky-50/40"
+          :class="index % 2 === 0 ? 'bg-white' : 'bg-slate-50/90'"
+        >
+          <input
+            :ref="(el) => setEntryInputRef(entry.id, el)"
+            v-model="entry.expr"
+            type="text"
+            inputmode="text"
+            class="w-full border-0 bg-transparent pr-16 font-mono text-sm leading-relaxed text-slate-800 outline-none placeholder:text-slate-400"
+            placeholder="计算公式"
+            spellcheck="false"
+            autocomplete="off"
+            autocapitalize="off"
+            @input="recalcEntry(entry)"
+            @blur="onEntryBlur(entry)"
+            @keydown.enter.prevent="focusDraft"
+            @click.stop
+          >
+          <p
+            v-if="entry.error"
+            class="mt-1 text-right text-sm text-red-600"
+          >
+            {{ entry.error }}
+          </p>
+          <p
+            v-else-if="entry.result != null"
+            class="mt-0.5 text-right font-mono text-xl font-semibold tabular-nums text-slate-900"
+          >
+            = {{ entry.result }}
+          </p>
+          <p
+            v-else
+            class="mt-0.5 text-right font-mono text-xl font-semibold tabular-nums text-slate-300"
+          >
+            =
+          </p>
+
+          <div
+            class="absolute right-2 top-2 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          >
+            <button
+              type="button"
+              class="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700"
+              title="复制"
+              @click.stop="copyEntry(entry)"
+            >
+              <van-icon name="description" size="16" />
+            </button>
+            <button
+              type="button"
+              class="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-red-600"
+              title="删除"
+              @click.stop="removeEntry(entry.id)"
+            >
+              <van-icon name="delete-o" size="16" />
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <p
+        v-else
+        class="border-b border-slate-100 px-4 py-8 text-center text-sm text-slate-400"
+      >
+        在下方输入算式，按 Enter 添加记录
+      </p>
+
       <div
-        class="rounded-2xl border border-slate-200 bg-slate-900 px-4 py-3 text-right shadow-inner min-h-[3.5rem] flex flex-col justify-center"
+        class="relative min-h-[5.25rem] bg-sky-50/60 px-4 py-3 ring-inset ring-sky-200/50 focus-within:bg-sky-50 focus-within:ring-2"
       >
         <input
-          v-model="expr"
+          ref="draftRef"
+          v-model="draft"
           type="text"
-          inputmode="decimal"
-          class="w-full bg-transparent text-right text-lg text-slate-100 font-mono outline-none placeholder:text-slate-500"
-          placeholder="0"
+          inputmode="text"
+          class="w-full border-0 bg-transparent font-mono text-sm text-slate-800 outline-none placeholder:text-slate-400"
+          placeholder="新建计算公式"
           spellcheck="false"
           autocomplete="off"
-          @keydown.enter.prevent="runCalc"
+          autocapitalize="off"
+          @keydown.enter.prevent="commitDraft"
+          @keydown.esc.prevent="clearDraft"
         >
-        <p v-if="resultText" class="mt-1 text-sm font-mono text-sky-300 tabular-nums">
-          = {{ resultText }}
+        <p
+          v-if="draftError"
+          class="mt-2 text-right text-xs text-red-600"
+        >
+          {{ draftError }}
         </p>
-      </div>
-      <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
-
-      <div class="grid grid-cols-4 gap-2">
-        <button
-          v-for="(k, idx) in keys"
-          :key="idx"
-          type="button"
-          class="rounded-xl py-3 text-base font-medium transition-transform active:scale-[0.98]"
-          :class="[
-            k.kind === 'op'
-              ? 'bg-sky-100 text-sky-900 hover:bg-sky-200'
-              : k.kind === 'eq'
-                ? 'bg-sky-600 text-white hover:bg-sky-700'
-                : k.kind === 'clear'
-                  ? 'bg-amber-100 text-amber-900 hover:bg-amber-200'
-                  : 'bg-slate-100 text-slate-900 hover:bg-slate-200',
-            k.colSpan === 4 ? 'col-span-4' : ''
-          ]"
-          @click="onKey(k)"
+        <p
+          v-else-if="draftPreview != null"
+          class="mt-1 text-right font-mono text-xl font-semibold tabular-nums text-slate-900"
         >
-          {{ k.label }}
-        </button>
-      </div>
-
-      <div class="flex flex-wrap gap-2 text-xs text-slate-500">
-        <button type="button" class="underline hover:text-slate-800" @click="copyExpr">复制表达式</button>
-        <button
-          v-if="resultText"
-          type="button"
-          class="underline hover:text-slate-800"
-          @click="copyWithToast(resultText, '已复制结果')"
+          = {{ draftPreview }}
+        </p>
+        <p
+          v-else
+          class="mt-1 text-right font-mono text-xl font-semibold tabular-nums text-slate-300"
         >
-          复制结果
-        </button>
+          =
+        </p>
+        <p class="mt-2 text-[11px] text-slate-400">
+          Enter 追加新记录 · Esc 清空 · 记录内可直接修改算式
+        </p>
       </div>
     </div>
   </div>
@@ -83,75 +164,198 @@ import { evaluateArithmetic, formatCalcResult } from '~~/utils/calcExpression'
 
 useHead({ title: '计算器 - Nexus Tools' })
 
-type Key =
-  | { label: string; kind: 'num' | 'op' | 'dot'; value: string; colSpan?: number }
-  | { label: string; kind: 'eq'; colSpan?: number }
-  | { label: string; kind: 'clear'; action: 'ac' | 'bs'; colSpan?: number }
+const STORAGE_KEY = 'nexus-calculator-tape-v1'
 
-const keys: Key[] = [
-  { label: 'AC', kind: 'clear', action: 'ac' },
-  { label: '⌫', kind: 'clear', action: 'bs' },
-  { label: '(', kind: 'op', value: '(' },
-  { label: ')', kind: 'op', value: ')' },
-  { label: '7', kind: 'num', value: '7' },
-  { label: '8', kind: 'num', value: '8' },
-  { label: '9', kind: 'num', value: '9' },
-  { label: '÷', kind: 'op', value: '/' },
-  { label: '4', kind: 'num', value: '4' },
-  { label: '5', kind: 'num', value: '5' },
-  { label: '6', kind: 'num', value: '6' },
-  { label: '×', kind: 'op', value: '*' },
-  { label: '1', kind: 'num', value: '1' },
-  { label: '2', kind: 'num', value: '2' },
-  { label: '3', kind: 'num', value: '3' },
-  { label: '−', kind: 'op', value: '-' },
-  { label: '0', kind: 'num', value: '0' },
-  { label: '.', kind: 'dot', value: '.' },
-  { label: '^', kind: 'op', value: '^' },
-  { label: '%', kind: 'op', value: '%' },
-  { label: '+', kind: 'op', value: '+', colSpan: 4 },
-  { label: '=', kind: 'eq', colSpan: 4 }
-]
-
-const expr = ref('')
-const resultText = ref('')
-const error = ref('')
-
-const runCalc = () => {
-  error.value = ''
-  resultText.value = ''
-  const r = evaluateArithmetic(expr.value)
-  if (!r.ok) {
-    error.value = r.error
-    return
-  }
-  resultText.value = formatCalcResult(r.value)
+interface CalcEntry {
+  id: string
+  expr: string
+  result: string | null
+  error: string | null
+  createdAt: number
 }
 
-watch(expr, () => {
-  error.value = ''
-  resultText.value = ''
+const { consumeCalculatorPrefill } = usePlainToolPrefill()
+
+const draftRef = ref<HTMLInputElement | null>(null)
+const entryInputRefs = new Map<string, HTMLInputElement>()
+const draft = ref('')
+const entries = ref<CalcEntry[]>([])
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null
+
+const draftEval = computed(() => {
+  const expr = draft.value.trim()
+  if (!expr) return null
+  return evaluateArithmetic(expr)
 })
 
-const onKey = (k: Key) => {
-  if (k.kind === 'clear') {
-    if (k.action === 'ac') {
-      expr.value = ''
-      error.value = ''
-      resultText.value = ''
-    } else {
-      expr.value = expr.value.slice(0, -1)
-    }
-    return
-  }
-  if (k.kind === 'eq') {
-    runCalc()
-    return
-  }
-  expr.value += k.value
+const draftPreview = computed(() => {
+  const r = draftEval.value
+  if (!r || !r.ok) return null
+  return formatCalcResult(r.value)
+})
+
+const draftError = computed(() => {
+  const expr = draft.value.trim()
+  if (!expr) return ''
+  const r = draftEval.value
+  if (!r || r.ok) return ''
+  return r.error
+})
+
+function setEntryInputRef(id: string, el: Element | ComponentPublicInstance | null) {
+  if (el instanceof HTMLInputElement) entryInputRefs.set(id, el)
+  else entryInputRefs.delete(id)
 }
 
-const copyExpr = () => {
-  void copyWithToast(expr.value || '0')
+function focusDraft() {
+  draftRef.value?.focus()
 }
+
+function focusEntry(id: string) {
+  entryInputRefs.get(id)?.focus()
+}
+
+function schedulePersist() {
+  if (!import.meta.client) return
+  if (persistTimer) clearTimeout(persistTimer)
+  persistTimer = setTimeout(() => {
+    persistTimer = null
+    persist()
+  }, 280)
+}
+
+function persist() {
+  if (!import.meta.client) return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.value))
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function restore() {
+  if (!import.meta.client) return
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return
+    entries.value = parsed
+      .filter(
+        (item): item is CalcEntry =>
+          item &&
+          typeof item === 'object' &&
+          typeof item.id === 'string' &&
+          typeof item.expr === 'string'
+      )
+      .map((item) => {
+        const entry: CalcEntry = {
+          id: item.id,
+          expr: item.expr,
+          result: item.result ?? null,
+          error: item.error ?? null,
+          createdAt: item.createdAt ?? Date.now()
+        }
+        recalcEntry(entry)
+        return entry
+      })
+  } catch {
+    entries.value = []
+  }
+}
+
+function applyEval(entry: CalcEntry, expr: string) {
+  const trimmed = expr.trim()
+  if (!trimmed) {
+    entry.result = null
+    entry.error = null
+    return
+  }
+  const r = evaluateArithmetic(expr)
+  entry.result = r.ok ? formatCalcResult(r.value) : null
+  entry.error = r.ok ? null : r.error
+}
+
+function recalcEntry(entry: CalcEntry) {
+  applyEval(entry, entry.expr)
+  schedulePersist()
+}
+
+function createEntry(expr: string): CalcEntry {
+  const entry: CalcEntry = {
+    id: crypto.randomUUID(),
+    expr,
+    result: null,
+    error: null,
+    createdAt: Date.now()
+  }
+  applyEval(entry, expr)
+  return entry
+}
+
+function commitDraft() {
+  const expr = draft.value.trim()
+  if (!expr) return
+  const entry = createEntry(expr)
+  entries.value = [...entries.value, entry]
+  persist()
+  draft.value = ''
+  void nextTick(() => focusDraft())
+}
+
+function clearDraft() {
+  draft.value = ''
+  focusDraft()
+}
+
+function removeEntry(id: string) {
+  entries.value = entries.value.filter((item) => item.id !== id)
+  entryInputRefs.delete(id)
+  persist()
+}
+
+function clearHistory() {
+  entries.value = []
+  entryInputRefs.clear()
+  persist()
+}
+
+function onEntryBlur(entry: CalcEntry) {
+  if (!entry.expr.trim()) {
+    removeEntry(entry.id)
+    return
+  }
+  persist()
+}
+
+function copyEntry(entry: CalcEntry) {
+  const text = entry.error
+    ? `${entry.expr}\n错误: ${entry.error}`
+    : `${entry.expr} = ${entry.result}`
+  void copyWithToast(text, '已复制')
+}
+
+function copyAll() {
+  if (entries.value.length === 0) return
+  const text = entries.value
+    .map((entry) =>
+      entry.error ? `${entry.expr}\n错误: ${entry.error}` : `${entry.expr} = ${entry.result}`
+    )
+    .join('\n\n')
+  void copyWithToast(text, '已复制全部记录')
+}
+
+onMounted(() => {
+  restore()
+  const prefill = consumeCalculatorPrefill()
+  if (prefill) {
+    const entry = createEntry(prefill)
+    entries.value = [...entries.value, entry]
+    persist()
+    void nextTick(() => focusEntry(entry.id))
+    return
+  }
+  void nextTick(() => focusDraft())
+})
 </script>

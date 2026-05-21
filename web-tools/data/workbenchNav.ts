@@ -32,6 +32,7 @@ export const workbenchNavGroups: WorkbenchNavGroup[] = [
       { label: '二维码', to: '/tools/qrcode', icon: 'qr', prefix: '/tools/qrcode' },
       { label: '颜色', to: '/tools/color', icon: 'brush-o', prefix: '/tools/color' },
       { label: '正则', to: '/tools/regex', icon: 'search', prefix: '/tools/regex' },
+      { label: '文本对比', to: '/tools/text-diff', icon: 'notes-o', prefix: '/tools/text-diff' },
       { label: 'HTTP', to: '/tools/http', icon: 'cluster-o', prefix: '/tools/http' },
       { label: '哈希', to: '/tools/hash', icon: 'lock', prefix: '/tools/hash' },
       { label: '格式化', to: '/tools/code', icon: 'coupon-o', prefix: '/tools/code' }

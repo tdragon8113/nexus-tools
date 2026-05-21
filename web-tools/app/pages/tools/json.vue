@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+  <div class="max-w-7xl px-4 sm:px-6 py-8 md:py-10">
     <PageBreadcrumb
       :items="[
         { to: '/', label: '首页' },
@@ -26,33 +26,6 @@
         等产品类似能力。数据仅在浏览器内处理。
       </p>
     </PageHero>
-
-    <!-- 选项栏 -->
-      <div
-        class="flex flex-wrap items-center gap-3 sm:gap-4 mb-5 p-3 sm:p-4 rounded-xl border border-slate-200 bg-white/90 shadow-sm"
-      >
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-          <span class="text-slate-500 shrink-0">缩进</span>
-          <select
-            v-model="indentMode"
-            class="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          >
-            <option value="1">1 空格</option>
-            <option value="2">2 空格</option>
-            <option value="3">3 空格</option>
-            <option value="4">4 空格</option>
-            <option value="tab">Tab</option>
-          </select>
-        </label>
-        <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
-          <input
-            v-model="sortKeys"
-            type="checkbox"
-            class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-          />
-          键名排序
-        </label>
-      </div>
 
       <!-- 工具栏：白底提示 + 圆形悬停（与格式化按钮一致，避免黑底主色钮） -->
       <div
@@ -694,18 +667,6 @@
           </div>
         </div>
       </div>
-
-      <section class="mt-8 rounded-xl border border-blue-100 bg-blue-50/80 p-5 md:p-6">
-        <h2 class="font-display text-base font-semibold text-blue-800 mb-3">使用说明</h2>
-        <ul class="text-sm text-blue-700/90 space-y-2 list-disc pl-5 marker:text-blue-400">
-          <li>输入内容会在短暂停顿后自动校验并美化到右侧；「格式化」可立即刷新。缩进支持 1～4 空格与 Tab。勾选「键名排序」将递归排序对象键（数组元素顺序不变）。主界面「输入 / 文本」为 CodeMirror 编辑器，支持<strong class="font-medium text-blue-900">代码折叠</strong>（行号旁 ∨ 收起对象/数组）；「对比」仍为行对齐差异视图，暂不提供折叠以免错位。</li>
-          <li>「历史」将最近成功解析的原文存入本机 IndexedDB（最多约 50 条），不上传服务器。</li>
-          <li>「对比」为**双栏合一编辑区**：每侧在**同一区域**内编辑（透明字 + 行底色与字符标记），左右同步滚动，**‹ ›** 跳转差异；**A 与「输入」原文一致**（不会把数字收成规范形式，例如可保留小数位写法），**B** 为解析后再格式化的文本；进入对比或刷新时会从当前模型同步两侧草稿。路径级表格在底部「路径级对比」中展开。</li>
-          <li>右侧除文本、树形外，提供「表格」（同质对象数组展开为列，否则为路径-值表）与「类型」（路径与类型推断，大文件会截断）。</li>
-          <li>「压缩」输出单行 minify；树/表/类型均按当前解析结果更新。支持 UTF-8 BOM；解析失败时输入区波浪线标位置，右上角图标点击查看详情。</li>
-          <li>「交换左右」、导入/下载与本地文件协作方式不变。</li>
-        </ul>
-      </section>
   </div>
 </template>
 

@@ -21,7 +21,7 @@ export const siteTools: SiteTool[] = [
     bgColor: 'bg-blue-100',
     iconColor: 'text-blue-500',
     path: '/tools/json',
-    keywords: ['json', 'JSON', '格式化', '美化', '压缩', '校验', 'parse', 'stringify']
+    keywords: ['json', 'JSON', '格式化', '美化', '压缩', '校验', 'parse', 'stringify', 'jq']
   },
   {
     id: 'base64',
@@ -74,6 +74,16 @@ export const siteTools: SiteTool[] = [
     keywords: ['正则', 'regex', 'regexp', '表达式']
   },
   {
+    id: 'text-diff',
+    name: '文本对比',
+    desc: 'Diff',
+    icon: 'notes-o',
+    bgColor: 'bg-lime-100',
+    iconColor: 'text-lime-600',
+    path: '/tools/text-diff',
+    keywords: ['文本对比', 'diff', 'compare', '差异', '比较', '文本比较', '对比', '比对', 'merge']
+  },
+  {
     id: 'http',
     name: 'HTTP 请求',
     desc: 'API 测试',
@@ -111,7 +121,7 @@ export const siteTools: SiteTool[] = [
     bgColor: 'bg-sky-100',
     iconColor: 'text-sky-600',
     path: '/tools/calculator',
-    keywords: ['计算器', '计算', 'calculator', '算术', '加减乘除', '幂', '乘方']
+    keywords: ['计算器', '计算', 'calculator', '算术', '加减乘除', '幂', '乘方', '算式', '数字', '数值', '+', '-', '*', '/']
   },
   {
     id: 'hash',
@@ -141,7 +151,7 @@ export const siteTools: SiteTool[] = [
     bgColor: 'bg-violet-100',
     iconColor: 'text-violet-500',
     path: '/tools/code',
-    keywords: ['prettier', '代码格式化', 'eslint', 'format']
+    keywords: ['prettier', '代码格式化', 'eslint', 'format', 'js', 'ts', 'html', 'css']
   },
   {
     id: 'more',

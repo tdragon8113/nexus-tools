@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+  <div class="max-w-5xl px-4 sm:px-6 py-6 md:py-8">
     <header class="mb-8 pb-6 border-b border-slate-200/80">
       <h1 class="font-display text-2xl md:text-3xl font-semibold text-slate-900 tracking-tight">
         小工具工作台
@@ -46,9 +46,6 @@
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-medium text-slate-900 text-sm">{{ tool.name }}</span>
-                <span
-                  class="text-[10px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-500/10 px-1.5 py-0.5 rounded"
-                >可用</span>
                 <span
                   v-if="contentHint?.toolId === tool.id"
                   class="text-[10px] font-semibold uppercase tracking-wider text-purple-800 bg-purple-100/80 px-1.5 py-0.5 rounded"
@@ -101,10 +98,7 @@
                 <van-icon :name="tool.icon" size="20" :class="tool.iconColor" />
               </div>
               <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <span class="font-medium text-slate-900 text-sm">{{ tool.name }}</span>
-                  <span class="text-[10px] font-semibold text-blue-700 bg-blue-500/10 px-1.5 py-0.5 rounded">可用</span>
-                </div>
+                <span class="font-medium text-slate-900 text-sm">{{ tool.name }}</span>
                 <p class="text-xs text-slate-500 mt-1">{{ tool.desc }}</p>
               </div>
             </button>
@@ -149,9 +143,7 @@ const availableCount = computed(
   () => siteTools.filter(t => t.path).length
 )
 
-const { matchedTools, normalizedQuery, contentHint, jsonDetected, query, clearQuery } = useToolSearch()
-const { setJsonPrefill } = useJsonPrefill()
-const { setPlainPrefill } = usePlainToolPrefill()
+const { matchedTools, normalizedQuery, contentHint, jsonDetected, openTool } = useToolSearch()
 
 const highlightId = computed(() => {
   if (jsonDetected.value) return 'json'
@@ -167,24 +159,6 @@ const handleToolClick = (tool: SiteTool) => {
     showComingSoon()
     return
   }
-
-  const q = query.value.trim()
-
-  if (tool.id === 'json' && jsonDetected.value && q) {
-    setJsonPrefill(q)
-    clearQuery()
-  } else if (q) {
-    const hint = detectContentHint(q)
-    if (hint?.toolId === tool.id) {
-      if (hint.kind === 'json') {
-        setJsonPrefill(q)
-      } else if (hint.kind === 'url' || hint.kind === 'timestamp' || hint.kind === 'uuid') {
-        setPlainPrefill(hint.kind, q)
-      }
-      clearQuery()
-    }
-  }
-
-  void navigateTo(tool.path)
+  void openTool(tool)
 }
 </script>
