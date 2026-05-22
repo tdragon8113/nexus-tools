@@ -91,17 +91,28 @@ java -jar nexus-workspace-service/target/*.jar
 
 ## 生产部署
 
-推送 tag 触发 GitHub Actions 全栈部署：
+版本 tag 规则见 [`docs/RELEASE_TAGS.md`](docs/RELEASE_TAGS.md)（**不同前缀触发不同流水线**）。
+
+**仅桌面端（web-tools Electron）**：
 
 ```bash
-git tag v1.0.0 && git push origin v1.0.0
+git tag web-tools-v0.2.0 && git push origin web-tools-v0.2.0
 ```
+
+→ `NexusTools.dmg`、GitHub Release、`brew install --cask nexus-tools`
+
+**生产全栈部署**（web-tools + web-time + 后端，**不会**随 `web-tools-v*` 触发）：
+
+```bash
+git tag deploy-v1.0.13 && git push origin deploy-v1.0.13
+```
+
+或在 Actions 手动运行 **Build and Deploy to Aliyun**。
 
 部署内容：
 - 小工具前端镜像 `nexus-frontend` → 端口 **8888**
 - 时间管理前端镜像 `nexus-frontend-time` → 端口 **8889**
 - 后端服务镜像 → Aliyun ACR → 端口 8080/8081/8082
-- Mac DMG → GitHub Releases → Homebrew Tap
 
 访问地址示例：`https://your-server:8888/`（小工具）、`https://your-server:8889/`（时间管理）。部署后需在构建时注入上述 `NUXT_PUBLIC_*`，保证两站导航链接正确。
 

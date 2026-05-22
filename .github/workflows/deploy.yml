@@ -1,13 +1,14 @@
+# 生产全栈部署（web-tools + web-time + 后端）。与桌面端 tag 分离，见 docs/RELEASE_TAGS.md
 name: Build and Deploy to Aliyun
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'deploy-v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to deploy (e.g. v1.0.0)'
+        description: 'Deploy tag (e.g. deploy-v1.0.13)'
         required: true
         default: 'latest'
 

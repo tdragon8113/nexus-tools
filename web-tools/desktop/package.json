@@ -10,7 +10,8 @@
     "dev": "npm run build && cross-env NEXUS_WEB_DEV=1 electron .",
     "dev:3001": "npm run build && cross-env NEXUS_WEB_DEV=1 NEXUS_WEB_URL=http://127.0.0.1:3001 electron .",
     "start": "electron .",
-    "pack": "npm run icons && npm run build && electron-builder --dir"
+    "pack": "npm run icons && npm run build && electron-builder --dir",
+    "dist": "npm run icons && npm run build && electron-builder --mac dmg"
   },
   "dependencies": {
     "electron": "^34.2.0"
@@ -46,9 +47,12 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "icons/icon.icns",
+      "artifactName": "NexusTools.${ext}",
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": ["universal"]
+        }
       ]
     }
   }

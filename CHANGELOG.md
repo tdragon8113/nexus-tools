@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-05-21
+
+### 新增（web-tools 桌面端）
+
+- Electron 桌面壳：Option+Space 唤起搜索、工具集与工具页（800×600 单窗）
+- 剪贴板匹配经 IPC，避免长内容撑爆 URL
+- 工具集列表 / 图标两种视图（本地记忆）
+- 文本对比工具、工作台侧栏与多标签
+
+### 改进（web-tools）
+
+- JSON 工具：CodeMirror 实时校验（波浪线 + 悬停说明）、桌面单栏布局、格式化失败 Toast
+- 发布流水线：仅 `web-tools-v*` tag 构建 DMG 并更新 Homebrew cask
+
+### 安装
+
+```bash
+brew tap tdragon8113/tap
+brew install --cask nexus-tools
+```
+
 ## [v1.0.12] - 2026-04-21
 
 ### 修复（部署）
