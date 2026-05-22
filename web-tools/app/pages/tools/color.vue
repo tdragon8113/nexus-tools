@@ -1,11 +1,5 @@
 <template>
   <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-    <PageBreadcrumb
-      :items="[
-        { to: '/', label: '首页' },
-        { label: '颜色转换' }
-      ]"
-    />
 
     <PageHero title="颜色转换" compact show-icon>
       <template #icon>

@@ -1,11 +1,5 @@
 <template>
   <div class="max-w-4xl px-4 sm:px-6 py-8 md:py-10">
-    <PageBreadcrumb
-      :items="[
-        { to: '/', label: '首页' },
-        { label: '代码格式化' }
-      ]"
-    />
 
     <PageHero title="代码格式化" compact show-icon>
       <template #icon>

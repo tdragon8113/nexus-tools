@@ -1,4 +1,14 @@
 <script setup lang="ts">
+const route = useRoute()
+const { isDesktop } = useDesktop()
+
+/** 工具子页只展示功能区，不重复大标题（Web / 桌面一致） */
+const isToolFeaturePage = computed(
+  () => route.path.startsWith('/tools/') && route.path !== '/tools'
+)
+
+const hideHero = computed(() => isDesktop.value || isToolFeaturePage.value)
+
 withDefaults(
   defineProps<{
     title: string
@@ -18,6 +28,7 @@ withDefaults(
 
 <template>
   <header
+    v-if="!hideHero"
     class="border-b border-slate-200/80"
     :class="compact ? 'mb-4 pb-3' : 'mb-4 pb-3'"
   >

@@ -156,3 +156,35 @@
  * 或按 https://vant-ui.github.io/vant/#/zh-CN/config-provider 覆盖 --van-* CSS 变量，
  * 与上方 .dark 中的 --doc-* 对齐，避免组件与页面背景脱节。
  */
+
+/* Electron 桌面壳：透明底，只显示圆角面板 */
+body.nexus-desktop-body {
+  background: transparent !important;
+}
+
+html[data-nexus-desktop='1'],
+body.nexus-desktop-body,
+body.nexus-desktop-body #__nuxt {
+  min-height: 0;
+  height: 100%;
+}
+
+/* 避免 type=search 与自定义清空按钮重复显示两个叉 */
+.desktop-search-input::-webkit-search-cancel-button,
+.desktop-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Electron 搜索窗：输入区禁止窗口拖拽，恢复双击/拖选文字 */
+html[data-nexus-desktop='1'] .nexus-desktop-search,
+html[data-nexus-desktop='1'] .desktop-search-bar,
+html[data-nexus-desktop='1'] .desktop-search-input {
+  -webkit-app-region: no-drag;
+}
+
+html[data-nexus-desktop='1'] .desktop-search-input {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}

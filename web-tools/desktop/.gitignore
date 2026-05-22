@@ -1,0 +1,7 @@
+node_modules/
+dist/
+release/
+icons/icon.iconset/
+*.log
+
+# 提交 icon.png / icon.icns；iconset 为生成中间产物

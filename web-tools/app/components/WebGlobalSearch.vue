@@ -16,13 +16,13 @@
         :id="inputId"
         ref="inputRef"
         v-model="query"
-        type="search"
+        type="text"
+        role="combobox"
         enterkeyhint="search"
         autocomplete="off"
-        role="combobox"
-        :aria-expanded="showPanel"
         aria-controls="tool-search-listbox"
         aria-autocomplete="list"
+        :aria-expanded="showPanel"
         :aria-activedescendant="activeDescendantId"
         :placeholder="placeholder"
         class="min-w-0 flex-1 border-0 bg-transparent py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0 sm:text-base"
@@ -128,18 +128,16 @@
       </ul>
 
       <div
-        v-if="hasMoreResults || !isHome"
+        v-if="hasMoreResults"
         class="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/80 px-3 py-2 text-xs text-slate-500"
       >
-        <span v-if="hasMoreResults">还有 {{ extraResultCount }} 个匹配</span>
-        <span v-else />
+        <span>还有 {{ extraResultCount }} 个匹配</span>
         <NuxtLink
-          v-if="!isHome"
-          to="/"
+          to="/tools"
           class="font-medium text-blue-600 hover:text-blue-700"
           @click="closePanel"
         >
-          在工作台查看全部
+          打开工具集
         </NuxtLink>
       </div>
     </div>
@@ -152,14 +150,12 @@
 </template>
 
 <script setup lang="ts">
-import { siteTools } from '~~/data/siteTools'
+import { siteTools } from '~/core/tools'
 
 const inputId = useId()
-const route = useRoute()
 const rootRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
 
-const isHome = computed(() => route.path === '/')
 const isMac = computed(() => import.meta.client && /Mac|iPhone|iPad/.test(navigator.platform))
 
 const {

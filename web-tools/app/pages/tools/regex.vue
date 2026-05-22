@@ -1,11 +1,5 @@
 <template>
   <div class="max-w-4xl px-4 sm:px-6 py-8 md:py-10">
-    <PageBreadcrumb
-      :items="[
-        { to: '/', label: '首页' },
-        { label: '正则测试' }
-      ]"
-    />
 
     <PageHero title="正则测试" compact show-icon>
       <template #icon>

@@ -1,11 +1,5 @@
 <template>
   <div class="max-w-7xl px-4 sm:px-6 py-8 md:py-10">
-    <PageBreadcrumb
-      :items="[
-        { to: '/', label: '首页' },
-        { label: 'JSON 格式化' }
-      ]"
-    />
 
     <PageHero title="JSON 格式化">
       <template #icon>

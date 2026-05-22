@@ -1,11 +1,5 @@
 <template>
   <div class="max-w-2xl px-4 sm:px-6 py-8 md:py-10">
-    <PageBreadcrumb
-      :items="[
-        { to: '/', label: '首页' },
-        { label: '计算器' }
-      ]"
-    />
 
     <PageHero title="计算器" compact show-icon>
       <template #icon>

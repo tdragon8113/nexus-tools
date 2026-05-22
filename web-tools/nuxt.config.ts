@@ -43,7 +43,9 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: true,
       routes: [
-        '/',
+        '/desktop/search',
+        '/desktop/hub',
+        '/tools',
         '/tools/json',
         '/tools/base64',
         '/tools/timestamp',
@@ -56,7 +58,8 @@ export default defineNuxtConfig({
         '/tools/regex',
         '/tools/http',
         '/tools/hash',
-        '/tools/code'
+        '/tools/code',
+        '/tools/text-diff'
       ]
     },
     compressPublicAssets: true

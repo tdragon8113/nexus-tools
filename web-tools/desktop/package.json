@@ -1,0 +1,55 @@
+{
+  "name": "nexus-tools-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nexus Tools desktop shell (uTools-style launcher)",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "dev": "npm run build && cross-env NEXUS_WEB_DEV=1 electron .",
+    "dev:3001": "npm run build && cross-env NEXUS_WEB_DEV=1 NEXUS_WEB_URL=http://127.0.0.1:3001 electron .",
+    "start": "electron .",
+    "pack": "npm run icons && npm run build && electron-builder --dir"
+  },
+  "dependencies": {
+    "electron": "^34.2.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.25.0",
+    "sharp": "^0.33.5",
+    "typescript": "^5.8.2"
+  },
+  "build": {
+    "appId": "com.nexus.tools",
+    "productName": "Nexus Tools",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "icons/icon.png",
+      "icons/icon.icns"
+    ],
+    "extraResources": [
+      {
+        "from": "../.output/public",
+        "to": "web",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "icon": "icons/icon.icns",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "icons/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    }
+  }
+}

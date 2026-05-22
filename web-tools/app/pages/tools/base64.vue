@@ -1,11 +1,5 @@
 <template>
   <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-    <PageBreadcrumb
-      :items="[
-        { to: '/', label: '首页' },
-        { label: 'Base64' }
-      ]"
-    />
 
     <PageHero title="Base64 编解码" compact show-icon>
       <template #icon>

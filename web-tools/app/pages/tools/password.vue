@@ -1,11 +1,5 @@
 <template>
   <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-    <PageBreadcrumb
-      :items="[
-        { to: '/', label: '首页' },
-        { label: '随机密码' }
-      ]"
-    />
 
     <PageHero title="随机密码" compact show-icon>
       <template #icon>
