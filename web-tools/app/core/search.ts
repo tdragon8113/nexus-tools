@@ -27,6 +27,22 @@ const UUID_RE =
 const MD5_RE = /^[a-f0-9]{32}$/i
 const SHA256_RE = /^[a-f0-9]{64}$/i
 const BASE64_RE = /^[A-Za-z0-9+/]+=*$/
+const DATA_URI_BASE64_RE = /^data:[^;\s]+;base64,/i
+
+/** 从 Data URI 中取出逗号后的 Base64 载荷 */
+function extractDataUriBase64Payload(raw: string): string | null {
+  const t = raw.trim()
+  if (!DATA_URI_BASE64_RE.test(t)) return null
+  const idx = t.toLowerCase().indexOf(';base64,')
+  if (idx === -1) return null
+  return t.slice(idx + ';base64,'.length)
+}
+
+function looksLikeRawBase64(payload: string): boolean {
+  const p = payload.replace(/\s/g, '')
+  if (p.length < 8 || !/[+/=]/.test(p)) return false
+  return BASE64_RE.test(p)
+}
 
 function tokenizeQuery(q: string): string[] {
   const tokens = q
@@ -100,6 +116,10 @@ function scoreTool(tool: SiteTool, tokens: string[]): number {
       else if (fieldIncludes(kw, token)) tokenScore = Math.max(tokenScore, 50)
     }
 
+    if (tool.id === 'base64' && /;base64,/i.test(token) && token.startsWith('data:')) {
+      tokenScore = Math.max(tokenScore, 92)
+    }
+
     for (const py of pinyinAliases) {
       if (py === token) tokenScore = Math.max(tokenScore, 82)
       else if (py.startsWith(token)) tokenScore = Math.max(tokenScore, 72)
@@ -136,6 +156,10 @@ export function detectContentHint(raw: string): ContentHint | null {
     /* not JSON */
   }
 
+  if (extractDataUriBase64Payload(t) !== null) {
+    return { kind: 'base64', toolId: 'base64', label: 'Data URI（Base64 图片/文件）' }
+  }
+
   const firstLine = t.split(/\r?\n/)[0]?.trim() ?? t
   const firstToken = firstLine.split(/\s+/)[0] ?? firstLine
 
@@ -163,7 +187,7 @@ export function detectContentHint(raw: string): ContentHint | null {
     return { kind: 'hash', toolId: 'hash', label: '哈希值' }
   }
 
-  if (t.length >= 8 && t.length % 4 === 0 && BASE64_RE.test(t) && /[+/=]/.test(t)) {
+  if (t.length >= 8 && t.length % 4 === 0 && looksLikeRawBase64(t)) {
     return { kind: 'base64', toolId: 'base64', label: 'Base64 文本' }
   }
 

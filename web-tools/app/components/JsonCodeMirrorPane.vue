@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group json-cm-wrap relative h-full min-h-0 min-w-0 overflow-hidden"
+    class="group json-cm-wrap relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden"
     :class="tone === 'output' ? 'bg-slate-50/50' : 'bg-[var(--doc-code-bg)]'"
   >
     <p
@@ -10,7 +10,7 @@
     >
       {{ placeholder }}
     </p>
-    <div ref="hostRef" class="h-full min-h-0 min-w-0" />
+    <div ref="hostRef" class="json-cm-host h-full min-h-0 min-w-0 flex-1" />
   </div>
 </template>
 
@@ -18,9 +18,9 @@
 import { json } from '@codemirror/lang-json'
 import { indentWithTab } from '@codemirror/commands'
 import { indentUnit as cmIndentUnit } from '@codemirror/language'
-import { linter, type Diagnostic } from '@codemirror/lint'
-import { Annotation, Compartment, EditorState, StateEffect, StateField, type Extension } from '@codemirror/state'
+import { Annotation, Compartment, EditorState, type Extension } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
+import { jsonLiveLintExtension } from '~/utils/jsonCodeMirrorLint'
 import { jsonCodeMirrorBasicSetup } from '~/utils/jsonCodeMirrorSetup'
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 
@@ -35,10 +35,6 @@ const props = withDefaults(
     tabSize?: number
     /** Tab / 自动缩进时插入的一段缩进，与 JSON 工具「缩进」选项一致（空格或 \\t） */
     singleIndent?: string
-    /** 解析错误时在原文中的字符下标，用于波浪下划线 */
-    errorCharIndex?: number | null
-    /** 与波浪线对应的说明，悬停波浪线时显示 */
-    errorMessage?: string
     /** output 与主输入区背景、行号栏略有区分 */
     tone?: 'input' | 'output'
   }>(),
@@ -47,55 +43,19 @@ const props = withDefaults(
     placeholder: '',
     tabSize: 2,
     singleIndent: '  ',
-    errorCharIndex: null,
-    errorMessage: '',
     tone: 'input'
   }
 )
 
-const emit = defineEmits<{ 'update:modelValue': [v: string] }>()
+const emit = defineEmits<{
+  'update:modelValue': [v: string]
+  paste: [v: string]
+}>()
 
 const hostRef = ref<HTMLElement | null>(null)
 const viewRef = shallowRef<EditorView | null>(null)
 
 const External = Annotation.define<boolean>()
-
-const setParseError = StateEffect.define<{ pos: number | null; message: string }>()
-
-const parseErrorField = StateField.define<{ pos: number | null; message: string }>({
-  create: () => ({ pos: null, message: '' }),
-  update(value, tr) {
-    for (const e of tr.effects) {
-      if (e.is(setParseError)) return e.value
-    }
-    return value
-  }
-})
-
-/** 由 lint 绘制波浪线 + 悬停显示 errorMessage（与官方 diagnostic 行为一致） */
-const parseErrorLint = linter(
-  (view) => {
-    const { pos, message } = view.state.field(parseErrorField)
-    if (pos == null || !message.trim()) return []
-    const docLen = view.state.doc.length
-    if (docLen === 0) return []
-    const from = Math.min(Math.max(0, pos), docLen - 1)
-    const to = Math.min(from + 1, docLen)
-    const d: Diagnostic = {
-      from,
-      to,
-      severity: 'error',
-      message: message.trim(),
-      markClass: 'json-cm-squiggle'
-    }
-    return [d]
-  },
-  {
-    delay: 0,
-    needsRefresh: (update) =>
-      update.transactions.some((tr) => tr.effects.some((e) => e.is(setParseError)))
-  }
-)
 
 const readOnlyComp = new Compartment()
 const tabSizeComp = new Compartment()
@@ -149,24 +109,6 @@ watch(
   }
 )
 
-function dispatchParseError() {
-  const view = viewRef.value
-  if (!view) return
-  const pos =
-    props.errorCharIndex != null && props.errorCharIndex >= 0 ? props.errorCharIndex : null
-  const message = pos != null ? (props.errorMessage ?? '').trim() : ''
-  view.dispatch({
-    effects: setParseError.of({ pos, message })
-  })
-}
-
-watch(
-  () => [props.errorCharIndex, props.errorMessage, props.modelValue] as const,
-  () => {
-    dispatchParseError()
-  }
-)
-
 function buildExtensions(): Extension[] {
   const isInput = props.tone === 'input'
   const scrollerBg = isInput ? 'var(--doc-code-bg)' : 'rgb(248 250 252 / 0.5)'
@@ -182,16 +124,20 @@ function buildExtensions(): Extension[] {
     indentUnitComp.of(cmIndentUnit.of(props.singleIndent)),
     tabIndentComp.of(props.readOnly ? [] : tabIndentKeymap),
     readOnlyComp.of(EditorState.readOnly.of(props.readOnly)),
-    parseErrorField,
-    parseErrorLint,
+    jsonLiveLintExtension(280),
     EditorView.theme({
       '&': {
         height: '100%',
+        minHeight: 0,
+        flex: '1 1 auto',
         fontSize: '14px',
         backgroundColor: 'transparent'
       },
       '.cm-scroller': {
-        overflow: 'auto',
+        flex: '1 1 auto',
+        minHeight: 0,
+        overflowX: 'auto',
+        overflowY: 'auto',
         fontFamily: 'var(--font-mono, ui-monospace, monospace)',
         backgroundColor: scrollerBg
       },
@@ -199,11 +145,12 @@ function buildExtensions(): Extension[] {
       '.cm-gutters': {
         backgroundColor: gutterBg,
         borderRight: '1px solid rgb(226 232 240)',
-        paddingLeft: '2px',
+        paddingLeft: '0',
         color: lineNoColor
       },
       '.cm-lineNumbers': {
-        color: lineNoColor
+        color: lineNoColor,
+        minWidth: '0'
       },
       '.cm-activeLine': {
         backgroundColor: isInput ? 'rgb(248 250 252 / 0.55)' : 'rgb(248 250 252 / 0.35)'
@@ -221,37 +168,37 @@ function buildExtensions(): Extension[] {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        padding: '0 3px 0 5px',
-        minWidth: '20px',
+        padding: '0 2px',
+        minWidth: '0',
+        fontSize: '12px',
         textAlign: 'right',
         whiteSpace: 'nowrap',
         boxSizing: 'border-box'
       },
       '.cm-foldGutter': {
-        width: '1.75rem',
-        minWidth: '1.75rem',
-        maxWidth: '1.75rem',
+        width: '1.125rem',
+        minWidth: '1.125rem',
+        maxWidth: '1.125rem',
         flexShrink: '0'
       },
       '.cm-foldGutter .cm-gutterElement': {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingLeft: '1px',
-        paddingRight: '3px',
+        padding: '0 1px',
         boxSizing: 'border-box',
         cursor: 'pointer',
-        borderRadius: '3px'
+        borderRadius: '2px'
       },
       '.cm-foldGutter .cm-gutterElement:hover .json-cm-fold-marker': {
         color: foldHover
       },
       '.cm-foldGutter .json-cm-fold-marker': {
         boxSizing: 'border-box',
-        width: '1.375rem',
-        minWidth: '1.375rem',
-        maxWidth: '1.375rem',
-        height: '1.375rem',
+        width: '0.875rem',
+        minWidth: '0.875rem',
+        maxWidth: '0.875rem',
+        height: '0.875rem',
         flexShrink: '0',
         display: 'inline-flex',
         alignItems: 'center',
@@ -261,8 +208,8 @@ function buildExtensions(): Extension[] {
       },
       '.cm-foldGutter .json-cm-fold-marker svg': {
         display: 'block',
-        width: '0.95rem',
-        height: '0.95rem',
+        width: '0.75rem',
+        height: '0.75rem',
         flexShrink: '0'
       },
       '&.cm-focused': { outline: 'none' },
@@ -274,7 +221,11 @@ function buildExtensions(): Extension[] {
       if (!update.docChanged) return
       if (update.transactions.some((tr) => tr.annotation(External))) return
       if (props.readOnly) return
-      emit('update:modelValue', update.state.doc.toString())
+      const doc = update.state.doc.toString()
+      emit('update:modelValue', doc)
+      if (update.transactions.some((tr) => tr.isUserEvent('input.paste'))) {
+        emit('paste', doc)
+      }
     })
   ]
 }
@@ -287,9 +238,6 @@ onMounted(() => {
   })
   const view = new EditorView({ state, parent: hostRef.value })
   viewRef.value = view
-  void nextTick(() => {
-    dispatchParseError()
-  })
 })
 
 onUnmounted(() => {
@@ -301,11 +249,26 @@ onUnmounted(() => {
 <style>
 .json-cm-wrap {
   /* 与行号列 + 折叠列 + 内边距对齐，避免占位文案与正文首列错位 */
-  --json-cm-ph-left: calc(2px + 28px + 1.75rem + 10px);
+  --json-cm-ph-left: calc(1.125rem + 2ch + 8px);
 }
 
+.json-cm-wrap .json-cm-host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 滚动区铺满可视高度，横向滚动条固定在面板底部 */
 .json-cm-wrap .cm-editor {
+  display: flex;
   height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.json-cm-wrap .cm-scroller {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .json-cm-wrap .json-cm-squiggle {

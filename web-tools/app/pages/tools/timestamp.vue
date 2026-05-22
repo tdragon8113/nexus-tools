@@ -124,9 +124,11 @@ import { parseTimestampFlexible } from '~~/utils/timestampParse'
 
 useHead({ title: '时间戳 - Nexus Tools' })
 
-const { consumeTimestampPrefill } = usePlainToolPrefill()
-
 const input = ref('')
+
+useConsumeToolPrefill('timestamp', (text) => {
+  input.value = text
+}, { plainKind: 'timestamp' })
 const nowMs = ref(0)
 let timer: ReturnType<typeof setInterval> | null = null
 
@@ -173,8 +175,6 @@ const useNowSec = () => {
 
 onMounted(() => {
   refreshNow()
-  const pre = consumeTimestampPrefill()
-  if (pre) input.value = pre
   timer = setInterval(refreshNow, 1000)
 })
 

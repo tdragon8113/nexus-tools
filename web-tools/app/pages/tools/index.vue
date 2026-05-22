@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import ToolGrid from '~/components/ToolGrid.vue'
+import { prefillToolFromSearch } from '~/composables/useConsumeToolPrefill'
 import type { SiteTool } from '~/core/tools'
 import { siteTools } from '~/core/tools'
 
 const filterQuery = ref('')
+const searchQuery = useState('tool-search-query', () => '')
 
 const availableCount = computed(
   () => siteTools.filter((t) => t.id !== 'more' && t.path).length
@@ -12,7 +14,10 @@ const availableCount = computed(
 useHead({ title: '工具集 - Nexus Tools' })
 
 async function onPick(tool: SiteTool) {
-  if (tool.path) await navigateTo(tool.path)
+  if (!tool.path) return
+  const q = String(searchQuery.value ?? '').trim()
+  if (q) prefillToolFromSearch(tool.id, q)
+  await navigateTo(tool.path)
 }
 </script>
 

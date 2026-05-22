@@ -9,9 +9,7 @@ const {
   goHub,
   closeDesktop,
   openTool,
-  onEnter,
-  moveActive,
-  onHorizontalKey
+  onEnter
 } = useDesktopSearchPanel()
 </script>
 
@@ -32,10 +30,6 @@ const {
         placeholder="搜索 Nexus 工具…"
         style="-webkit-app-region: no-drag"
         autofocus
-        @keydown.down.prevent="displayTools.length && moveActive(1)"
-        @keydown.up.prevent="displayTools.length && moveActive(-1)"
-        @keydown.right="onHorizontalKey($event, 1)"
-        @keydown.left="onHorizontalKey($event, -1)"
         @keydown.enter.prevent="onEnter"
         @keydown.esc.prevent="closeDesktop"
       />
@@ -64,7 +58,7 @@ const {
     <footer
       class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] text-slate-400"
     >
-      <span>↵ 打开 · ←→ 选择 · Esc 关闭</span>
+      <span>↵ 打开 · Esc 关闭</span>
       <button
         type="button"
         class="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 font-medium text-blue-700 hover:bg-blue-100"

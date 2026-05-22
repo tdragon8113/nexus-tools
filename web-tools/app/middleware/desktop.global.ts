@@ -4,11 +4,7 @@ export default defineNuxtRouteMiddleware((to) => {
   if (to.path === '/desktop/launcher') {
     return navigateTo({
       path: DESKTOP_ROUTES.search,
-      query: desktopQuery(
-        Object.fromEntries(
-          Object.entries(to.query).filter(([, v]) => typeof v === 'string') as [string, string][]
-        )
-      )
+      query: desktopQuery()
     })
   }
 

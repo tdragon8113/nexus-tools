@@ -60,6 +60,10 @@ const text = ref('')
 const out = ref('')
 const error = ref('')
 
+useConsumeToolPrefill('hash', (value) => {
+  text.value = value
+}, { plainKind: 'hash' })
+
 let t: ReturnType<typeof setTimeout> | undefined
 watch(
   [text, algo],

@@ -63,10 +63,12 @@
 <script setup lang="ts">
 useHead({ title: 'URL 编码 - Nexus Tools' })
 
-const { consumeUrlPrefill } = usePlainToolPrefill()
-
 const input = ref('')
 const error = ref('')
+
+useConsumeToolPrefill('url', (text) => {
+  input.value = text
+}, { plainKind: 'url' })
 
 const encode = () => {
   error.value = ''
@@ -91,8 +93,4 @@ const clear = () => {
   error.value = ''
 }
 
-onMounted(() => {
-  const pre = consumeUrlPrefill()
-  if (pre) input.value = pre
-})
 </script>

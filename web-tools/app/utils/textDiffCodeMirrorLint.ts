@@ -1,7 +1,7 @@
 import { syntaxTree } from '@codemirror/language'
 import { linter, type Diagnostic, type LintSource } from '@codemirror/lint'
 import type { Extension } from '@codemirror/state'
-import { parseJson } from '~/utils/jsonTool'
+import { jsonLintSource } from '~/utils/jsonCodeMirrorLint'
 import type { TextDiffLanguageId } from '~/utils/textDiffCodeMirrorLanguage'
 
 function mergeDiagnostics(diags: Diagnostic[]): Diagnostic[] {
@@ -39,30 +39,6 @@ function lezerSyntaxLintSource(message = '语法错误'): LintSource {
       }
     })
     return mergeDiagnostics(diags)
-  }
-}
-
-function jsonLintSource(): LintSource {
-  return (view) => {
-    const text = view.state.doc.toString()
-    if (!text.trim()) return []
-    const result = parseJson(text)
-    if (result.ok) return []
-    const docLen = view.state.doc.length
-    const from =
-      result.errorIndexInRaw != null
-        ? Math.min(Math.max(result.errorIndexInRaw, 0), docLen)
-        : 0
-    const to = Math.min(from + 1, docLen)
-    return [
-      {
-        from,
-        to: to > from ? to : from,
-        severity: 'error',
-        message: result.message,
-        source: 'json'
-      }
-    ]
   }
 }
 

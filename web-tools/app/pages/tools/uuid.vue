@@ -91,9 +91,11 @@ const UUID_RE =
 
 useHead({ title: 'UUID - Nexus Tools' })
 
-const { consumeUuidPrefill } = usePlainToolPrefill()
-
 const count = ref(5)
+
+useConsumeToolPrefill('uuid', (text) => {
+  checkInput.value = text
+}, { plainKind: 'uuid' })
 const lines = ref<string[]>([])
 const checkInput = ref('')
 
@@ -132,8 +134,6 @@ const checkMessage = computed(() => {
 })
 
 onMounted(() => {
-  const pre = consumeUuidPrefill()
-  if (pre) checkInput.value = pre
   generate()
 })
 </script>

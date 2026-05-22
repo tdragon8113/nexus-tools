@@ -197,9 +197,13 @@ const encodingImage = ref(false)
 const uploadedFileName = ref('')
 const previewDismissed = ref(false)
 
-const { consumeBase64Prefill } = usePlainToolPrefill()
-
 let previewDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+useConsumeToolPrefill('base64', (text) => {
+  input.value = text
+  previewDismissed.value = false
+  syncImagePreviewFromInput()
+}, { plainKind: 'base64' })
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`
@@ -349,14 +353,6 @@ const clearAll = () => {
   clearImagePreview()
   resetFileInput()
 }
-
-onMounted(() => {
-  const prefill = consumeBase64Prefill()
-  if (prefill) {
-    input.value = prefill
-    syncImagePreviewFromInput()
-  }
-})
 
 const copyInput = () => {
   void copyWithToast(input.value)

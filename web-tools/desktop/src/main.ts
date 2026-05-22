@@ -9,6 +9,14 @@ import { WindowManager } from './windowManager'
 
 const isDev = process.env.NEXUS_WEB_DEV === '1'
 const HOTKEY = process.env.NEXUS_HOTKEY ?? 'Alt+Space'
+/** 搜索框可接受的剪贴板最大长度（IPC 传递，不进 URL） */
+const MAX_CLIPBOARD_FOR_SEARCH = 48_000
+
+function readClipboardForSearch(): string {
+  const raw = clipboard.readText().trim()
+  if (raw.length <= MAX_CLIPBOARD_FOR_SEARCH) return raw
+  return raw.slice(0, MAX_CLIPBOARD_FOR_SEARCH)
+}
 
 const distDir = path.join(__dirname)
 let webBaseUrl = ''
@@ -43,7 +51,7 @@ app.whenReady().then(async () => {
   windows = new WindowManager(webBaseUrl, preloadPath)
 
   const ok = globalShortcut.register(HOTKEY, () => {
-    windows?.toggleSearch(clipboard.readText().trim())
+    windows?.toggleSearch(readClipboardForSearch())
   })
   if (!ok) console.error(`[Nexus Tools] 快捷键注册失败: ${HOTKEY}`)
 
@@ -62,7 +70,7 @@ app.whenReady().then(async () => {
   }
 
   console.log(`[Nexus Tools] 已启动 · ${webBaseUrl} · ${HOTKEY} 唤起搜索`)
-  windows.showSearch(clipboard.readText().trim())
+  windows.showSearch(readClipboardForSearch())
 })
 
 app.on('will-quit', () => {
@@ -78,6 +86,6 @@ if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
   app.on('second-instance', () => {
-    windows?.toggleSearch(clipboard.readText().trim())
+    windows?.toggleSearch(readClipboardForSearch())
   })
 }

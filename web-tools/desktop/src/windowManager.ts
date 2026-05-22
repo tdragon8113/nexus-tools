@@ -1,20 +1,18 @@
 import { BrowserWindow, screen } from 'electron'
 import {
-  HUB_HEIGHT,
-  HUB_WIDTH,
   LAUNCHER_MIN_HEIGHT,
   LAUNCHER_WIDTH,
-  TOOL_FLOAT_HEIGHT,
-  TOOL_FLOAT_MIN_HEIGHT,
-  TOOL_FLOAT_MIN_WIDTH,
-  TOOL_FLOAT_SIZE,
-  TOOL_FLOAT_WIDTH
+  PANEL_HEIGHT,
+  PANEL_MIN_HEIGHT,
+  PANEL_MIN_WIDTH,
+  PANEL_WIDTH
 } from './types'
 import { getAppIcon } from './appIcon'
 
 type PreloadFn = (file: string) => string
 
-const DESKTOP_Q = 'desktop=1'
+/** URL 中 q 参数上限；剪贴板一律走 IPC，避免 base64 图片等撑爆 URL */
+const MAX_URL_Q_LEN = 512
 
 /** 单窗 SPA：主进程只管显隐、尺寸；路由由 Nuxt 负责 */
 export class WindowManager {
@@ -55,11 +53,17 @@ export class WindowManager {
       }
     })
 
-    // 开发时不失焦隐藏，便于调试；生产保持 uTools 失焦关闭
+    // 点击窗口外失焦时隐藏（uTools 式）；短延迟避免误触（如短暂失焦又收回焦点）
     this.shell.on('blur', () => {
-      if (process.env.NEXUS_WEB_DEV === '1') return
-      const url = this.shell?.webContents.getURL() ?? ''
-      if (url.includes('/desktop/search')) this.hide()
+      if (process.env.NEXUS_KEEP_VISIBLE === '1') return
+      const win = this.shell
+      if (!win || win.isDestroyed()) return
+      setTimeout(() => {
+        if (win.isDestroyed() || !win.isVisible()) return
+        const focused = BrowserWindow.getFocusedWindow()
+        if (focused === win) return
+        this.hide()
+      }, 120)
     })
 
     this.shell.on('closed', () => {
@@ -79,11 +83,13 @@ export class WindowManager {
     return this.shell
   }
 
-  private searchUrl(clipboard = '', q = '') {
+  private searchUrl(q = '') {
     const url = new URL('/desktop/search', this.webBaseUrl)
     url.searchParams.set('desktop', '1')
-    if (clipboard) url.searchParams.set('clipboard', clipboard)
-    if (q) url.searchParams.set('q', q)
+    const safeQ = q.trim()
+    if (safeQ && safeQ.length <= MAX_URL_Q_LEN) {
+      url.searchParams.set('q', safeQ)
+    }
     return url.toString()
   }
 
@@ -104,7 +110,7 @@ export class WindowManager {
     const { width: workW, height: workH } = this.workArea()
     const w = Math.min(width, workW - 40)
     const h = Math.min(height, workH - 40)
-    win.setMinimumSize(TOOL_FLOAT_MIN_WIDTH, TOOL_FLOAT_MIN_HEIGHT)
+    win.setMinimumSize(PANEL_MIN_WIDTH, PANEL_MIN_HEIGHT)
     win.setResizable(true)
     const [_, y] = win.getPosition()
     win.setSize(w, h, false)
@@ -128,7 +134,7 @@ export class WindowManager {
     const win = this.ensureShell()
     this.applySearchChrome()
 
-    const target = this.searchUrl(clipboard, q)
+    const target = this.searchUrl(q)
     const current = win.webContents.getURL()
     const onSearchPage = current.includes('/desktop/search')
 
@@ -150,21 +156,59 @@ export class WindowManager {
     if (this.shell && !this.shell.isDestroyed()) this.shell.hide()
   }
 
-  toggleSearch(clipboard = '') {
-    if (this.shell && !this.shell.isDestroyed() && this.shell.isVisible()) {
-      const url = this.shell.webContents.getURL()
-      if (url.includes('/desktop/search')) {
-        this.hide()
-        return
-      }
+  private pathnameFromUrl(url: string): string {
+    try {
+      return new URL(url).pathname
+    } catch {
+      const m = url.match(/^https?:\/\/[^/]+(\/[^?#]*)/)
+      return m?.[1] ?? ''
     }
+  }
+
+  /** 工具页 / 工具集：不重新加载，仅恢复窗口尺寸与焦点 */
+  private isPanelRoute(url: string): boolean {
+    const path = this.pathnameFromUrl(url)
+    return path.startsWith('/tools/') || path === '/desktop/hub'
+  }
+
+  revealPanel() {
+    const win = this.shell
+    if (!win || win.isDestroyed()) return
+    const path = this.pathnameFromUrl(win.webContents.getURL())
+    if (this.isPanelRoute(win.webContents.getURL())) {
+      this.setPanelMode(path)
+    }
+    win.show()
+    win.focus()
+  }
+
+  /**
+   * 全局快捷键：显隐切换。
+   * 已在工具/工具集时保持当前页；仅搜索入口或未打开过工具时再进搜索。
+   */
+  toggleSearch(clipboard = '') {
+    const win = this.shell
+    if (!win || win.isDestroyed()) {
+      this.showSearch(clipboard)
+      return
+    }
+
+    if (win.isVisible()) {
+      this.hide()
+      return
+    }
+
+    const current = win.webContents.getURL()
+    if (this.loaded && this.isPanelRoute(current)) {
+      this.revealPanel()
+      return
+    }
+
     this.showSearch(clipboard)
   }
 
-  panelSizeForPath(path: string) {
-    if (path === '/desktop/hub') return { width: HUB_WIDTH, height: HUB_HEIGHT }
-    const id = path.replace(/^\/tools\//, '').split('/')[0] ?? ''
-    return TOOL_FLOAT_SIZE[id] ?? { width: TOOL_FLOAT_WIDTH, height: TOOL_FLOAT_HEIGHT }
+  panelSizeForPath(_path: string) {
+    return { width: PANEL_WIDTH, height: PANEL_HEIGHT }
   }
 
   setPanelMode(path: string) {

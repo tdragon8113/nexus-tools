@@ -1,5 +1,5 @@
 import { showToast } from 'vant'
-import { applyPrefillForTool } from '~/core/prefill'
+import { prefillToolFromSearch } from '~/composables/useConsumeToolPrefill'
 import { rankToolsForQuery, resolveToolSearchResults } from '~/core/search'
 import { siteTools, type SiteTool } from '~/core/tools'
 
@@ -70,7 +70,7 @@ export function useToolSearch() {
     }
 
     if (options?.withPrefill !== false) {
-      applyPrefillForTool(tool.id, query.value)
+      prefillToolFromSearch(tool.id, query.value)
     }
 
     await navigateTo(tool.path)

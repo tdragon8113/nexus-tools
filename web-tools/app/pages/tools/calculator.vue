@@ -168,8 +168,6 @@ interface CalcEntry {
   createdAt: number
 }
 
-const { consumeCalculatorPrefill } = usePlainToolPrefill()
-
 const draftRef = ref<HTMLInputElement | null>(null)
 const entryInputRefs = new Map<string, HTMLInputElement>()
 const draft = ref('')
@@ -340,16 +338,23 @@ function copyAll() {
   void copyWithToast(text, '已复制全部记录')
 }
 
-onMounted(() => {
-  restore()
-  const prefill = consumeCalculatorPrefill()
-  if (prefill) {
-    const entry = createEntry(prefill)
+const { drain: drainCalculatorPrefill } = useConsumeToolPrefill(
+  'calculator',
+  (text) => {
+    const entry = createEntry(text)
     entries.value = [...entries.value, entry]
     persist()
     void nextTick(() => focusEntry(entry.id))
-    return
-  }
-  void nextTick(() => focusDraft())
+  },
+  { plainKind: 'calculator', consumeOnMount: false }
+)
+
+onMounted(() => {
+  restore()
+  const before = entries.value.length
+  drainCalculatorPrefill()
+  void nextTick(() => {
+    if (entries.value.length === before) focusDraft()
+  })
 })
 </script>

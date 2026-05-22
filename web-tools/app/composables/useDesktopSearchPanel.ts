@@ -1,4 +1,4 @@
-import { applyPrefillForTool } from '~/core/prefill'
+import { prefillToolFromSearch } from '~/composables/useConsumeToolPrefill'
 import { resolveDisplayToolsForQuery } from '~/core/search'
 import type { SiteTool } from '~/core/tools'
 import type { NexusOpenToolPayload } from '~/types/nexus-desktop'
@@ -7,7 +7,8 @@ const DEFAULT_LIMIT = 6
 
 export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   const route = useRoute()
-  const { goHub, goTool, closeDesktop, resizeSearchPanel } = useDesktop()
+  const { goHub, goTool, closeDesktop } = useDesktop()
+  const remeasureDesktopSearch = inject<() => void>('remeasureDesktopSearch', () => {})
 
   const rootRef = ref<HTMLElement | null>(null)
   const query = ref('')
@@ -27,7 +28,7 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
 
   async function openTool(tool: SiteTool) {
     if (!tool.path) return
-    applyPrefillForTool(tool.id, trimmed.value)
+    prefillToolFromSearch(tool.id, trimmed.value)
     await goTool(tool, payloadFor(tool))
   }
 
@@ -36,43 +37,29 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     if (list.length) await openTool(list[activeIndex.value] ?? list[0]!)
   }
 
-  function moveActive(delta: number) {
-    const n = displayTools.value.length
-    if (n === 0) return
-    activeIndex.value = (activeIndex.value + delta + n) % n
-  }
-
-  function onHorizontalKey(e: KeyboardEvent, delta: number) {
-    if (displayTools.value.length === 0) return
-    const el = e.target as HTMLInputElement | null
-    if (!el || el.tagName !== 'INPUT') return
-    if (e.shiftKey || e.altKey || e.metaKey || e.ctrlKey) return
-    const pos = el.selectionStart ?? 0
-    const end = el.selectionEnd ?? pos
-    const len = el.value.length
-    if (pos !== end) return
-    if (delta < 0 && pos > 0) return
-    if (delta > 0 && pos < len) return
-    e.preventDefault()
-    moveActive(delta)
-  }
-
-  function syncQueryFromRoute() {
-    const clip = typeof route.query.clipboard === 'string' ? route.query.clipboard : ''
+  function applySearchInput() {
+    const fromIpc = consumeDesktopSearchInput()
+    if (fromIpc) {
+      query.value = fromIpc
+      return
+    }
     const q = typeof route.query.q === 'string' ? route.query.q : ''
-    const next = q || clip
-    if (next) query.value = next
+    if (q) query.value = q
   }
-
-  useElementResize(rootRef, resizeSearchPanel)
 
   watch(trimmed, () => {
     activeIndex.value = 0
   })
   watch(displayTools, (list) => {
     activeIndex.value = Math.min(activeIndex.value, Math.max(0, list.length - 1))
+    void nextTick(remeasureDesktopSearch)
   })
-  watch(() => [route.query.clipboard, route.query.q], syncQueryFromRoute, { immediate: true })
+  watch([hint, showEmpty], () => {
+    void nextTick(remeasureDesktopSearch)
+  })
+  watch(() => useDesktopSearchInput().value, applySearchInput, { deep: true })
+  watch(() => route.query.q, applySearchInput, { immediate: true })
+  onMounted(applySearchInput)
 
   return {
     rootRef,
@@ -84,8 +71,6 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     goHub,
     closeDesktop,
     openTool,
-    onEnter,
-    moveActive,
-    onHorizontalKey
+    onEnter
   }
 }

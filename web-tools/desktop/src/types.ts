@@ -17,18 +17,9 @@ export const IPC = {
 export const LAUNCHER_WIDTH = 680
 export const LAUNCHER_MIN_HEIGHT = 120
 
-export const HUB_WIDTH = 760
-export const HUB_HEIGHT = 560
+/** 工具集与所有工具页统一窗口尺寸 */
+export const PANEL_WIDTH = 800
+export const PANEL_HEIGHT = 600
 
-export const TOOL_FLOAT_WIDTH = 800
-export const TOOL_FLOAT_HEIGHT = 600
-export const TOOL_FLOAT_MIN_WIDTH = 480
-export const TOOL_FLOAT_MIN_HEIGHT = 360
-
-export const TOOL_FLOAT_SIZE: Record<string, { width: number; height: number }> = {
-  json: { width: 960, height: 720 },
-  'text-diff': { width: 980, height: 680 },
-  http: { width: 860, height: 640 },
-  code: { width: 860, height: 620 },
-  calculator: { width: 420, height: 520 }
-}
+export const PANEL_MIN_WIDTH = 480
+export const PANEL_MIN_HEIGHT = 360

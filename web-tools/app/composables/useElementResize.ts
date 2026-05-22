@@ -6,16 +6,32 @@ export function useElementResize(
   let ro: ResizeObserver | null = null
 
   const measure = () => {
-    if (target.value) {
-      onResize(Math.ceil(target.value.getBoundingClientRect().height))
-    }
+    const el = target.value
+    if (!el) return
+    // offsetHeight 含 border，与 Electron 窗口可视区域对齐
+    onResize(Math.ceil(el.offsetHeight))
   }
 
-  onMounted(() => {
-    ro = new ResizeObserver(measure)
-    if (target.value) ro.observe(target.value)
-    nextTick(measure)
-  })
+  const stopObserve = () => {
+    ro?.disconnect()
+    ro = null
+  }
 
-  onUnmounted(() => ro?.disconnect())
+  const startObserve = (el: HTMLElement) => {
+    stopObserve()
+    ro = new ResizeObserver(measure)
+    ro.observe(el)
+    measure()
+  }
+
+  watch(
+    target,
+    (el) => {
+      if (el) startObserve(el)
+      else stopObserve()
+    },
+    { flush: 'post' }
+  )
+
+  onUnmounted(stopObserve)
 }

@@ -32,6 +32,8 @@ export function jsonFoldMarkerEl(open: boolean): HTMLSpanElement {
   el.setAttribute('aria-hidden', 'true')
   const svg = document.createElementNS(SVG_NS, 'svg')
   svg.setAttribute('viewBox', '0 0 16 16')
+  svg.setAttribute('width', '12')
+  svg.setAttribute('height', '12')
   const path = document.createElementNS(SVG_NS, 'path')
   path.setAttribute('fill', 'none')
   path.setAttribute('stroke', 'currentColor')

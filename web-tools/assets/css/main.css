@@ -169,6 +169,12 @@ body.nexus-desktop-body #__nuxt {
   height: 100%;
 }
 
+/* 搜索窗高度由 Electron 精确贴合，禁止文档级滚动条 */
+body.nexus-desktop-body--search,
+body.nexus-desktop-body--search #__nuxt {
+  overflow: hidden;
+}
+
 /* 避免 type=search 与自定义清空按钮重复显示两个叉 */
 .desktop-search-input::-webkit-search-cancel-button,
 .desktop-search-input::-webkit-search-decoration {

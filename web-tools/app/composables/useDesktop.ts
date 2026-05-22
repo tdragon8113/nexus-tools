@@ -32,13 +32,10 @@ export function useDesktop() {
   }
 
   async function goSearch(opts?: { clipboard?: string; q?: string }) {
-    await router.push({
-      path: DESKTOP_ROUTES.search,
-      query: desktopQuery({
-        ...(opts?.clipboard ? { clipboard: opts.clipboard } : {}),
-        ...(opts?.q ? { q: opts.q } : {})
-      })
-    })
+    if (opts?.clipboard || opts?.q) {
+      stageDesktopSearchInput({ clipboard: opts.clipboard, q: opts.q })
+    }
+    await router.push({ path: DESKTOP_ROUTES.search, query: desktopQuery() })
   }
 
   async function goHub() {

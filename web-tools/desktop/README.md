@@ -6,7 +6,7 @@ uTools 式单窗体验，UI 由 Nuxt 渲染。
 
 | 操作 | 路由 |
 |------|------|
-| `Alt+Space` 搜索 | `/desktop/search?desktop=1` |
+| `Alt+Space`（Mac 为 Option+Space） | 搜索入口；已在工具/工具集时仅显隐当前页，不跳回搜索 |
 | 工具集按钮 | `/desktop/hub?desktop=1` |
 | 打开工具 | `/tools/{id}?desktop=1` |
 
@@ -23,6 +23,8 @@ cd web-tools && npm run desktop:dev
 ```
 
 若 3000 被占用，Electron 已支持自动改连 3001，无需手设 `NEXUS_WEB_URL`。
+
+点击窗口外任意区域会失焦并自动隐藏（搜索 / 工具集 / 工具页均生效）。调试若需保持窗口：`NEXUS_KEEP_VISIBLE=1 npm run dev`。
 
 ## 生产
 

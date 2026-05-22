@@ -148,3 +148,14 @@ export function lineCountFor(text: string): number {
   if (!text) return 1
   return text.split(/\r\n|\r|\n/).length
 }
+
+/** 统一换行符，避免 Windows 剪贴板 \\r\\n 造成行号错位 */
+export function normalizeJsonInput(raw: string): string {
+  return raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+}
+
+/** 去掉文末连续空行（粘贴时常带入） */
+export function trimTrailingBlankLines(text: string): string {
+  if (!text) return text
+  return text.replace(/(\n[ \t]*)+$/g, '')
+}
