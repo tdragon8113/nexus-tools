@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-05-22
+
+### 修复（web-tools 桌面端）
+
+- macOS 通用包构建时启用 ad-hoc 签名（`mac.identity: "-"`），修复 Apple Silicon 上「Nexus Tools.app 已损坏」误报
+- Homebrew cask 安装后自动 `xattr -cr` 清除隔离属性
+
 ## [0.2.0] - 2026-05-21
 
 ### 新增（web-tools 桌面端）

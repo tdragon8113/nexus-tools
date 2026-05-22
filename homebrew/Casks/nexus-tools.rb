@@ -14,6 +14,13 @@ cask "nexus-tools" do
 
   app "Nexus Tools.app"
 
+  postflight do
+    # 清除下载隔离标记，避免 Gatekeeper 提示「已损坏」
+    system_command "/usr/bin/xattr",
+                   args: ["-cr", "#{appdir}/Nexus Tools.app"],
+                   must_succeed: false
+  end
+
   zap trash: [
     "~/Library/Application Support/Nexus Tools",
     "~/Library/Application Support/nexus-tools",

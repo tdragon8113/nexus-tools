@@ -45,7 +45,19 @@ brew tap tdragon8113/tap
 brew install --cask nexus-tools
 ```
 
-首次打开若被 Gatekeeper 拦截，可在「隐私与安全性」中允许，或对 app 执行 `xattr -cr "/Applications/Nexus Tools.app"`。
+### 提示「已损坏，无法打开」
+
+多为未签名 DMG 的隔离标记（不是文件真坏）。任选其一：
+
+```bash
+xattr -cr "/Applications/Nexus Tools.app"
+```
+
+或：右键应用 → **打开** → 确认打开。
+
+`web-tools-v0.2.1` 起 CI 会对通用包做 **ad-hoc 签名**；仍可能提示「未验证开发者」，但不会误报损坏。
+
+长期方案：配置 Apple Developer ID + 公证（仓库 Secrets：`CSC_LINK`、`CSC_KEY_PASSWORD`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`）。
 
 ## 路由
 

@@ -54,16 +54,7 @@ jobs:
 
       - name: Build Electron DMG
         working-directory: web-tools/desktop
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: npm run dist
-
-      - name: Ad-hoc sign app in DMG (optional, improves local open)
-        run: |
-          APP=$(find web-tools/desktop/release -maxdepth 1 -name '*.app' -print -quit)
-          if [ -n "$APP" ]; then
-            codesign --force --deep --sign - "$APP" || true
-          fi
 
       - name: Stage release artifact
         run: |

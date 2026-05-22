@@ -48,6 +48,11 @@
       "category": "public.app-category.developer-tools",
       "icon": "icons/icon.icns",
       "artifactName": "NexusTools.${ext}",
+      "identity": "-",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
       "target": [
         {
           "target": "dmg",
