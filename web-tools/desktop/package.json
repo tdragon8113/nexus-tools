@@ -2,6 +2,7 @@
   "name": "nexus-tools-desktop",
   "version": "0.1.0",
   "private": true,
+  "author": "tdragon8113",
   "description": "Nexus Tools desktop shell (uTools-style launcher)",
   "main": "dist/main.cjs",
   "scripts": {
@@ -13,11 +14,9 @@
     "pack": "npm run icons && npm run build && electron-builder --dir",
     "dist": "npm run icons && npm run build && electron-builder --mac dmg"
   },
-  "dependencies": {
-    "electron": "^34.2.0"
-  },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "electron": "^34.2.0",
     "electron-builder": "^25.1.8",
     "esbuild": "^0.25.0",
     "sharp": "^0.33.5",
@@ -26,6 +25,7 @@
   "build": {
     "appId": "com.nexus.tools",
     "productName": "Nexus Tools",
+    "publish": null,
     "directories": {
       "output": "release"
     },
