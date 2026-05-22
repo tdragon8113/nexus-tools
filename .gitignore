@@ -57,6 +57,8 @@ node_modules/
 .output/
 .nitro/
 dist/
+# web-tools：dist 常为指向 .output/public 的符号链接，需显式路径
+web-tools/dist
 
 # Claude Code
 .claude/*
