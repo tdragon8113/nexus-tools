@@ -1,4 +1,5 @@
 import { diffChars, diffLines } from 'diff'
+import { escapeHtml } from '~/utils/textTool'
 
 export const LINE_DIFF_MAX_ROWS = 12000
 
@@ -8,13 +9,6 @@ export type AlignedLineRow = {
   left: string
   right: string
   kind: LineDiffKind
-}
-
-export function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
 }
 
 /**

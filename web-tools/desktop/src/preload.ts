@@ -27,7 +27,18 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
     ipcRenderer.send(IPC.searchMode)
   },
   notifyPanelMode(path: string) {
-    ipcRenderer.send(IPC.panelMode, path)
+    return ipcRenderer.invoke(IPC.panelMode, path) as Promise<void>
+  },
+  getPinned() {
+    return ipcRenderer.invoke(IPC.pinGet) as Promise<boolean>
+  },
+  setPinned(pinned: boolean) {
+    return ipcRenderer.invoke(IPC.pinSet, pinned) as Promise<boolean>
+  },
+  onPinnedChange(handler: (pinned: boolean) => void) {
+    const listener = (_e: unknown, pinned: boolean) => handler(pinned)
+    ipcRenderer.on(IPC.pinChanged, listener)
+    return () => ipcRenderer.removeListener(IPC.pinChanged, listener)
   },
   onShowSearch(handler: (payload: ShowSearchPayload) => void) {
     showSearchHandler = handler

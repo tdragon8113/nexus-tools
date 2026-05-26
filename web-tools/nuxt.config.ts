@@ -1,6 +1,8 @@
+import { desktopDevtoolsGuard } from './vite/desktop-devtools-guard'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NUXT_DISABLE_DEVTOOLS !== '1' },
 
   modules: [
     '@nuxtjs/tailwindcss',
@@ -23,11 +25,16 @@ export default defineNuxtConfig({
     lazyload: true
   },
 
+  routeRules: {
+    '/': { redirect: '/desktop/search' },
+    '/tools': { redirect: '/desktop/hub' }
+  },
+
   app: {
     head: {
       title: 'Nexus Tools',
       meta: [
-        { name: 'description', content: '开发者工具：JSON 格式化等，纯浏览器端处理' },
+        { name: 'description', content: 'Nexus Tools 桌面开发者工具箱' },
         { name: 'keywords', content: '开发者工具,JSON格式化,JSON' },
         { name: 'author', content: 'Nexus Tools' },
         { property: 'og:title', content: 'Nexus Tools - 小工具' },
@@ -45,7 +52,6 @@ export default defineNuxtConfig({
       routes: [
         '/desktop/search',
         '/desktop/hub',
-        '/tools',
         '/tools/json',
         '/tools/base64',
         '/tools/timestamp',
@@ -59,6 +65,7 @@ export default defineNuxtConfig({
         '/tools/http',
         '/tools/hash',
         '/tools/code',
+        '/tools/text',
         '/tools/text-diff'
       ]
     },
@@ -66,6 +73,7 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    plugins: [desktopDevtoolsGuard()],
     build: {
       minify: 'esbuild'
     },

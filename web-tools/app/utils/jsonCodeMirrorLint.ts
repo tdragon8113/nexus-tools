@@ -7,12 +7,10 @@ export function jsonLintSource(): LintSource {
     if (!sliceForJsonParse(text).slice) return []
     const result = parseJson(text)
     if (result.ok) return []
+    if (result.errorFromInRaw == null || result.errorToInRaw == null) return []
     const docLen = view.state.doc.length
-    const from =
-      result.errorIndexInRaw != null
-        ? Math.min(Math.max(result.errorIndexInRaw, 0), Math.max(0, docLen - 1))
-        : 0
-    const to = Math.min(from + 1, docLen)
+    const from = Math.min(Math.max(result.errorFromInRaw, 0), docLen)
+    const to = Math.min(Math.max(result.errorToInRaw, from + 1), docLen)
     const d: Diagnostic = {
       from,
       to: to > from ? to : from,

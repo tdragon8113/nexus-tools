@@ -5,17 +5,19 @@ import { applyDockIcon } from './appIcon'
 import { IPC } from './types'
 import { resolveDevWebUrl } from './resolveWebUrl'
 import { startStaticServer } from './staticServer'
+import { MAX_CLIPBOARD_TEXT_CHARS } from './clipboardLimits'
 import { WindowManager } from './windowManager'
 
 const isDev = process.env.NEXUS_WEB_DEV === '1'
 const HOTKEY = process.env.NEXUS_HOTKEY ?? 'Alt+Space'
-/** 搜索框可接受的剪贴板最大长度（IPC 传递，不进 URL） */
-const MAX_CLIPBOARD_FOR_SEARCH = 48_000
 
 function readClipboardForSearch(): string {
   const raw = clipboard.readText().trim()
-  if (raw.length <= MAX_CLIPBOARD_FOR_SEARCH) return raw
-  return raw.slice(0, MAX_CLIPBOARD_FOR_SEARCH)
+  if (raw.length <= MAX_CLIPBOARD_TEXT_CHARS) return raw
+  let cut = raw.slice(0, MAX_CLIPBOARD_TEXT_CHARS)
+  const rem = cut.length % 4
+  if (rem) cut = cut.slice(0, cut.length - rem)
+  return cut
 }
 
 const distDir = path.join(__dirname)
@@ -59,10 +61,15 @@ app.whenReady().then(async () => {
     if (typeof h === 'number' && Number.isFinite(h)) windows?.resizeSearch(h)
   })
   ipcMain.on(IPC.searchMode, () => windows?.applySearchChrome())
-  ipcMain.on(IPC.panelMode, (_e, p: string) => {
+  ipcMain.handle(IPC.panelMode, (_e, p: unknown) => {
     if (typeof p === 'string') windows?.setPanelMode(p)
   })
   ipcMain.on(IPC.close, () => windows?.closeFromRenderer())
+  ipcMain.handle(IPC.pinGet, () => windows?.isPinned() ?? false)
+  ipcMain.handle(IPC.pinSet, (_e, pinned: unknown) => {
+    if (typeof pinned === 'boolean') windows?.setPinned(pinned)
+    return windows?.isPinned() ?? false
+  })
 
   if (process.platform === 'darwin') {
     app.dock?.show()

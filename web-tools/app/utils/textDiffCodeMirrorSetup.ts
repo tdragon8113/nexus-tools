@@ -1,13 +1,6 @@
 import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import {
-  bracketMatching,
-  foldGutter,
-  foldKeymap,
-  indentOnInput,
-  syntaxHighlighting,
-  defaultHighlightStyle
-} from '@codemirror/language'
+import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language'
 import { lintGutter, lintKeymap } from '@codemirror/lint'
 import { EditorState, type Extension } from '@codemirror/state'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
@@ -34,7 +27,6 @@ export const textDiffCodeMirrorSetup: Extension[] = [
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
-  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   bracketMatching(),
   closeBrackets(),
   autocompletion(),
@@ -52,4 +44,19 @@ export const textDiffCodeMirrorSetup: Extension[] = [
     ...completionKeymap,
     ...lintKeymap
   ])
+]
+
+/** 纯文本编辑：行号 + 历史 + 搜索；语法高亮由 language bundle 注入 */
+export const plainTextCodeMirrorSetup: Extension[] = [
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  history(),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  bracketMatching(),
+  highlightActiveLine(),
+  highlightSelectionMatches(),
+  keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap])
 ]

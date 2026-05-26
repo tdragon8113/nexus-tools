@@ -1,3 +1,5 @@
+import { triggerDesktopSearchApply } from '~/composables/desktopSearchApply'
+
 /** 桌面搜索：剪贴板/关键词经 IPC 传入，勿写入 URL（避免超长 query 导致页面加载失败） */
 export type DesktopSearchInput = {
   clipboard?: string
@@ -9,18 +11,27 @@ export function useDesktopSearchInput() {
 }
 
 export function stageDesktopSearchInput(input: DesktopSearchInput) {
-  const clip = input.clipboard?.trim() ?? ''
-  const q = input.q?.trim() ?? ''
-  if (!clip && !q) return
+  const clip = input.clipboard ?? ''
+  const q = input.q ?? ''
+  if (!clip.trim() && !q.trim()) return
   useDesktopSearchInput().value = {
-    ...(clip ? { clipboard: clip } : {}),
-    ...(q ? { q } : {})
+    ...(clip.trim() ? { clipboard: clip } : {}),
+    ...(q.trim() ? { q } : {})
   }
+  triggerDesktopSearchApply()
 }
 
-export function consumeDesktopSearchInput(): string {
+/** 取出并清空待处理的 IPC 搜索输入 */
+export function takeDesktopSearchInput(): DesktopSearchInput | null {
   const pending = useDesktopSearchInput().value
-  if (!pending) return ''
+  if (!pending) return null
   useDesktopSearchInput().value = null
-  return (pending.q || pending.clipboard || '').trim()
+  return pending
+}
+
+/** @deprecated 使用 {@link takeDesktopSearchInput} */
+export function consumeDesktopSearchInput(): string {
+  const pending = takeDesktopSearchInput()
+  if (!pending) return ''
+  return (pending.clipboard || pending.q || '').trim()
 }

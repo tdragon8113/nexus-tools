@@ -6,7 +6,7 @@
 
 | 模块 | 技术 | 端口 |
 |------|------|------|
-| Web 小工具 | Nuxt 4 + Vue 3 + Tailwind CSS + Vant 4 | 8888 |
+| 小工具（Electron） | Nuxt 4 + Vue 3 + Electron | 本地 dev :3000 |
 | Web 时间管理 | Nuxt 4 + Vue 3 + Tailwind CSS + Vant 4 | 8889 |
 | Mac 应用 | SwiftUI + GRDB.swift (macOS 14.0+) | - |
 | 网关 | Spring Cloud Gateway | 8080 |
@@ -18,10 +18,9 @@
 
 ```
 nexus-tools/
-├── web-tools/                  # 纯静态小工具（不接网关 API）
+├── web-tools/                  # 小工具（仅 Electron 桌面，不接网关 API）
 │   ├── app/
-│   ├── nginx.conf
-│   └── Dockerfile             # 镜像 nexus-frontend → :8888
+│   └── desktop/               # Electron 壳
 ├── web-time/                   # 时间管理 + 登录/个人中心（nginx 代理 /api）
 │   ├── app/
 │   ├── nginx.conf
@@ -41,13 +40,14 @@ nexus-tools/
 
 ## 本地开发
 
-### Web 小工具（web-tools）
+### 小工具桌面端（web-tools）
 
 ```bash
 cd web-tools
 npm install
-npm run dev     # http://localhost:3000
-npm run build
+npm run dev          # 终端 1：Nuxt，供 Electron 加载
+npm run desktop:dev  # 终端 2：Electron
+npm run desktop:dist # 打包 DMG
 ```
 
 ### Web 时间管理（web-time）
@@ -101,7 +101,7 @@ git tag web-tools-v0.2.0 && git push origin web-tools-v0.2.0
 
 → `NexusTools.dmg`、GitHub Release、`brew install --cask nexus-tools`
 
-**生产全栈部署**（web-tools + web-time + 后端，**不会**随 `web-tools-v*` 触发）：
+**生产全栈部署**（web-time + 后端，**不会**随 `web-tools-v*` 触发）：
 
 ```bash
 git tag deploy-v1.0.13 && git push origin deploy-v1.0.13
@@ -110,11 +110,10 @@ git tag deploy-v1.0.13 && git push origin deploy-v1.0.13
 或在 Actions 手动运行 **Build and Deploy to Aliyun**。
 
 部署内容：
-- 小工具前端镜像 `nexus-frontend` → 端口 **8888**
 - 时间管理前端镜像 `nexus-frontend-time` → 端口 **8889**
 - 后端服务镜像 → Aliyun ACR → 端口 8080/8081/8082
 
-访问地址示例：`https://your-server:8888/`（小工具）、`https://your-server:8889/`（时间管理）。部署后需在构建时注入上述 `NUXT_PUBLIC_*`，保证两站导航链接正确。
+访问地址示例：`https://your-server:8889/`（时间管理）。小工具仅通过 Electron / Homebrew 分发。
 
 ## 配置管理
 
@@ -162,7 +161,7 @@ git tag deploy-v1.0.13 && git push origin deploy-v1.0.13
 
 ### 前端显示 nginx 默认页面
 
-确保 `nuxt.config.ts` 为需预渲染的路由配置了 `nitro.prerender.routes`（`web-tools` 仅首页与工具页；`web-time` 含认证与 `/manage/time` 子路由）。
+确保 `nuxt.config.ts` 为需预渲染的路由配置了 `nitro.prerender.routes`（`web-tools` 为 `/desktop/*` 与各工具页；`web-time` 含认证与 `/manage/time` 子路由）。
 
 ### 后端服务启动失败
 

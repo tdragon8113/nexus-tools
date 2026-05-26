@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="Unix 时间戳" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-orange-100 flex items-center justify-center shadow-sm border border-orange-100"
-        >
-          <van-icon name="clock-o" size="24" class="text-orange-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        秒 / 毫秒与本地时间互转；当前时间一键填入。
-      </p>
-    </PageHero>
-
-    <section
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<section
       class="mb-6 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700 space-y-2"
       aria-label="当前时间"
     >
@@ -128,7 +114,7 @@ const input = ref('')
 
 useConsumeToolPrefill('timestamp', (text) => {
   input.value = text
-}, { plainKind: 'timestamp' })
+})
 const nowMs = ref(0)
 let timer: ReturnType<typeof setInterval> | null = null
 

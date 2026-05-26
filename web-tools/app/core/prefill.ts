@@ -1,16 +1,40 @@
-import { detectContentHint } from '~/core/search'
-
-export type PlainPrefillKind = 'url' | 'timestamp' | 'uuid' | 'calculator' | 'base64' | 'hash'
-
 const CONTENT_PREFILL_KEY = 'tool-content-prefill'
+const LAST_SEARCH_TEXT_KEY = 'desktop-last-search-text'
+
+/** 路由 state 携带预填，避免导航与 useState 消费竞态 */
+export const ROUTER_TOOL_PREFILL_KEY = 'nexusToolPrefill'
+export const ROUTER_TOOL_PREFILL_FOR_KEY = 'nexusToolPrefillFor'
+
+export function useLastSearchTransferText() {
+  return useState<string>(LAST_SEARCH_TEXT_KEY, () => '')
+}
+
+export function readRouterToolPrefill(toolId: string): string | null {
+  if (!import.meta.client || !toolId) return null
+  const state = history.state as Record<string, unknown> | null
+  if (!state) return null
+  const forTool = state[ROUTER_TOOL_PREFILL_FOR_KEY]
+  if (forTool !== toolId) return null
+  const v = state[ROUTER_TOOL_PREFILL_KEY]
+  return typeof v === 'string' && v.length > 0 ? v : null
+}
+
+export function clearRouterToolPrefill() {
+  if (!import.meta.client) return
+  const state = history.state as Record<string, unknown> | null
+  if (!state) return
+  const next = { ...state }
+  delete next[ROUTER_TOOL_PREFILL_KEY]
+  delete next[ROUTER_TOOL_PREFILL_FOR_KEY]
+  history.replaceState(next, '')
+}
 
 export function useToolContentPrefill() {
   const map = useState<Record<string, string>>(CONTENT_PREFILL_KEY, () => ({}))
 
   const stage = (toolId: string, value: string) => {
-    const v = value.trim()
-    if (!v) return
-    map.value = { ...map.value, [toolId]: v }
+    if (!value) return
+    map.value = { ...map.value, [toolId]: value }
   }
 
   const consume = (toolId: string): string | null => {
@@ -25,140 +49,20 @@ export function useToolContentPrefill() {
   return { map, stage, consume }
 }
 
-export function shouldApplyContentPrefill(toolId: string, raw: string): boolean {
-  const q = raw.trim()
-  if (!q) return false
-  const hint = detectContentHint(q)
-  return hint?.toolId === toolId
-}
-
-export function useJsonPrefill() {
-  const prefill = useState<string | null>('tool-json-prefill', () => null)
-
-  const setJsonPrefill = (value: string) => {
-    prefill.value = value
-  }
-
-  const consumeJsonPrefill = (): string | null => {
-    const v = prefill.value
-    prefill.value = null
-    return v
-  }
-
-  return { setJsonPrefill, consumeJsonPrefill, prefill }
-}
-
-export function usePlainToolPrefill() {
-  const url = useState<string | null>('tool-prefill-url', () => null)
-  const timestamp = useState<string | null>('tool-prefill-timestamp', () => null)
-  const uuid = useState<string | null>('tool-prefill-uuid', () => null)
-  const calculator = useState<string | null>('tool-prefill-calculator', () => null)
-  const base64 = useState<string | null>('tool-prefill-base64', () => null)
-  const hash = useState<string | null>('tool-prefill-hash', () => null)
-
-  const setPlainPrefill = (kind: PlainPrefillKind, value: string) => {
-    const v = value.trim()
-    if (kind === 'url') url.value = v
-    else if (kind === 'timestamp') timestamp.value = v
-    else if (kind === 'uuid') uuid.value = v
-    else if (kind === 'calculator') calculator.value = v
-    else if (kind === 'base64') base64.value = v
-    else hash.value = v
-  }
-
-  const consumeUrlPrefill = (): string | null => {
-    const v = url.value
-    url.value = null
-    return v
-  }
-
-  const consumeTimestampPrefill = (): string | null => {
-    const v = timestamp.value
-    timestamp.value = null
-    return v
-  }
-
-  const consumeUuidPrefill = (): string | null => {
-    const v = uuid.value
-    uuid.value = null
-    return v
-  }
-
-  const consumeCalculatorPrefill = (): string | null => {
-    const v = calculator.value
-    calculator.value = null
-    return v
-  }
-
-  const consumeBase64Prefill = (): string | null => {
-    const v = base64.value
-    base64.value = null
-    return v
-  }
-
-  const consumeHashPrefill = (): string | null => {
-    const v = hash.value
-    hash.value = null
-    return v
-  }
-
-  return {
-    setPlainPrefill,
-    consumeUrlPrefill,
-    consumeTimestampPrefill,
-    consumeUuidPrefill,
-    consumeCalculatorPrefill,
-    consumeBase64Prefill,
-    consumeHashPrefill,
-    url,
-    timestamp,
-    uuid,
-    calculator,
-    base64,
-    hash
-  }
-}
-
-function consumePlainLegacy(kind: PlainPrefillKind): string | null {
-  const p = usePlainToolPrefill()
-  switch (kind) {
-    case 'url':
-      return p.consumeUrlPrefill()
-    case 'timestamp':
-      return p.consumeTimestampPrefill()
-    case 'uuid':
-      return p.consumeUuidPrefill()
-    case 'calculator':
-      return p.consumeCalculatorPrefill()
-    case 'base64':
-      return p.consumeBase64Prefill()
-    case 'hash':
-      return p.consumeHashPrefill()
-  }
-}
-
-/** 按内容识别结果写入对应工具的预填状态 */
+/** 写入工具预填（搜索 / IPC 打开工具时调用） */
 export function applyPrefillForTool(toolId: string, raw: string) {
-  const q = raw.trim()
-  if (!q) return
-  const hint = detectContentHint(q)
-  if (!hint || hint.toolId !== toolId) return
+  if (!raw.trim()) return
+  useToolContentPrefill().stage(toolId, raw)
+}
 
-  const { stage } = useToolContentPrefill()
-  stage(toolId, q)
-
-  const { setJsonPrefill } = useJsonPrefill()
-  const { setPlainPrefill } = usePlainToolPrefill()
-
-  if (hint.kind === 'json') setJsonPrefill(q)
-  else if (
-    hint.kind === 'url' ||
-    hint.kind === 'timestamp' ||
-    hint.kind === 'uuid' ||
-    hint.kind === 'calculator' ||
-    hint.kind === 'base64' ||
-    hint.kind === 'hash'
-  ) {
-    setPlainPrefill(hint.kind, q)
+/** 路由 push 时附带的状态（与 {@link readRouterToolPrefill} 成对） */
+export function buildRouterPrefillState(
+  toolId: string,
+  prefill: string
+): Record<string, string> | undefined {
+  if (!prefill.trim()) return undefined
+  return {
+    [ROUTER_TOOL_PREFILL_KEY]: prefill,
+    [ROUTER_TOOL_PREFILL_FOR_KEY]: toolId
   }
 }

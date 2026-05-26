@@ -1,18 +1,6 @@
 <template>
-  <div class="max-w-4xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="代码格式化" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-violet-100 flex items-center justify-center border border-violet-100 shadow-sm"
-        >
-          <van-icon name="coupon-o" size="24" class="text-violet-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">浏览器端 Prettier，适合小段代码；大文件可能较慢。</p>
-    </PageHero>
-
-    <div class="flex flex-wrap gap-3 items-center mb-4">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="flex flex-wrap gap-3 items-center mb-4">
       <label class="text-sm text-slate-600">
         语言
         <select v-model="lang" class="ml-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm">

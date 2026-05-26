@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-2xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="计算器" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-sky-100 flex items-center justify-center shadow-sm border border-sky-100"
-        >
-          <van-icon name="records" size="24" class="text-sky-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        每条记录可直接修改算式并实时重算；底部输入新算式后按 Enter 追加记录。
-      </p>
-    </PageHero>
-
-    <div class="mt-6 flex flex-wrap items-center gap-2 text-sm">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="mt-6 flex flex-wrap items-center gap-2 text-sm">
       <span class="text-slate-500 tabular-nums">{{ entries.length }} 条记录</span>
       <span class="text-slate-300">·</span>
       <button
@@ -346,7 +332,7 @@ const { drain: drainCalculatorPrefill } = useConsumeToolPrefill(
     persist()
     void nextTick(() => focusEntry(entry.id))
   },
-  { plainKind: 'calculator', consumeOnMount: false }
+  { consumeOnMount: false }
 )
 
 onMounted(() => {

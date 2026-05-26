@@ -1,44 +1,34 @@
-# Nexus Web Tools
+# Nexus Tools（桌面端）
 
-浏览器端 + Electron 桌面端的开发者工具箱。
+Electron 开发者工具箱：JSON、Base64、时间戳等，数据仅在本地处理。
 
-## 架构（v2）
+## 结构
 
 ```text
 app/
-  core/           # 工具注册、搜索/拼音、预填、桌面路由约定
-  components/     # WebGlobalSearch、DesktopSearchPanel、ToolGrid 等
-  layouts/        # default（网站）| desktop（Electron）
-  pages/
-    tools/        # 各工具实现页
-    desktop/      # search | hub
-  composables/    # useDesktop、useDesktopSearchPanel、useToolSearch、use*Prefill
-  components/search/  # ToolMatchChips 等搜索 UI 片段
-desktop/          # Electron 主进程（单窗 SPA）
+  core/              # 工具注册、搜索、预填、路由
+  components/        # DesktopSearchPanel、ToolGrid 等
+  layouts/desktop.vue
+  pages/desktop/     # search | hub
+  pages/tools/       # 各工具页
+desktop/             # Electron 主进程
 ```
 
-## 网站
-
-- `/tools` — 工具集
-- `/tools/*` — 单工具（无侧栏、无面包屑）
-- 顶栏全局搜索（⌘K / Ctrl+K）
-
-## 桌面（uTools 式）
-
-- `Alt+Space` — 搜索 + 剪贴板匹配
-- 工具集 — `/desktop/hub`
-- 工具页 — `/tools/*?desktop=1`，无目录侧栏
+## 开发
 
 ```bash
-npm run dev
-npm run desktop:dev   # 需先 dev 或 generate
+npm install
+npm run dev              # 终端 1：Nuxt（http://localhost:3000）
+npm run desktop:dev      # 终端 2：Electron（需先 dev 或 generate）
 ```
 
 ## 脚本
 
 | 命令 | 说明 |
 |------|------|
-| `npm run dev` | Nuxt 开发 |
-| `npm run generate` | 静态导出 |
+| `npm run dev` | Nuxt 开发（供 Electron 加载） |
+| `npm run generate` | 静态导出（桌面打包用） |
 | `npm run desktop:dev` | Electron 开发 |
-| `npm run desktop:start` | 生成 + 打包 + 启动桌面 |
+| `npm run desktop:dist` | 生成静态资源 + 打包 DMG |
+
+桌面发布：`git tag web-tools-v0.x.x && git push origin web-tools-v0.x.x`，见 [`docs/RELEASE_TAGS.md`](../docs/RELEASE_TAGS.md)。

@@ -1,9 +1,11 @@
 import type { Extension } from '@codemirror/state'
 import { loadTextDiffLint } from '~/utils/textDiffCodeMirrorLint'
+import { textEditorHighlightForLanguage } from '~/utils/textEditorCodeMirrorHighlight'
 
 export interface TextDiffLanguageBundle {
   language: Extension
   lint: Extension | null
+  highlight: Extension
 }
 
 export type TextDiffLanguageId =
@@ -88,7 +90,7 @@ async function loadTextDiffLanguageSupport(id: TextDiffLanguageId): Promise<Exte
 
 export async function loadTextDiffLanguageBundle(id: TextDiffLanguageId): Promise<TextDiffLanguageBundle> {
   const [language, lint] = await Promise.all([loadTextDiffLanguageSupport(id), Promise.resolve(loadTextDiffLint(id))])
-  return { language, lint }
+  return { language, lint, highlight: textEditorHighlightForLanguage(id) }
 }
 
 /** @deprecated 使用 loadTextDiffLanguageBundle */

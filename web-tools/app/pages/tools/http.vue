@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-4xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="HTTP 请求" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-indigo-100 flex items-center justify-center shadow-sm border border-indigo-100"
-        >
-          <van-icon name="cluster-o" size="24" class="text-indigo-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        纯浏览器 fetch。若目标未配置 CORS，浏览器会拦截响应——这是站点安全策略，并非本工具故障。
-      </p>
-    </PageHero>
-
-    <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 mb-6">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 mb-6">
       不要在此输入密钥；可被浏览器控制台与网络面板记录。
     </div>
 

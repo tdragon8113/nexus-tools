@@ -8,6 +8,9 @@ export type Base64DecodeErrorCode =
 /** 图片预览体积上限（约 10MB） */
 export const BASE64_IMAGE_MAX_BYTES = 10 * 1024 * 1024
 
+/** 桌面搜索 / IPC 可传递的 Base64 文本上限（字符数，与 {@link BASE64_IMAGE_MAX_BYTES} 对齐） */
+export const MAX_CLIPBOARD_TEXT_CHARS = Math.ceil((BASE64_IMAGE_MAX_BYTES * 4) / 3) + 512
+
 export class Base64DecodeError extends Error {
   readonly code: Base64DecodeErrorCode
 
@@ -18,9 +21,18 @@ export class Base64DecodeError extends Error {
   }
 }
 
-/** 规范化粘贴内容：去空白、Data URI 前缀、URL-safe 字母表、补 padding */
-export function normalizeBase64Input(raw: string): string {
+/** 去掉粘贴时常见的首尾双引号（如从 JSON / 代码里复制的字符串） */
+export function stripWrappingDoubleQuotes(raw: string): string {
   let t = raw.trim()
+  while (t.length >= 2 && t.startsWith('"') && t.endsWith('"')) {
+    t = t.slice(1, -1).trim()
+  }
+  return t
+}
+
+/** 规范化粘贴内容：去空白、首尾引号、Data URI 前缀、URL-safe 字母表、补 padding */
+export function normalizeBase64Input(raw: string): string {
+  let t = stripWrappingDoubleQuotes(raw)
   if (!t) throw new Base64DecodeError('empty')
 
   const dataUri = /^data:[^,]*,(.+)$/i.exec(t)
@@ -212,7 +224,7 @@ export function base64ToUtf8(b64: string): string {
 export function tryDecodeBase64Image(
   raw: string
 ): DecodedBase64Image | null {
-  const t = raw.trim()
+  const t = stripWrappingDoubleQuotes(raw)
   if (!t) return null
   if (/^data:image\//i.test(t)) {
     try {

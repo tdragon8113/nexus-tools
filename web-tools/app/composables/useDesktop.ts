@@ -1,27 +1,17 @@
-import { applyPrefillForTool } from '~/core/prefill'
-import {
-  DESKTOP_QUERY_VALUE,
-  DESKTOP_ROUTES,
-  desktopQuery,
-  desktopScreenFromPath,
-  isDesktopQuery,
-  type DesktopScreen
-} from '~/core/desktop'
-import type { SiteTool } from '~/core/tools'
+import { applyPrefillForTool, buildRouterPrefillState } from '~/core/prefill'
+import { triggerDesktopSearchApply } from '~/composables/desktopSearchApply'
+import { DESKTOP_ROUTES, desktopScreenFromPath, isElectronShell, type DesktopScreen } from '~/core/desktop'
+import { getToolById, getToolByPath, type SiteTool } from '~/core/tools'
 import type { NexusOpenToolPayload } from '~/types/nexus-desktop'
-
-export { DESKTOP_QUERY_VALUE as DESKTOP_VAL, desktopQuery, isDesktopQuery }
-
-export function isDesktopRoute(route = useRoute()) {
-  return isDesktopQuery(route.query as Record<string, unknown>)
-}
 
 /** 桌面壳：导航、预填、Electron 桥接 */
 export function useDesktop() {
   const route = useRoute()
   const router = useRouter()
+  const pinned = useState('desktop-pinned', () => false)
 
-  const isDesktop = computed(() => import.meta.client && isDesktopRoute(route))
+  const hasElectronBridge = computed(() => isElectronShell())
+
   const screen = computed<DesktopScreen>(() => desktopScreenFromPath(route.path))
   const isSearchScreen = computed(() => screen.value === 'search')
   const isHubScreen = computed(() => screen.value === 'hub')
@@ -32,26 +22,40 @@ export function useDesktop() {
   }
 
   async function goSearch(opts?: { clipboard?: string; q?: string }) {
-    if (opts?.clipboard || opts?.q) {
-      stageDesktopSearchInput({ clipboard: opts.clipboard, q: opts.q })
+    const clip = opts?.clipboard ?? ''
+    const qParam = opts?.q ?? ''
+    if (clip.trim() || qParam.trim()) {
+      stageDesktopSearchInput({
+        ...(clip.trim() ? { clipboard: clip } : {}),
+        ...(qParam.trim() ? { q: qParam } : {})
+      })
     }
-    await router.push({ path: DESKTOP_ROUTES.search, query: desktopQuery() })
+    await router.push({ path: DESKTOP_ROUTES.search })
+    await nextTick()
+    await syncWindowChrome()
+    triggerDesktopSearchApply()
   }
 
   async function goHub() {
-    await router.push({ path: DESKTOP_ROUTES.hub, query: desktopQuery() })
+    await router.push({ path: DESKTOP_ROUTES.hub })
+    await nextTick()
+    await syncWindowChrome()
   }
 
   async function goTool(tool: SiteTool, payload?: Partial<NexusOpenToolPayload>) {
     if (!tool.path) return
-    if (payload?.prefill) {
-      applyPrefill({
-        path: tool.path,
-        toolId: tool.id,
-        ...payload
-      } as NexusOpenToolPayload)
+    const rawPrefill = payload?.prefill ?? ''
+    const toolId = payload?.toolId ?? tool.id
+    if (rawPrefill.trim()) {
+      applyPrefillForTool(toolId, rawPrefill)
     }
-    await router.push({ path: tool.path, query: desktopQuery() })
+    const state = buildRouterPrefillState(toolId, rawPrefill)
+    await router.push({
+      path: tool.path,
+      ...(state ? { state } : {})
+    })
+    await nextTick()
+    await syncWindowChrome()
   }
 
   function closeDesktop() {
@@ -62,34 +66,62 @@ export function useDesktop() {
     window.nexusDesktop?.resizeSearch?.(height)
   }
 
-  function syncWindowChrome() {
-    if (!import.meta.client || !window.nexusDesktop || !isDesktopRoute(route)) return
+  async function syncWindowChrome() {
+    if (!isElectronShell() || !window.nexusDesktop) return
     if (route.path === DESKTOP_ROUTES.search) {
-      window.nexusDesktop.notifySearchMode?.()
+      await window.nexusDesktop.notifySearchMode?.()
     } else {
-      window.nexusDesktop.notifyPanelMode?.(route.path)
+      await window.nexusDesktop.notifyPanelMode?.(route.path)
+    }
+  }
+
+  async function syncPinnedFromMain() {
+    if (!hasElectronBridge.value) return
+    pinned.value = await window.nexusDesktop!.getPinned!()
+  }
+
+  async function togglePin() {
+    if (!hasElectronBridge.value) return
+    const next = !pinned.value
+    try {
+      pinned.value = await window.nexusDesktop!.setPinned!(next)
+    } catch (err) {
+      console.error('[Nexus Tools] 图钉切换失败', err)
     }
   }
 
   function registerElectronBridge() {
     if (!import.meta.client || !window.nexusDesktop) return () => {}
 
-    const offOpen = window.nexusDesktop.onOpenTool?.(applyPrefill)
+    const offOpen = window.nexusDesktop.onOpenTool?.((payload) => {
+      const tool =
+        getToolById(payload.toolId) ??
+        (payload.path ? getToolByPath(payload.path) : undefined)
+      if (tool?.path) void goTool(tool, payload)
+      else applyPrefill(payload)
+    })
     const offShow = window.nexusDesktop.onShowSearch?.((payload) => {
       void goSearch({
-        clipboard: payload.clipboard ?? '',
-        q: payload.q ?? ''
+        ...(payload.clipboard != null ? { clipboard: payload.clipboard } : {}),
+        ...(payload.q != null ? { q: payload.q } : {})
       })
     })
+    const offPin = window.nexusDesktop.onPinnedChange?.((value) => {
+      pinned.value = value
+    })
+    void syncPinnedFromMain()
 
     return () => {
       offOpen?.()
       offShow?.()
+      offPin?.()
     }
   }
 
   return {
-    isDesktop,
+    hasElectronBridge,
+    pinned,
+    togglePin,
     screen,
     isSearchScreen,
     isHubScreen,
@@ -100,6 +132,7 @@ export function useDesktop() {
     closeDesktop,
     resizeSearchPanel,
     syncWindowChrome,
+    syncPinnedFromMain,
     registerElectronBridge
   }
 }

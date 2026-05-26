@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="随机密码" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-emerald-100 flex items-center justify-center shadow-sm border border-emerald-100"
-        >
-          <van-icon name="closed-eye" size="24" class="text-emerald-700" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        使用 <code class="text-xs bg-slate-100 px-1 rounded">crypto.getRandomValues</code> 在本地生成；已选类型各至少 1 位，再打乱顺序。
-      </p>
-    </PageHero>
-
-    <div class="space-y-5">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="space-y-5">
       <div class="flex flex-wrap items-end gap-4">
         <label class="block">
           <span class="block text-xs font-medium text-slate-600 mb-1">长度</span>

@@ -5,12 +5,15 @@ uTools 式单窗体验，UI 由 Nuxt 静态站嵌入。
 ## 开发
 
 ```bash
-# 终端 1
-cd web-tools && npm run dev
+# 推荐：一条命令同时起 Nuxt + Electron（macOS / Linux）
+cd web-tools && npm run dev:desktop
 
-# 终端 2
-cd web-tools && npm run desktop:dev
+# 或两个终端
+cd web-tools && npm run dev          # 终端 1
+cd web-tools && npm run desktop:dev  # 终端 2（会轮询等待 Nuxt，约 30s）
 ```
+
+`desktop:dev` **不会**自动启动 Nuxt；若只跑它且未开 `npm run dev`，终端会长时间停在「等待 Nuxt dev 就绪…」。
 
 `NEXUS_KEEP_VISIBLE=1` 可保持窗口不因失焦隐藏。
 
@@ -64,8 +67,8 @@ xattr -cr "/Applications/Nexus Tools.app"
 | 操作 | 路由 |
 |------|------|
 | `Alt+Space`（Mac 为 Option+Space） | 搜索；已在工具/工具集时仅显隐 |
-| 工具集 | `/desktop/hub?desktop=1` |
-| 工具 | `/tools/{id}?desktop=1` |
+| 工具集 | `/desktop/hub` |
+| 工具 | `/tools/{id}` |
 
 ## 目录
 

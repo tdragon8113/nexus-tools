@@ -1,4 +1,11 @@
-import { visit, type JSONPath } from 'jsonc-parser'
+import {
+  parse as jsoncParse,
+  ParseErrorCode,
+  printParseErrorCode,
+  visit,
+  type JSONPath,
+  type ParseError
+} from 'jsonc-parser'
 
 export type IndentMode = '1' | '2' | '3' | '4' | 'tab'
 
@@ -86,6 +93,64 @@ export function errorOffsetInParseText(message: string, parseText: string): numb
   return null
 }
 
+/** 优先报告根因类错误，避免尾随逗号等连带标在 `}`、`,` 上 */
+const PRIMARY_JSONC_ERROR_CODES = new Set<ParseErrorCode>([
+  ParseErrorCode.InvalidSymbol,
+  ParseErrorCode.InvalidNumberFormat,
+  ParseErrorCode.PropertyNameExpected,
+  ParseErrorCode.ValueExpected,
+  ParseErrorCode.ColonExpected,
+  ParseErrorCode.InvalidUnicode,
+  ParseErrorCode.InvalidEscapeCharacter,
+  ParseErrorCode.InvalidCharacter,
+  ParseErrorCode.UnexpectedEndOfString,
+  ParseErrorCode.UnexpectedEndOfNumber,
+  ParseErrorCode.InvalidCommentToken,
+  ParseErrorCode.UnexpectedEndOfComment
+])
+
+function jsoncParseErrors(slice: string): ParseError[] {
+  const errors: ParseError[] = []
+  jsoncParse(slice, errors, { disallowComments: true })
+  return errors
+}
+
+function pickPrimaryJsoncError(errors: ParseError[]): ParseError | null {
+  if (!errors.length) return null
+  return errors.find((e) => PRIMARY_JSONC_ERROR_CODES.has(e.error)) ?? errors[0]
+}
+
+function jsoncErrorMessage(err: ParseError): string {
+  const zh: Partial<Record<ParseErrorCode, string>> = {
+    [ParseErrorCode.InvalidSymbol]: '无效的符号',
+    [ParseErrorCode.InvalidNumberFormat]: '数字格式无效',
+    [ParseErrorCode.PropertyNameExpected]: '需要属性名（双引号字符串）',
+    [ParseErrorCode.ValueExpected]: '需要合法的 JSON 值（字符串请使用双引号）',
+    [ParseErrorCode.ColonExpected]: '缺少冒号',
+    [ParseErrorCode.CommaExpected]: '缺少逗号',
+    [ParseErrorCode.CloseBraceExpected]: '缺少右花括号',
+    [ParseErrorCode.CloseBracketExpected]: '缺少右方括号',
+    [ParseErrorCode.EndOfFileExpected]: '意外的文件结束',
+    [ParseErrorCode.UnexpectedEndOfString]: '字符串未正确结束',
+    [ParseErrorCode.UnexpectedEndOfNumber]: '数字未正确结束',
+    [ParseErrorCode.InvalidUnicode]: '无效的 Unicode 转义',
+    [ParseErrorCode.InvalidEscapeCharacter]: '无效的转义字符',
+    [ParseErrorCode.InvalidCharacter]: '无效的字符'
+  }
+  return zh[err.error] ?? printParseErrorCode(err.error)
+}
+
+function sliceRangeToRaw(
+  raw: string,
+  sliceStart: number,
+  offsetInSlice: number,
+  lengthInSlice: number
+): { from: number; to: number } {
+  const from = Math.min(Math.max(sliceStart + offsetInSlice, 0), raw.length)
+  const to = Math.min(Math.max(sliceStart + offsetInSlice + Math.max(lengthInSlice, 1), from + 1), raw.length)
+  return { from, to }
+}
+
 function lineColToOffset(text: string, line1: number, col1: number): number | null {
   if (line1 < 1 || col1 < 1) return null
   let line = 1
@@ -117,30 +182,40 @@ export function parseJson(
   raw: string
 ):
   | { ok: true; value: unknown }
-  | { ok: false; message: string; errorIndexInRaw: number | null } {
+  | { ok: false; message: string; errorFromInRaw: number | null; errorToInRaw: number | null } {
   const { slice, start } = sliceForJsonParse(raw)
-  if (!slice) return { ok: false, message: '内容为空', errorIndexInRaw: null }
+  if (!slice) return { ok: false, message: '内容为空', errorFromInRaw: null, errorToInRaw: null }
   try {
     const value = JSON.parse(slice)
     const dup = findFirstDuplicateObjectKey(slice)
     if (dup) {
-      const at = start + dup.offsetInSlice
-      const errorIndexInRaw = raw.length === 0 ? null : Math.min(Math.max(at, 0), raw.length - 1)
+      const { from, to } = sliceRangeToRaw(raw, start, dup.offsetInSlice, dup.key.length)
       return {
         ok: false,
         message: `重复的对象键「${dup.key}」（同一对象内键名必须唯一）`,
-        errorIndexInRaw
+        errorFromInRaw: from,
+        errorToInRaw: to
       }
     }
     return { ok: true, value }
   } catch (e) {
     const msg = e instanceof SyntaxError ? e.message : 'JSON 解析失败'
     const off = errorOffsetInParseText(msg, slice)
-    if (off == null) return { ok: false, message: msg, errorIndexInRaw: null }
-    const at = start + off
-    if (raw.length === 0) return { ok: false, message: msg, errorIndexInRaw: null }
-    const errorIndexInRaw = Math.min(Math.max(at, 0), raw.length - 1)
-    return { ok: false, message: msg, errorIndexInRaw }
+    if (off != null) {
+      const { from, to } = sliceRangeToRaw(raw, start, off, 1)
+      return { ok: false, message: msg, errorFromInRaw: from, errorToInRaw: to }
+    }
+    const primary = pickPrimaryJsoncError(jsoncParseErrors(slice))
+    if (primary) {
+      const { from, to } = sliceRangeToRaw(raw, start, primary.offset, primary.length)
+      return {
+        ok: false,
+        message: jsoncErrorMessage(primary),
+        errorFromInRaw: from,
+        errorToInRaw: to
+      }
+    }
+    return { ok: false, message: msg, errorFromInRaw: null, errorToInRaw: null }
   }
 }
 

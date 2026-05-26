@@ -1,18 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="颜色转换" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-pink-100 flex items-center justify-center shadow-sm border border-pink-100"
-        >
-          <van-icon name="brush-o" size="24" class="text-pink-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">HEX、RGB、HSL 互转，取色器与文本均可编辑。</p>
-    </PageHero>
-
-    <div class="flex flex-wrap gap-6 items-start">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="flex flex-wrap gap-6 items-start">
       <div
         class="w-28 h-28 rounded-2xl border border-slate-200 shadow-inner shrink-0"
         :style="{ backgroundColor: previewCss }"

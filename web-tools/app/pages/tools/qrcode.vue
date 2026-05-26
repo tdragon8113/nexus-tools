@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="二维码" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-purple-100 flex items-center justify-center shadow-sm border border-purple-100"
-        >
-          <van-icon name="qr" size="24" class="text-purple-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        在浏览器内生成 PNG，或上传含二维码的图片尝试解码（依赖图片清晰度）。
-      </p>
-    </PageHero>
-
-    <div class="flex gap-2 mb-6 border-b border-slate-200 pb-1">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="flex gap-2 mb-6 border-b border-slate-200 pb-1">
       <button
         type="button"
         class="px-3 py-1.5 text-sm rounded-lg transition-colors"

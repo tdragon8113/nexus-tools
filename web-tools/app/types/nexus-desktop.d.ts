@@ -12,7 +12,10 @@ export interface NexusDesktopBridge {
   resizeSearch(height: number): void
   close(): void
   notifySearchMode?(): void
-  notifyPanelMode?(path: string): void
+  notifyPanelMode?(path: string): Promise<void>
+  getPinned?(): Promise<boolean>
+  setPinned?(pinned: boolean): Promise<boolean>
+  onPinnedChange?(handler: (pinned: boolean) => void): () => void
   applyOpenTool?(payload: NexusOpenToolPayload): void
   onShowSearch(handler: (payload: { clipboard?: string; q?: string }) => void): () => void
   onOpenTool?(handler: (payload: NexusOpenToolPayload) => void): () => void

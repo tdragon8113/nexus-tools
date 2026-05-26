@@ -1,18 +1,6 @@
 <template>
-  <div class="max-w-4xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="正则测试" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-cyan-100 flex items-center justify-center shadow-sm border border-cyan-100"
-        >
-          <van-icon name="search" size="24" class="text-cyan-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">在浏览器中用 JavaScript RegExp 试匹配，注意勿对不可信模式长时间运算。</p>
-    </PageHero>
-
-    <div class="space-y-4">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="space-y-4">
       <div class="flex flex-wrap gap-6">
         <label class="block flex-1 min-w-[200px]">
           <span class="block text-xs font-medium text-slate-600 mb-1">模式（body）</span>

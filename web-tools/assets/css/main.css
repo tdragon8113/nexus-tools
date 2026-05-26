@@ -95,60 +95,6 @@
   .doc-eyebrow {
     @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600/80;
   }
-
-  .doc-page-gradient {
-    @apply min-h-screen bg-gradient-to-br from-slate-50 to-blue-50;
-  }
-
-  .doc-cta-gradient {
-    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm hover:opacity-90 transition-opacity;
-  }
-
-  /** 可点击卡片：仅 transform / opacity / shadow / border-color 参与过渡 */
-  .doc-card-interactive {
-    border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
-    @apply transition-all border border-slate-200 bg-white;
-    transition-property: transform, opacity, box-shadow, border-color;
-  }
-
-  .doc-card-interactive:hover {
-    @apply -translate-y-0.5 border-blue-200/80;
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  .doc-skip-link {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-    z-index: 100;
-  }
-
-  .doc-skip-link:focus {
-    position: fixed;
-    left: 0.5rem;
-    top: 0.5rem;
-    width: auto;
-    height: auto;
-    margin: 0;
-    clip: auto;
-    overflow: visible;
-    white-space: normal;
-    @apply rounded-md px-3 py-2 text-sm font-medium text-slate-900 shadow-md;
-    background: var(--doc-surface);
-    outline: 2px solid var(--ring-focus);
-    outline-offset: 2px;
-  }
-
-  .doc-page-shell {
-    padding-bottom: var(--pb-safe);
-  }
 }
 
 /*
@@ -157,22 +103,65 @@
  * 与上方 .dark 中的 --doc-* 对齐，避免组件与页面背景脱节。
  */
 
-/* Electron 桌面壳：透明底，只显示圆角面板 */
+/* Electron 桌面壳：不透明白底，窗体尺寸与面板一致 */
 body.nexus-desktop-body {
-  background: transparent !important;
+  background: #ffffff !important;
 }
 
 html[data-nexus-desktop='1'],
 body.nexus-desktop-body,
 body.nexus-desktop-body #__nuxt {
   min-height: 0;
-  height: 100%;
 }
 
-/* 搜索窗高度由 Electron 精确贴合，禁止文档级滚动条 */
+/* 工具面板撑满窗口；搜索窗由内容决定高度 */
+body.nexus-desktop-body:not(.nexus-desktop-body--search),
+body.nexus-desktop-body:not(.nexus-desktop-body--search) #__nuxt {
+  height: 100%;
+  overflow: hidden;
+}
+
 body.nexus-desktop-body--search,
 body.nexus-desktop-body--search #__nuxt {
+  height: auto;
   overflow: hidden;
+}
+
+html[data-nexus-desktop='1'] #__nuxt {
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-nexus-desktop='1'] .nexus-desktop-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+html[data-nexus-desktop='1'] .nexus-desktop-search,
+html[data-nexus-desktop='1'] .nexus-desktop-panel {
+  width: 100%;
+  max-width: 800px;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+/* 桌面壳内不显示 Nuxt DevTools 底栏 / 悬浮钮 */
+html[data-nexus-desktop='1'] #nuxt-devtools-container,
+html[data-nexus-desktop='1'] #nuxt-devtools-anchor,
+html[data-nexus-desktop='1'] #nuxt-devtools-iframe,
+html[data-nexus-desktop='1'] nuxt-devtools-frame,
+html[data-nexus-desktop='1'] .nuxt-devtools-frame,
+html[data-nexus-desktop='1'] .nuxt-devtools-panel,
+html[data-nexus-desktop='1'] .nuxt-devtools-label,
+html[data-nexus-desktop='1'] .nuxt-devtools-resize-handle,
+html[data-nexus-desktop='1'] .nuxt-devtools-glowing {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
 }
 
 /* 避免 type=search 与自定义清空按钮重复显示两个叉 */
@@ -193,4 +182,7 @@ html[data-nexus-desktop='1'] .desktop-search-input {
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
+  overflow-x: auto;
+  text-overflow: clip;
+  white-space: nowrap;
 }

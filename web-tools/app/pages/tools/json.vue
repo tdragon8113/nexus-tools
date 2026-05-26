@@ -1,24 +1,7 @@
 <template>
-  <div
-    class="json-tool-page"
-    :class="isDesktop ? 'desktop-tool-page' : 'max-w-5xl px-4 sm:px-6 py-8 md:py-10'"
-  >
-    <PageHero v-if="!isDesktop" title="JSON 格式化">
-      <template #icon>
-        <div
-          class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-100 shadow-sm"
-        >
-          <van-icon name="description" size="24" class="text-blue-600" />
-        </div>
-      </template>
-      <p class="mt-2 max-w-2xl text-base doc-prose-muted">
-        粘贴或输入 JSON，点击格式化后在同一编辑区显示美化结果；支持压缩、导入与下载。数据仅在浏览器内处理。
-      </p>
-    </PageHero>
-
+  <div class="json-tool-page desktop-tool-page flex h-full min-h-0 flex-col">
     <div
-      class="relative z-30 flex shrink-0 flex-wrap items-center gap-2 rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
-      :class="isDesktop ? 'mb-2' : 'mt-4 mb-3'"
+      class="relative z-30 mb-2 flex shrink-0 flex-wrap items-center gap-2 rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
     >
       <div class="flex flex-wrap items-center gap-0.5">
         <button
@@ -136,28 +119,19 @@
       />
     </div>
 
-    <div
-      class="doc-surface min-h-0 overflow-hidden rounded-2xl border border-slate-200"
-      :class="isDesktop ? 'flex flex-1 flex-col' : ''"
+    <section
+      class="json-editor-shell doc-surface flex min-h-[28rem] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[var(--doc-code-bg)]"
     >
-      <div
-        class="relative flex flex-col overflow-hidden bg-[var(--doc-code-bg)]"
-        :class="isDesktop ? 'min-h-0 flex-1' : 'min-h-[min(70vh,560px)]'"
-      >
-        <div class="flex min-h-0 flex-1 flex-col">
-          <ClientOnly>
-            <JsonCodeMirrorPane
-              v-model="jsonText"
-              class="flex min-h-0 flex-1 flex-col"
-            :tab-size="editorTabSize"
-            :single-indent="editorSingleIndent"
-            placeholder="在此粘贴或输入 JSON，点击工具栏「格式化」…"
-            @paste="onEditorPaste"
-            />
-          </ClientOnly>
-        </div>
-      </div>
-    </div>
+      <JsonCodeMirrorPane
+        ref="jsonPaneRef"
+        v-model="jsonText"
+        fill-height
+        :tab-size="editorTabSize"
+        :single-indent="editorSingleIndent"
+        placeholder="在此粘贴或输入 JSON，点击工具栏「格式化」…"
+        @paste="onEditorPaste"
+      />
+    </section>
   </div>
 </template>
 
@@ -180,8 +154,6 @@ import {
   stringifyPrettyWithSourceOrder
 } from '~/utils/jsonPrettyOrdered'
 
-const { isDesktop } = useDesktop()
-
 useHead({
   title: 'JSON 格式化 - Nexus Tools'
 })
@@ -195,6 +167,7 @@ const jsonTbarBtnDisabled = 'disabled:opacity-40 disabled:pointer-events-none'
 
 const jsonText = ref('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const jsonPaneRef = ref<{ syncDocFromModel?: () => void } | null>(null)
 
 function jsonParseFailed(raw: string): boolean {
   if (!sliceForJsonParse(raw).slice) return false
@@ -317,15 +290,23 @@ function clearAll() {
   jsonText.value = ''
 }
 
-/** 搜索预填：写入后直接显示格式化结果（不依赖 nextTick / 编辑器挂载时机） */
-function applyPrefillRaw(raw: string) {
+function setJsonFromRaw(raw: string) {
   raw = normalizeJsonInput(raw)
-  const out = formatRawJson(raw, false)
-  if (!out.ok) {
+  if (!sliceForJsonParse(raw).slice) {
     jsonText.value = trimTrailingBlankLines(raw)
-    return
+  } else {
+    const out = formatRawJson(raw, false)
+    jsonText.value = trimTrailingBlankLines(out.ok ? out.text || raw : raw)
   }
-  jsonText.value = trimTrailingBlankLines(out.text || raw)
+}
+
+/** 文件导入等：写入后同步 CodeMirror */
+function applyPrefillRaw(raw: string) {
+  setJsonFromRaw(raw)
+  void nextTick(() => {
+    jsonPaneRef.value?.syncDocFromModel?.()
+    requestAnimationFrame(() => jsonPaneRef.value?.syncDocFromModel?.())
+  })
 }
 
 function onEditorPaste(raw: string) {
@@ -337,7 +318,7 @@ function onEditorPaste(raw: string) {
   jsonText.value = trimTrailingBlankLines(out.text)
 }
 
-useConsumeToolPrefill('json', applyPrefillRaw)
+useConsumeToolPrefill('json', withCodeMirrorPrefillSync(setJsonFromRaw, jsonPaneRef))
 
 watch(indentMode, () => {
   if (!jsonText.value.trim() || jsonParseFailed(jsonText.value)) return
@@ -379,4 +360,10 @@ watch(sortKeys, () => {
   visibility: visible;
 }
 
+.json-editor-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
 </style>

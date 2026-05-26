@@ -1,4 +1,4 @@
-# 生产全栈部署（web-tools + web-time + 后端）。与桌面端 tag 分离，见 docs/RELEASE_TAGS.md
+# 生产全栈部署（web-time + 后端；web-tools 仅 Electron 桌面，见 release.yml）。见 docs/RELEASE_TAGS.md
 name: Build and Deploy to Aliyun
 
 on:
@@ -40,21 +40,9 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install and build (web-tools)
-        working-directory: web-tools
-        run: npm ci && npm run build
-
       - name: Install and build (web-time)
         working-directory: web-time
         run: npm ci && npm run build
-
-      - name: Upload tools static artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist-tools
-          path: web-tools/.output/public
-          if-no-files-found: error
-          retention-days: 1
 
       - name: Upload time static artifact
         uses: actions/upload-artifact@v4
@@ -117,10 +105,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: tools
-            artifact: frontend-dist-tools
-            context: web-tools
-            image: nexus-frontend
           - name: time
             artifact: frontend-dist-time
             context: web-time
@@ -264,8 +248,6 @@ jobs:
       - name: Health check
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
-            echo 'Checking frontend (tools)...' && \
-            curl -sf http://localhost:8888 > /dev/null && echo 'Frontend tools: OK' && \
             echo 'Checking frontend (time)...' && \
             curl -sf http://localhost:8889 > /dev/null && echo 'Frontend time: OK' && \
             echo 'Checking gateway (liveness; /health 在 Redis 等未就绪时可能 503)...' && \

@@ -7,7 +7,7 @@
 | Tag 格式 | 示例 | 触发工作流 | 发布内容 |
 |----------|------|------------|----------|
 | `web-tools-v*` | `web-tools-v0.2.0` | [`.github/workflows/release.yml`](../.github/workflows/release.yml) | **仅** `web-tools` Electron 桌面：`NexusTools.dmg` → GitHub Release → Homebrew cask |
-| `deploy-v*` | `deploy-v1.0.13` | [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) | 全栈：`web-tools` / `web-time` 静态站 + 后端镜像 → 阿里云部署 |
+| `deploy-v*` | `deploy-v1.0.13` | [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) | `web-time` 静态站 + 后端镜像 → 阿里云部署 |
 | `v*`（旧） | `v1.0.12` | **无** | 已弃用，请改用上表前缀 |
 
 ## 发布桌面端（web-tools）

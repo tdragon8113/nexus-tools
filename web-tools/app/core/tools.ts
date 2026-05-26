@@ -72,6 +72,16 @@ export const siteTools: SiteTool[] = [
     keywords: ['正则', 'regex', 'regexp', '表达式']
   },
   {
+    id: 'text',
+    name: '文本编辑',
+    desc: '高亮/替换/处理',
+    icon: 'edit',
+    bgColor: 'bg-stone-100',
+    iconColor: 'text-stone-600',
+    path: '/tools/text',
+    keywords: ['文本', '文本编辑', '纯文本', 'plain', 'text', '记事', 'note', '粘贴', '剪贴板']
+  },
+  {
     id: 'text-diff',
     name: '文本对比',
     desc: 'Diff',

@@ -1,18 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="MD5 / SHA" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-red-100 flex items-center justify-center shadow-sm border border-red-100"
-        >
-          <van-icon name="lock" size="24" class="text-red-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">文本摘要：MD5 由 spark-md5；SHA 系使用 Web Crypto。均在本地计算。</p>
-    </PageHero>
-
-    <div class="space-y-4">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="space-y-4">
       <div class="flex flex-wrap gap-3 items-center">
         <label class="text-sm text-slate-600">
           算法
@@ -62,7 +50,7 @@ const error = ref('')
 
 useConsumeToolPrefill('hash', (value) => {
   text.value = value
-}, { plainKind: 'hash' })
+})
 
 let t: ReturnType<typeof setTimeout> | undefined
 watch(

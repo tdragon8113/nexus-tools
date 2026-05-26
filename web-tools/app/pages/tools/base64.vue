@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="Base64 编解码" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-green-100 flex items-center justify-center shadow-sm border border-green-100"
-        >
-          <van-icon name="shield-o" size="24" class="text-green-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        UTF-8 文本与 Base64 互转；上传或粘贴图片 Base64 将自动预览，仅在浏览器内处理。
-      </p>
-    </PageHero>
-
-    <div class="space-y-4">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="space-y-4">
       <section
         class="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4 space-y-3"
         aria-label="上传图片编码"
@@ -79,7 +65,7 @@
 
       <section
         v-if="imagePreview"
-        class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3"
+        class="shrink-0 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3"
         aria-label="图片预览"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -92,14 +78,23 @@
         </div>
 
         <div
-          class="rounded-lg border border-emerald-100 bg-white p-3 flex items-center justify-center min-h-[120px] max-h-[min(70vh,480px)] overflow-auto"
+          class="base64-preview-frame rounded-lg border border-emerald-100 bg-white p-3 overflow-auto"
         >
-          <img
-            :src="imagePreview.url"
-            :alt="`图片预览 ${imagePreview.fileName}`"
-            class="max-w-full max-h-[min(68vh,440px)] object-contain"
+          <button
+            type="button"
+            class="base64-preview-hitbox mx-auto block cursor-zoom-in rounded-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+            :title="`查看大图：${imagePreview.fileName}`"
+            @click="openImageLightbox"
           >
+            <img
+              :src="imagePreview.url"
+              :alt="`图片预览 ${imagePreview.fileName}`"
+              class="base64-preview-img pointer-events-none"
+              draggable="false"
+            >
+          </button>
         </div>
+        <p class="text-xs text-emerald-800/70">点击查看大图 · 滚轮缩放 · 按住左键拖动</p>
 
         <div class="flex flex-wrap gap-2">
           <a
@@ -155,11 +150,60 @@
         </button>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="imageLightboxOpen && imagePreview"
+        class="fixed inset-0 z-[200] flex flex-col bg-black/80"
+        role="dialog"
+        aria-modal="true"
+        aria-label="图片大图预览"
+      >
+        <button
+          type="button"
+          class="absolute inset-0 z-0 cursor-default"
+          aria-label="关闭预览"
+          @click="closeImageLightbox"
+        />
+        <button
+          type="button"
+          class="absolute right-4 top-4 z-20 rounded-lg border border-white/20 bg-black/50 px-3 py-1.5 text-sm text-white hover:bg-black/70"
+          aria-label="关闭预览"
+          @click="closeImageLightbox"
+        >
+          关闭
+        </button>
+        <p
+          class="absolute left-4 top-4 z-20 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-mono text-white/90 tabular-nums pointer-events-none"
+        >
+          {{ Math.round(imageLightboxZoom * 100) }}%
+        </p>
+        <div
+          class="relative z-10 flex min-h-0 flex-1 items-center justify-center overflow-hidden p-6 select-none touch-none"
+          :class="imageLightboxDragging ? 'cursor-grabbing' : 'cursor-grab'"
+          @wheel.prevent="onImageLightboxWheel"
+          @pointerdown="onImageLightboxPointerDown"
+          @pointermove="onImageLightboxPointerMove"
+          @pointerup="onImageLightboxPointerUp"
+          @pointercancel="onImageLightboxPointerUp"
+          @click.stop
+        >
+          <img
+            :src="imagePreview.url"
+            :alt="`大图 ${imagePreview.fileName}`"
+            class="max-h-[92vh] max-w-[min(96vw,1200px)] object-contain origin-center pointer-events-none"
+            :class="imageLightboxDragging ? '' : 'transition-transform duration-75 ease-out'"
+            :style="imageLightboxTransform"
+            draggable="false"
+          >
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { showToast } from 'vant'
 import {
   Base64DecodeError,
@@ -196,14 +240,29 @@ const imageOutputFormat = ref<ImageBase64OutputFormat>('data-uri')
 const encodingImage = ref(false)
 const uploadedFileName = ref('')
 const previewDismissed = ref(false)
+const imageLightboxOpen = ref(false)
+const imageLightboxZoom = ref(1)
+const imageLightboxPanX = ref(0)
+const imageLightboxPanY = ref(0)
+const imageLightboxDragging = ref(false)
+
+const imageLightboxTransform = computed(() => ({
+  transform: `translate(${imageLightboxPanX.value}px, ${imageLightboxPanY.value}px) scale(${imageLightboxZoom.value})`
+}))
 
 let previewDebounceTimer: ReturnType<typeof setTimeout> | null = null
+let lightboxEscHandler: ((e: KeyboardEvent) => void) | null = null
+let lightboxDragPointerId: number | null = null
+let lightboxDragOrigin = { x: 0, y: 0, panX: 0, panY: 0 }
 
 useConsumeToolPrefill('base64', (text) => {
   input.value = text
   previewDismissed.value = false
-  syncImagePreviewFromInput()
-}, { plainKind: 'base64' })
+  void nextTick(() => {
+    syncImagePreviewFromInput()
+    requestAnimationFrame(() => syncImagePreviewFromInput())
+  })
+})
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`
@@ -218,9 +277,83 @@ function clearImagePreview() {
 }
 
 function dismissImagePreview() {
+  closeImageLightbox()
   previewDismissed.value = true
   clearImagePreview()
 }
+
+function resetImageLightboxView() {
+  imageLightboxZoom.value = 1
+  imageLightboxPanX.value = 0
+  imageLightboxPanY.value = 0
+  imageLightboxDragging.value = false
+  lightboxDragPointerId = null
+}
+
+function openImageLightbox() {
+  if (!imagePreview.value) return
+  resetImageLightboxView()
+  imageLightboxOpen.value = true
+}
+
+function closeImageLightbox() {
+  imageLightboxOpen.value = false
+  resetImageLightboxView()
+}
+
+function onImageLightboxWheel(e: WheelEvent) {
+  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12
+  imageLightboxZoom.value = Math.min(8, Math.max(0.2, imageLightboxZoom.value * factor))
+}
+
+function onImageLightboxPointerDown(e: PointerEvent) {
+  if (e.button !== 0) return
+  imageLightboxDragging.value = true
+  lightboxDragPointerId = e.pointerId
+  lightboxDragOrigin = {
+    x: e.clientX,
+    y: e.clientY,
+    panX: imageLightboxPanX.value,
+    panY: imageLightboxPanY.value
+  }
+  ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+}
+
+function onImageLightboxPointerMove(e: PointerEvent) {
+  if (!imageLightboxDragging.value || lightboxDragPointerId !== e.pointerId) return
+  imageLightboxPanX.value = lightboxDragOrigin.panX + (e.clientX - lightboxDragOrigin.x)
+  imageLightboxPanY.value = lightboxDragOrigin.panY + (e.clientY - lightboxDragOrigin.y)
+}
+
+function onImageLightboxPointerUp(e: PointerEvent) {
+  if (lightboxDragPointerId !== null && e.pointerId !== lightboxDragPointerId) return
+  imageLightboxDragging.value = false
+  lightboxDragPointerId = null
+  try {
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+  } catch {
+    /* 已释放 */
+  }
+}
+
+function detachLightboxEsc() {
+  if (lightboxEscHandler) {
+    document.removeEventListener('keydown', lightboxEscHandler)
+    lightboxEscHandler = null
+  }
+}
+
+watch(imageLightboxOpen, (open) => {
+  if (!import.meta.client) return
+  detachLightboxEsc()
+  document.body.style.overflow = open ? 'hidden' : ''
+  if (open) {
+    lightboxEscHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeImageLightbox()
+    }
+    document.addEventListener('keydown', lightboxEscHandler)
+  }
+})
 
 function setImagePreviewFromBytes(
   mime: string,
@@ -360,6 +493,33 @@ const copyInput = () => {
 
 onUnmounted(() => {
   if (previewDebounceTimer) clearTimeout(previewDebounceTimer)
+  detachLightboxEsc()
+  document.body.style.overflow = ''
+  closeImageLightbox()
   clearImagePreview()
 })
 </script>
+
+<style scoped>
+/* button 默认行高会裁切块级图片；用块级布局保证预览按比例完整显示 */
+.base64-preview-frame {
+  min-height: 8rem;
+  max-height: min(70vh, 32rem);
+}
+
+.base64-preview-hitbox {
+  line-height: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.base64-preview-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(65vh, 30rem);
+  object-fit: contain;
+}
+</style>

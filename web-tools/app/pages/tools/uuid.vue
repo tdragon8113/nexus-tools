@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="UUID v4" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-amber-100 flex items-center justify-center shadow-sm border border-amber-100"
-        >
-          <van-icon name="gift-o" size="24" class="text-amber-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        使用浏览器 <code class="text-xs bg-slate-100 px-1 rounded">crypto.randomUUID()</code> 生成随机 UUID（RFC 4122 v4）。
-      </p>
-    </PageHero>
-
-    <div class="space-y-4">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="space-y-4">
       <div class="flex flex-wrap items-center gap-3">
         <label class="flex items-center gap-2 text-sm text-slate-700">
           <span class="text-slate-500">数量</span>
@@ -95,7 +81,7 @@ const count = ref(5)
 
 useConsumeToolPrefill('uuid', (text) => {
   checkInput.value = text
-}, { plainKind: 'uuid' })
+})
 const lines = ref<string[]>([])
 const checkInput = ref('')
 

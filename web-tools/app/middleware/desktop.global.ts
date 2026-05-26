@@ -1,16 +1,14 @@
-import { DESKTOP_ROUTES, desktopQuery, DESKTOP_QUERY_VALUE } from '~/core/desktop'
+import { DESKTOP_ROUTES } from '~/core/desktop'
 
+/** 桌面应用：统一壳布局，废弃网页版 /tools 与根路径 */
 export default defineNuxtRouteMiddleware((to) => {
-  if (to.path === '/desktop/launcher') {
-    return navigateTo({
-      path: DESKTOP_ROUTES.search,
-      query: desktopQuery()
-    })
+  if (to.path === '/' || to.path === '/desktop/launcher') {
+    return navigateTo({ path: DESKTOP_ROUTES.search })
   }
 
-  if (to.query.desktop !== DESKTOP_QUERY_VALUE) return
-
-  if (to.path.startsWith('/desktop') || to.path.startsWith('/tools/')) {
-    setPageLayout('desktop')
+  if (to.path === '/tools') {
+    return navigateTo({ path: DESKTOP_ROUTES.hub })
   }
+
+  setPageLayout('desktop')
 })

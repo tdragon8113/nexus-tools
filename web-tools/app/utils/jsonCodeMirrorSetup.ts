@@ -4,10 +4,9 @@ import {
   bracketMatching,
   foldGutter,
   foldKeymap,
-  indentOnInput,
-  syntaxHighlighting,
-  defaultHighlightStyle
+  indentOnInput
 } from '@codemirror/language'
+import { jsonSyntaxHighlightExtension } from '~/utils/jsonCodeMirrorHighlight'
 import { lintKeymap } from '@codemirror/lint'
 import { EditorState, type Extension } from '@codemirror/state'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
@@ -57,7 +56,7 @@ export const jsonCodeMirrorBasicSetup: Extension[] = [
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
-  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  jsonSyntaxHighlightExtension,
   bracketMatching(),
   closeBrackets(),
   autocompletion(),

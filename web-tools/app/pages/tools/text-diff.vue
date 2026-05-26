@@ -1,16 +1,6 @@
 <template>
-  <div class="max-w-7xl px-4 sm:px-6 py-8 md:py-10">
-    <PageHero title="文本对比" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-lime-100 flex items-center justify-center shadow-sm border border-lime-100"
-        >
-          <van-icon name="notes-o" size="24" class="text-lime-700" />
-        </div>
-      </template>
-    </PageHero>
-
-    <div class="mb-3 flex flex-wrap items-center gap-1 rounded-xl border border-slate-200/85 bg-slate-50/90 px-1.5 py-1 shadow-sm">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="mb-3 flex flex-wrap items-center gap-1 rounded-xl border border-slate-200/85 bg-slate-50/90 px-1.5 py-1 shadow-sm">
       <label class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-slate-600">
         <span class="shrink-0 text-xs font-medium text-slate-500">语言</span>
         <select

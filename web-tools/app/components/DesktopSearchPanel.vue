@@ -2,15 +2,27 @@
 const {
   rootRef,
   query,
+  hasQuery,
+  hasPayload,
+  payloadSize,
   hint,
   displayTools,
   showEmpty,
   activeIndex,
-  goHub,
+  clearQuery,
   closeDesktop,
   openTool,
-  onEnter
+  onEnter,
+  onSearchPaste
 } = useDesktopSearchPanel()
+
+/** 剪贴板摘要展示时，聚焦全选，便于直接键入新关键词 */
+function onSearchFocus(event: FocusEvent) {
+  if (!hasPayload.value) return
+  const el = event.target
+  if (!(el instanceof HTMLInputElement)) return
+  nextTick(() => el.select())
+}
 </script>
 
 <template>
@@ -26,25 +38,29 @@ const {
         role="searchbox"
         autocomplete="off"
         spellcheck="false"
-        class="desktop-search-input min-w-0 flex-1 border-0 bg-transparent text-base outline-none placeholder:text-slate-400"
+        class="desktop-search-input min-w-0 flex-1 border-0 bg-transparent font-mono text-sm outline-none placeholder:text-slate-400 placeholder:font-sans focus:ring-0"
         placeholder="搜索 Nexus 工具…"
         style="-webkit-app-region: no-drag"
         autofocus
+        @focus="onSearchFocus"
+        @paste="onSearchPaste"
         @keydown.enter.prevent="onEnter"
         @keydown.esc.prevent="closeDesktop"
       />
       <button
-        v-if="query"
+        v-if="hasQuery || hasPayload"
         type="button"
-        class="text-slate-400 hover:text-slate-600"
+        class="flex shrink-0 items-center justify-center rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
         aria-label="清空"
-        @click="query = ''"
+        @click="clearQuery"
       >
         <van-icon name="cross" size="16" />
       </button>
     </div>
 
-    <p v-if="hint" class="mt-2 text-xs text-blue-600">识别为 {{ hint.label }}，回车打开</p>
+    <p v-if="hint" class="mt-2 text-xs text-blue-600">
+      识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>，回车打开
+    </p>
     <p v-else-if="showEmpty" class="mt-2 text-xs text-slate-400">无匹配，可打开工具集</p>
 
     <SearchToolMatchChips
@@ -54,18 +70,5 @@ const {
       @update:active-index="activeIndex = $event"
       @pick="openTool"
     />
-
-    <footer
-      class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] text-slate-400"
-    >
-      <span>↵ 打开 · Esc 关闭</span>
-      <button
-        type="button"
-        class="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 font-medium text-blue-700 hover:bg-blue-100"
-        @mousedown.prevent="goHub"
-      >
-        工具集
-      </button>
-    </footer>
   </div>
 </template>

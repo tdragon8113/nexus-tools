@@ -1,20 +1,6 @@
 <template>
-  <div class="max-w-3xl px-4 sm:px-6 py-8 md:py-10">
-
-    <PageHero title="URL 编码 / 解码" compact show-icon>
-      <template #icon>
-        <div
-          class="w-12 h-12 shrink-0 rounded-xl bg-teal-100 flex items-center justify-center shadow-sm border border-teal-100"
-        >
-          <van-icon name="link-o" size="24" class="text-teal-600" />
-        </div>
-      </template>
-      <p class="mt-2 doc-prose-muted text-sm max-w-2xl">
-        使用 encodeURIComponent / decodeURIComponent 处理文本与查询参数（含中文），浏览器内完成。
-      </p>
-    </PageHero>
-
-    <div class="space-y-4">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
+<div class="space-y-4">
       <label class="block">
         <span class="sr-only">文本</span>
         <textarea
@@ -68,7 +54,7 @@ const error = ref('')
 
 useConsumeToolPrefill('url', (text) => {
   input.value = text
-}, { plainKind: 'url' })
+})
 
 const encode = () => {
   error.value = ''

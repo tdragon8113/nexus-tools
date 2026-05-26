@@ -1,5 +1,8 @@
 <template>
-  <div class="text-diff-cm-wrap h-full min-h-0 min-w-0 overflow-hidden bg-white">
+  <div
+    class="text-diff-cm-wrap h-full min-h-0 min-w-0 overflow-hidden bg-white"
+    :class="{ 'text-diff-cm-wrap--plain': variant === 'plain' }"
+  >
     <div ref="hostRef" class="h-full min-h-0 min-w-0" />
   </div>
 </template>
@@ -13,7 +16,7 @@ import {
   loadTextDiffLanguageBundle,
   type TextDiffLanguageId
 } from '~/utils/textDiffCodeMirrorLanguage'
-import { textDiffCodeMirrorSetup } from '~/utils/textDiffCodeMirrorSetup'
+import { plainTextCodeMirrorSetup, textDiffCodeMirrorSetup } from '~/utils/textDiffCodeMirrorSetup'
 
 export interface TextDiffLineDecoration {
   line: number
@@ -31,15 +34,20 @@ const props = withDefaults(
   defineProps<{
     modelValue: string
     language?: TextDiffLanguageId
+    /** diff：对比用完整能力；plain：纯文本，行号栏紧凑 */
+    variant?: 'diff' | 'plain'
     decorations?: TextDiffLineDecoration[]
     rangeDecorations?: TextDiffRangeDecoration[]
     placeholder?: string
+    wordWrap?: boolean
   }>(),
   {
     language: 'plain',
+    variant: 'diff',
     decorations: () => [],
     rangeDecorations: () => [],
-    placeholder: ''
+    placeholder: '',
+    wordWrap: true
   }
 )
 
@@ -52,6 +60,8 @@ const hostRef = ref<HTMLElement | null>(null)
 const viewRef = shallowRef<EditorView | null>(null)
 const languageComp = new Compartment()
 const lintComp = new Compartment()
+const highlightComp = new Compartment()
+const wrapComp = new Compartment()
 let suppressScrollEmit = false
 let languageRequestId = 0
 
@@ -113,17 +123,29 @@ const lineDecorationField = StateField.define<DecorationSet>({
   provide: (field) => EditorView.decorations.from(field)
 })
 
-watch(
-  () => props.modelValue,
-  (value) => {
-    const view = viewRef.value
-    if (!view || value === view.state.doc.toString()) return
-    view.dispatch({
-      changes: { from: 0, to: view.state.doc.length, insert: value },
-      effects: External.of(value)
-    })
-  }
-)
+function getDocument(): string {
+  return viewRef.value?.state.doc.toString() ?? ''
+}
+
+/** 强制写入全文（处理/替换等必须走此接口，避免与 v-model 竞态） */
+function setDocument(value: string) {
+  const view = viewRef.value
+  if (!view) return
+  view.dispatch({
+    changes: { from: 0, to: view.state.doc.length, insert: value },
+    effects: External.of(value)
+  })
+}
+
+function syncDocFromModel() {
+  const view = viewRef.value
+  if (!view) return
+  const value = props.modelValue
+  if (value === view.state.doc.toString()) return
+  setDocument(value)
+}
+
+watch(() => props.modelValue, syncDocFromModel, { flush: 'post' })
 
 watch(
   () => [props.decorations, props.rangeDecorations] as const,
@@ -140,7 +162,11 @@ async function applyLanguage(language: TextDiffLanguageId) {
   const bundle = await loadTextDiffLanguageBundle(language)
   if (requestId !== languageRequestId) return
   viewRef.value?.dispatch({
-    effects: [languageComp.reconfigure(bundle.language), lintComp.reconfigure(bundle.lint ? [bundle.lint] : [])]
+    effects: [
+      languageComp.reconfigure(bundle.language),
+      highlightComp.reconfigure(bundle.highlight),
+      lintComp.reconfigure(bundle.lint ? [bundle.lint] : [])
+    ]
   })
 }
 
@@ -152,12 +178,26 @@ watch(
   }
 )
 
+watch(
+  () => props.wordWrap,
+  (wordWrap) => {
+    viewRef.value?.dispatch({
+      effects: wrapComp.reconfigure(wordWrap ? EditorView.lineWrapping : [])
+    })
+  }
+)
+
 function buildExtensions(): Extension[] {
+  const isPlain = props.variant === 'plain'
+  const baseSetup = isPlain ? plainTextCodeMirrorSetup : textDiffCodeMirrorSetup
+  const lineNoColor = 'rgb(148 163 184)'
+
   return [
-    ...textDiffCodeMirrorSetup,
+    ...baseSetup,
     languageComp.of([]),
-    lintComp.of([]),
-    lineDecorationField,
+    highlightComp.of([]),
+    wrapComp.of(props.wordWrap ? EditorView.lineWrapping : []),
+    ...(isPlain ? [] : [lintComp.of([]), lineDecorationField]),
     EditorView.theme({
       '&': {
         height: '100%',
@@ -170,17 +210,28 @@ function buildExtensions(): Extension[] {
       },
       '.cm-content': {
         padding: '12px 0',
-        minHeight: '100%'
+        minHeight: isPlain ? undefined : '100%'
       },
       '.cm-gutters': {
         backgroundColor: 'rgb(248 250 252)',
         borderRight: '1px solid rgb(226 232 240)',
-        color: 'rgb(148 163 184)'
+        color: lineNoColor,
+        paddingLeft: '0'
+      },
+      '.cm-lineNumbers': {
+        color: lineNoColor,
+        minWidth: '0'
       },
       '.cm-lineNumbers .cm-gutterElement': {
-        minWidth: '2.75rem',
-        padding: '0 0.5rem',
-        textAlign: 'right'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        boxSizing: 'border-box',
+        minWidth: '0',
+        padding: '0 6px 0 2px',
+        fontSize: '12px',
+        textAlign: 'right',
+        whiteSpace: 'nowrap'
       },
       '.cm-line': {
         padding: '0 0.75rem'
@@ -202,6 +253,16 @@ function buildExtensions(): Extension[] {
       },
       '&.cm-focused .cm-cursor': {
         borderLeftColor: 'rgb(30 41 59)'
+      },
+      '.cm-matchingBracket': {
+        backgroundColor: 'rgb(191 219 254 / 0.45)',
+        outline: '1px solid rgb(59 130 246 / 0.55)',
+        borderRadius: '2px'
+      },
+      '.cm-nonmatchingBracket': {
+        backgroundColor: 'rgb(254 202 202 / 0.5)',
+        outline: '1px solid rgb(239 68 68 / 0.55)',
+        borderRadius: '2px'
       },
       '.text-diff-line-del': {
         backgroundColor: 'rgb(254 226 226 / 0.92)'
@@ -261,7 +322,7 @@ function scrollToLine(lineNo: number) {
   }, 0)
 }
 
-defineExpose({ setScrollTop, scrollToLine })
+defineExpose({ setScrollTop, scrollToLine, syncDocFromModel, getDocument, setDocument })
 
 onMounted(() => {
   if (!hostRef.value) return
@@ -270,6 +331,7 @@ onMounted(() => {
     extensions: buildExtensions()
   })
   viewRef.value = new EditorView({ state, parent: hostRef.value })
+  syncDocFromModel()
   void nextTick(() => {
     viewRef.value?.dispatch({
       effects: setDecorations.of({ lines: props.decorations, ranges: props.rangeDecorations })
@@ -287,6 +349,12 @@ onUnmounted(() => {
 <style>
 .text-diff-cm-wrap .cm-editor {
   height: 100%;
+}
+
+.text-diff-cm-wrap--plain .cm-lineNumbers {
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 0 !important;
 }
 
 .text-diff-cm-wrap .cm-tooltip {
