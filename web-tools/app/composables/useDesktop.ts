@@ -1,7 +1,14 @@
-import { applyPrefillForTool, buildRouterPrefillState } from '~/core/prefill'
+import {
+  applyPrefillForTool,
+  buildRouterPrefillState,
+  clearLastSearchTransferText,
+  clearPendingToolOpenPrefill,
+  stageToolOpenPrefill
+} from '~/core/prefill'
 import { triggerDesktopSearchApply } from '~/composables/desktopSearchApply'
 import { DESKTOP_ROUTES, desktopScreenFromPath, isElectronShell, type DesktopScreen } from '~/core/desktop'
 import { getToolById, getToolByPath, type SiteTool } from '~/core/tools'
+import type { ClipboardOpenSource } from '~/core/desktopClipboardPolicy'
 import type { NexusOpenToolPayload } from '~/types/nexus-desktop'
 
 /** 桌面壳：导航、预填、Electron 桥接 */
@@ -16,18 +23,25 @@ export function useDesktop() {
   const isSearchScreen = computed(() => screen.value === 'search')
   const isHubScreen = computed(() => screen.value === 'hub')
   const isToolScreen = computed(() => screen.value === 'tool')
+  const isSettingsScreen = computed(() => screen.value === 'settings')
 
   function applyPrefill(payload: NexusOpenToolPayload) {
     if (payload.prefill) applyPrefillForTool(payload.toolId, payload.prefill)
   }
 
-  async function goSearch(opts?: { clipboard?: string; q?: string }) {
+  async function goSearch(opts?: {
+    clipboard?: string
+    q?: string
+    source?: ClipboardOpenSource
+  }) {
     const clip = opts?.clipboard ?? ''
     const qParam = opts?.q ?? ''
+    const source = opts?.source ?? 'navigation'
     if (clip.trim() || qParam.trim()) {
       stageDesktopSearchInput({
         ...(clip.trim() ? { clipboard: clip } : {}),
-        ...(qParam.trim() ? { q: qParam } : {})
+        ...(qParam.trim() ? { q: qParam } : {}),
+        source
       })
     }
     await router.push({ path: DESKTOP_ROUTES.search })
@@ -37,9 +51,25 @@ export function useDesktop() {
   }
 
   async function goHub() {
+    clearLastSearchTransferText()
+    clearPendingToolOpenPrefill()
     await router.push({ path: DESKTOP_ROUTES.hub })
     await nextTick()
     await syncWindowChrome()
+  }
+
+  async function goSettings() {
+    await router.push({ path: DESKTOP_ROUTES.settings })
+    await nextTick()
+    await syncWindowChrome()
+  }
+
+  function leaveSettings() {
+    if (import.meta.client && window.history.length > 1) {
+      router.back()
+      return
+    }
+    void goSearch()
   }
 
   async function goTool(tool: SiteTool, payload?: Partial<NexusOpenToolPayload>) {
@@ -47,14 +77,19 @@ export function useDesktop() {
     const rawPrefill = payload?.prefill ?? ''
     const toolId = payload?.toolId ?? tool.id
     if (rawPrefill.trim()) {
-      applyPrefillForTool(toolId, rawPrefill)
+      stageToolOpenPrefill(toolId, rawPrefill)
+      clearLastSearchTransferText()
     }
     const state = buildRouterPrefillState(toolId, rawPrefill)
     await router.push({
       path: tool.path,
-      ...(state ? { state } : {})
+      ...(state ? { state } : {}),
+      ...(rawPrefill.trim() ? { force: true } : {})
     })
     await nextTick()
+    if (rawPrefill.trim()) {
+      stageToolOpenPrefill(toolId, rawPrefill)
+    }
     await syncWindowChrome()
   }
 
@@ -103,7 +138,8 @@ export function useDesktop() {
     const offShow = window.nexusDesktop.onShowSearch?.((payload) => {
       void goSearch({
         ...(payload.clipboard != null ? { clipboard: payload.clipboard } : {}),
-        ...(payload.q != null ? { q: payload.q } : {})
+        ...(payload.q != null ? { q: payload.q } : {}),
+        source: payload.source ?? 'hotkey'
       })
     })
     const offPin = window.nexusDesktop.onPinnedChange?.((value) => {
@@ -126,8 +162,11 @@ export function useDesktop() {
     isSearchScreen,
     isHubScreen,
     isToolScreen,
+    isSettingsScreen,
     goSearch,
     goHub,
+    goSettings,
+    leaveSettings,
     goTool,
     closeDesktop,
     resizeSearchPanel,

@@ -1,6 +1,7 @@
 <template>
-  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
-<div class="space-y-4">
+  <div class="desktop-tool-page flex h-full min-h-0 flex-col overflow-hidden">
+    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div class="space-y-4 pb-4">
       <section
         class="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4 space-y-3"
         aria-label="上传图片编码"
@@ -149,9 +150,11 @@
           复制输入
         </button>
       </div>
+      </div>
     </div>
+  </div>
 
-    <Teleport to="body">
+  <Teleport to="body">
       <div
         v-if="imageLightboxOpen && imagePreview"
         class="fixed inset-0 z-[200] flex flex-col bg-black/80"
@@ -198,8 +201,7 @@
           >
         </div>
       </div>
-    </Teleport>
-  </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">

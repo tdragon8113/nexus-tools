@@ -14,8 +14,18 @@ export const IPC = {
   close: 'desktop:close',
   pinGet: 'desktop:pin-get',
   pinSet: 'desktop:pin-set',
-  pinChanged: 'desktop:pinned-changed'
+  pinChanged: 'desktop:pinned-changed',
+  clipboardPrefsGet: 'desktop:clipboard-prefs-get',
+  clipboardPrefsPatch: 'desktop:clipboard-prefs-patch'
 } as const
+
+export type ClipboardOpenSource = 'hotkey' | 'navigation'
+
+export type ShowSearchPayload = {
+  clipboard?: string
+  q?: string
+  source?: ClipboardOpenSource
+}
 
 /** 搜索窗 / 工具集 / 工具页统一外框宽度（与白色圆角面板一致） */
 export const DESKTOP_FRAME_WIDTH = 800

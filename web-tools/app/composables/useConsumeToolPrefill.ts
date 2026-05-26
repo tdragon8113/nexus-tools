@@ -1,8 +1,10 @@
 import type { Ref } from 'vue'
 import {
-  applyPrefillForTool,
+  clearLastSearchTransferText,
+  clearPendingToolOpenPrefill,
   clearRouterToolPrefill,
   readRouterToolPrefill,
+  takePendingToolOpenPrefill,
   useToolContentPrefill
 } from '~/core/prefill'
 
@@ -23,6 +25,8 @@ export function useConsumeToolPrefill(
     if (fromMap) {
       apply(fromMap)
       clearRouterToolPrefill()
+      clearLastSearchTransferText()
+      clearPendingToolOpenPrefill(toolId)
       return true
     }
 
@@ -30,6 +34,16 @@ export function useConsumeToolPrefill(
     if (fromRouter) {
       apply(fromRouter)
       clearRouterToolPrefill()
+      clearLastSearchTransferText()
+      clearPendingToolOpenPrefill(toolId)
+      return true
+    }
+
+    const fromPending = takePendingToolOpenPrefill(toolId)
+    if (fromPending) {
+      apply(fromPending)
+      clearRouterToolPrefill()
+      clearLastSearchTransferText()
       return true
     }
 

@@ -1,9 +1,19 @@
 <script setup lang="ts">
+import { desktopPanelScrollFromPath } from '~/core/desktop'
 import { getToolByPath } from '~/core/tools'
 
 const route = useRoute()
-const { goSearch, goHub, isSearchScreen, isHubScreen, isToolScreen, resizeSearchPanel, syncWindowChrome } =
-  useDesktop()
+const {
+  goSearch,
+  goHub,
+  leaveSettings,
+  isSearchScreen,
+  isHubScreen,
+  isToolScreen,
+  isSettingsScreen,
+  resizeSearchPanel,
+  syncWindowChrome
+} = useDesktop()
 
 const searchShellRef = ref<HTMLElement | null>(null)
 
@@ -49,12 +59,23 @@ provide('remeasureDesktopSearch', remeasureSearchShell)
 const toolTitle = computed(() => getToolByPath(route.path)?.name ?? '工具')
 
 const barTitle = computed(() => {
+  if (isSettingsScreen.value) return '设置'
   if (isHubScreen.value) return '工具集'
   return toolTitle.value
 })
 
+/** 表格式工具（Base64 等）：面板内层 __scroll 滚动 */
+const panelBodyScroll = computed(
+  () => route.meta.desktopPanelScroll === true || desktopPanelScrollFromPath(route.path)
+)
+
+const panelBodyIsToolLayout = computed(
+  () => (isHubScreen.value || isToolScreen.value) && !panelBodyScroll.value
+)
+
 function syncBodyShellClass() {
   document.documentElement.dataset.nexusDesktop = '1'
+  document.documentElement.classList.toggle('nexus-desktop-html--panel', !isSearchScreen.value)
   document.body.classList.add('nexus-desktop-body')
   document.body.classList.toggle('nexus-desktop-body--search', isSearchScreen.value)
 }
@@ -65,6 +86,7 @@ onMounted(syncBodyShellClass)
 
 onUnmounted(() => {
   delete document.documentElement.dataset.nexusDesktop
+  document.documentElement.classList.remove('nexus-desktop-html--panel')
   document.body.classList.remove('nexus-desktop-body', 'nexus-desktop-body--search')
 })
 </script>
@@ -90,6 +112,7 @@ onUnmounted(() => {
           工具集
         </button>
         <span class="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">搜索</span>
+        <DesktopHeaderSettingsButton />
         <DesktopWindowChrome />
       </div>
       <div class="shrink-0" style="-webkit-app-region: no-drag">
@@ -107,43 +130,69 @@ onUnmounted(() => {
         style="-webkit-app-region: drag"
       >
         <button
+          v-if="isSettingsScreen"
           type="button"
           class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
           style="-webkit-app-region: no-drag"
-          @click="goSearch()"
+          @click="leaveSettings"
         >
-          搜索
+          返回
         </button>
-        <button
-          v-if="!isHubScreen"
-          type="button"
-          class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
-          style="-webkit-app-region: no-drag"
-          @click="goHub"
-        >
-          工具集
-        </button>
+        <template v-else>
+          <button
+            type="button"
+            class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
+            style="-webkit-app-region: no-drag"
+            @click="goSearch()"
+          >
+            搜索
+          </button>
+          <button
+            v-if="!isHubScreen"
+            type="button"
+            class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
+            style="-webkit-app-region: no-drag"
+            @click="goHub"
+          >
+            工具集
+          </button>
+        </template>
         <span class="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">
           {{ barTitle }}
         </span>
+        <DesktopHeaderSettingsButton v-if="!isSettingsScreen" />
         <DesktopWindowChrome />
       </header>
       <main
         class="nexus-desktop-panel__body min-h-0 flex-1"
         :class="
-          isHubScreen || isToolScreen
-            ? 'nexus-desktop-panel__body--tool overflow-hidden'
-            : 'overflow-auto'
+          panelBodyScroll
+            ? 'nexus-desktop-panel__body--scroll flex min-h-0 flex-col overflow-hidden'
+            : panelBodyIsToolLayout
+              ? 'nexus-desktop-panel__body--tool overflow-hidden'
+              : 'overflow-auto'
         "
       >
-        <slot />
+        <div
+          :class="
+            panelBodyScroll
+              ? 'nexus-desktop-panel__scroll min-h-0 flex-1 overflow-y-auto overscroll-contain'
+              : 'nexus-desktop-panel__inner min-h-0 flex-1'
+          "
+        >
+          <slot />
+        </div>
       </main>
     </div>
   </div>
 </template>
 
 <style>
-html[data-nexus-desktop='1'] .nexus-desktop-panel__body:not(.nexus-desktop-panel__body--tool) > div {
+html[data-nexus-desktop='1']
+  .nexus-desktop-panel__body:not(.nexus-desktop-panel__body--tool):not(
+    .nexus-desktop-panel__body--scroll
+  )
+  > div {
   max-width: none !important;
   padding: 12px 14px !important;
 }
@@ -165,7 +214,7 @@ html[data-nexus-desktop='1'] .nexus-desktop-panel__body--tool {
   padding: 8px 10px !important;
 }
 
-html[data-nexus-desktop='1'] .nexus-desktop-panel__body--tool > div {
+html[data-nexus-desktop='1'] .nexus-desktop-panel__body--tool .nexus-desktop-panel__inner {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -185,6 +234,30 @@ html[data-nexus-desktop='1'] .nexus-desktop-panel__body--tool .desktop-hub-page 
   height: 100%;
   width: 100%;
   max-width: none !important;
+  padding: 0 !important;
+}
+
+html[data-nexus-desktop='1'] .nexus-desktop-panel__body--scroll {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px !important;
+}
+
+html[data-nexus-desktop='1'] .nexus-desktop-panel__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-nexus-desktop='1'] .nexus-desktop-panel__scroll > .desktop-tool-page,
+html[data-nexus-desktop='1'] .nexus-desktop-panel__scroll > .desktop-hub-page {
+  display: block;
+  width: 100%;
+  max-width: none !important;
+  min-height: min-content;
   padding: 0 !important;
 }
 

@@ -6,6 +6,7 @@ import { IPC } from './types'
 import { resolveDevWebUrl } from './resolveWebUrl'
 import { startStaticServer } from './staticServer'
 import { MAX_CLIPBOARD_TEXT_CHARS } from './clipboardLimits'
+import { DesktopPrefsStore } from './prefs'
 import { WindowManager } from './windowManager'
 
 const isDev = process.env.NEXUS_WEB_DEV === '1'
@@ -24,6 +25,7 @@ const distDir = path.join(__dirname)
 let webBaseUrl = ''
 let staticServerClose: (() => void) | null = null
 let windows: WindowManager | null = null
+const desktopPrefs = new DesktopPrefsStore()
 
 function preloadPath(file: string) {
   return path.join(distDir, file)
@@ -70,6 +72,22 @@ app.whenReady().then(async () => {
     if (typeof pinned === 'boolean') windows?.setPinned(pinned)
     return windows?.isPinned() ?? false
   })
+  ipcMain.handle(IPC.clipboardPrefsGet, () => desktopPrefs.read())
+  ipcMain.handle(IPC.clipboardPrefsPatch, (_e, patch: unknown) => {
+    if (!patch || typeof patch !== 'object') return desktopPrefs.read()
+    const p = patch as Record<string, unknown>
+    const next: Partial<ReturnType<DesktopPrefsStore['read']>> = {}
+    if (p.clipboardPolicy === 'smart' || p.clipboardPolicy === 'always' || p.clipboardPolicy === 'never') {
+      next.clipboardPolicy = p.clipboardPolicy
+    }
+    if (typeof p.lastAppliedClipboardHash === 'string') {
+      next.lastAppliedClipboardHash = p.lastAppliedClipboardHash
+    }
+    if (typeof p.dismissedClipboardHash === 'string') {
+      next.dismissedClipboardHash = p.dismissedClipboardHash
+    }
+    return desktopPrefs.write(next)
+  })
 
   if (process.platform === 'darwin') {
     app.dock?.show()
@@ -77,7 +95,7 @@ app.whenReady().then(async () => {
   }
 
   console.log(`[Nexus Tools] 已启动 · ${webBaseUrl} · ${HOTKEY} 唤起搜索`)
-  windows.showSearch(readClipboardForSearch())
+  windows.showSearch({ clipboard: readClipboardForSearch(), source: 'hotkey' })
 })
 
 app.on('will-quit', () => {

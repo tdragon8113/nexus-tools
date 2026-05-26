@@ -9,14 +9,18 @@ const {
   displayTools,
   showEmpty,
   activeIndex,
+  hasClipboardOffer,
+  clipboardOfferLabel,
+  acceptClipboardOffer,
+  dismissClipboardOffer,
   clearQuery,
   closeDesktop,
   openTool,
   onEnter,
-  onSearchPaste
+  onSearchPaste,
+  onSearchKeydown
 } = useDesktopSearchPanel()
 
-/** 剪贴板摘要展示时，聚焦全选，便于直接键入新关键词 */
 function onSearchFocus(event: FocusEvent) {
   if (!hasPayload.value) return
   const el = event.target
@@ -44,8 +48,8 @@ function onSearchFocus(event: FocusEvent) {
         autofocus
         @focus="onSearchFocus"
         @paste="onSearchPaste"
+        @keydown="onSearchKeydown"
         @keydown.enter.prevent="onEnter"
-        @keydown.esc.prevent="closeDesktop"
       />
       <button
         v-if="hasQuery || hasPayload"
@@ -55,6 +59,24 @@ function onSearchFocus(event: FocusEvent) {
         @click="clearQuery"
       >
         <van-icon name="cross" size="16" />
+      </button>
+    </div>
+
+    <div
+      v-if="hasClipboardOffer"
+      class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-amber-200/80 bg-amber-50/90 px-2.5 py-2 text-xs text-amber-950"
+      style="-webkit-app-region: no-drag"
+    >
+      <span class="min-w-0 flex-1">
+        剪贴板：<span class="font-medium">{{ clipboardOfferLabel }}</span>
+        <span class="text-amber-800/80"> · Tab 填入 · Esc 忽略</span>
+      </span>
+      <button
+        type="button"
+        class="shrink-0 rounded-md bg-amber-200/80 px-2 py-0.5 font-medium text-amber-950 hover:bg-amber-300/80"
+        @click="acceptClipboardOffer"
+      >
+        填入
       </button>
     </div>
 

@@ -8,7 +8,8 @@ import {
   PANEL_HEIGHT,
   PANEL_MIN_HEIGHT,
   PANEL_MIN_WIDTH,
-  PANEL_WIDTH
+  PANEL_WIDTH,
+  type ShowSearchPayload
 } from './types'
 import { getAppIcon } from './appIcon'
 
@@ -404,7 +405,8 @@ export class WindowManager {
     }
   }
 
-  showSearch(clipboard = '', q = '') {
+  showSearch(input: ShowSearchPayload = {}) {
+    const { clipboard = '', q = '', source = 'hotkey' } = input
     const win = this.ensureShell()
     this.applySearchChrome()
 
@@ -415,7 +417,7 @@ export class WindowManager {
     const reveal = () => {
       this.applySearchChrome()
       this.revealSearchWindow(win)
-      win.webContents.send('desktop:show-search', { clipboard, q })
+      win.webContents.send('desktop:show-search', { clipboard, q, source })
     }
 
     if (!this.loaded || !onSearchPage) {
@@ -445,7 +447,11 @@ export class WindowManager {
   /** 工具页 / 工具集：不重新加载，仅恢复窗口尺寸与焦点 */
   private isPanelRoute(url: string): boolean {
     const path = this.pathnameFromUrl(url)
-    return path.startsWith('/tools/') || path === '/desktop/hub'
+    return (
+      path.startsWith('/tools/') ||
+      path === '/desktop/hub' ||
+      path === '/desktop/settings'
+    )
   }
 
   revealPanel() {
@@ -465,9 +471,10 @@ export class WindowManager {
    * - 隐藏后唤起：若上次在工具/工具集，仅恢复该页；否则打开搜索并带入剪贴板
    */
   toggleSearch(clipboard = '') {
+    const payload: ShowSearchPayload = { clipboard, source: 'hotkey' }
     const win = this.shell
     if (!win || win.isDestroyed()) {
-      this.showSearch(clipboard)
+      this.showSearch(payload)
       return
     }
 
@@ -482,7 +489,7 @@ export class WindowManager {
       return
     }
 
-    this.showSearch(clipboard)
+    this.showSearch(payload)
   }
 
   panelSizeForPath(_path: string) {

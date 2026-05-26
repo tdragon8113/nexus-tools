@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ToolGrid from '~/components/ToolGrid.vue'
 import { toolMatchesQuery } from '~/core/search'
-import { useLastSearchTransferText } from '~/core/prefill'
 import { siteTools, type SiteTool } from '~/core/tools'
 
 definePageMeta({ layout: 'desktop' })
@@ -40,11 +39,7 @@ watch(filtered, (list) => {
 })
 
 async function onPick(tool: SiteTool) {
-  const prefill = useLastSearchTransferText().value
-  await goTool(
-    tool,
-    prefill.trim() ? { toolId: tool.id, prefill } : undefined
-  )
+  await goTool(tool)
 }
 
 function pickActive() {

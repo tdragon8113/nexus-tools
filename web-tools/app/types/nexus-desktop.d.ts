@@ -7,6 +7,20 @@ export interface NexusOpenToolPayload {
   hintKind?: ContentHintKind
 }
 
+import type { ClipboardOpenSource, ClipboardPolicy } from '~/core/desktopClipboardPolicy'
+
+export type NexusShowSearchPayload = {
+  clipboard?: string
+  q?: string
+  source?: ClipboardOpenSource
+}
+
+export type NexusClipboardPrefs = {
+  clipboardPolicy: ClipboardPolicy
+  lastAppliedClipboardHash?: string
+  dismissedClipboardHash?: string
+}
+
 export interface NexusDesktopBridge {
   isDesktop: true
   resizeSearch(height: number): void
@@ -16,8 +30,10 @@ export interface NexusDesktopBridge {
   getPinned?(): Promise<boolean>
   setPinned?(pinned: boolean): Promise<boolean>
   onPinnedChange?(handler: (pinned: boolean) => void): () => void
+  getClipboardPrefs?(): Promise<NexusClipboardPrefs>
+  patchClipboardPrefs?(patch: Partial<NexusClipboardPrefs>): Promise<NexusClipboardPrefs>
   applyOpenTool?(payload: NexusOpenToolPayload): void
-  onShowSearch(handler: (payload: { clipboard?: string; q?: string }) => void): () => void
+  onShowSearch(handler: (payload: NexusShowSearchPayload) => void): () => void
   onOpenTool?(handler: (payload: NexusOpenToolPayload) => void): () => void
 }
 

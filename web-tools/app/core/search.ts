@@ -102,7 +102,7 @@ function queryTokensForToolSearch(q: string): string[] {
 }
 
 /** 是否像用户粘贴的多行/长文（优先文本编辑，除非有强工具名意图） */
-function looksLikePlainDocument(raw: string): boolean {
+export function looksLikePlainDocument(raw: string): boolean {
   const t = raw.trim()
   if (t.length < 48) return false
   const lines = t.split(/\r?\n/).filter((l) => l.trim())

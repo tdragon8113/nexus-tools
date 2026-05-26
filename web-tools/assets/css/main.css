@@ -115,6 +115,11 @@ body.nexus-desktop-body #__nuxt {
 }
 
 /* 工具面板撑满窗口；搜索窗由内容决定高度 */
+html[data-nexus-desktop='1'].nexus-desktop-html--panel {
+  height: 100%;
+  overflow: hidden;
+}
+
 body.nexus-desktop-body:not(.nexus-desktop-body--search),
 body.nexus-desktop-body:not(.nexus-desktop-body--search) #__nuxt {
   height: 100%;
@@ -144,6 +149,11 @@ html[data-nexus-desktop='1'] .nexus-desktop-panel {
   max-width: 800px;
   min-height: 0;
   box-sizing: border-box;
+}
+
+html[data-nexus-desktop='1'] .nexus-desktop-panel {
+  height: 100%;
+  max-height: 100%;
 }
 
 /* 桌面壳内不显示 Nuxt DevTools 底栏 / 悬浮钮 */

@@ -52,6 +52,7 @@ export default defineNuxtConfig({
       routes: [
         '/desktop/search',
         '/desktop/hub',
+        '/desktop/settings',
         '/tools/json',
         '/tools/base64',
         '/tools/timestamp',

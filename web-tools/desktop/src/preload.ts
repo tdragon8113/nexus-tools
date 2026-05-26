@@ -1,8 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { OpenToolPayload } from './types'
+import type { OpenToolPayload, ShowSearchPayload } from './types'
 import { IPC } from './types'
-
-type ShowSearchPayload = { clipboard?: string; q?: string }
 
 let pendingShowSearch: ShowSearchPayload | null = null
 let showSearchHandler: ((payload: ShowSearchPayload) => void) | null = null
@@ -39,6 +37,24 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
     const listener = (_e: unknown, pinned: boolean) => handler(pinned)
     ipcRenderer.on(IPC.pinChanged, listener)
     return () => ipcRenderer.removeListener(IPC.pinChanged, listener)
+  },
+  getClipboardPrefs() {
+    return ipcRenderer.invoke(IPC.clipboardPrefsGet) as Promise<{
+      clipboardPolicy: 'smart' | 'always' | 'never'
+      lastAppliedClipboardHash?: string
+      dismissedClipboardHash?: string
+    }>
+  },
+  patchClipboardPrefs(patch: {
+    clipboardPolicy?: 'smart' | 'always' | 'never'
+    lastAppliedClipboardHash?: string
+    dismissedClipboardHash?: string
+  }) {
+    return ipcRenderer.invoke(IPC.clipboardPrefsPatch, patch) as Promise<{
+      clipboardPolicy: 'smart' | 'always' | 'never'
+      lastAppliedClipboardHash?: string
+      dismissedClipboardHash?: string
+    }>
   },
   onShowSearch(handler: (payload: ShowSearchPayload) => void) {
     showSearchHandler = handler
