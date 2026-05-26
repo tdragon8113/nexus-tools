@@ -17,11 +17,16 @@ cd web-tools && npm run desktop:dev  # 终端 2（会轮询等待 Nuxt，约 30s
 
 `NEXUS_KEEP_VISIBLE=1` 可保持窗口不因失焦隐藏。
 
-## 本地打包 DMG（macOS）
+## 本地打包
 
 ```bash
-cd web-tools && npm run desktop:dist
+# macOS DMG（通用架构）
+cd web-tools && npm run desktop:dist:mac
 # 产物：web-tools/desktop/release/NexusTools.dmg
+
+# Windows NSIS 安装包（需在 Windows 或 CI 上执行）
+cd web-tools && npm run desktop:dist:win
+# 产物：web-tools/desktop/release/NexusTools-setup.exe
 ```
 
 ## 发布（GitHub + Homebrew）
@@ -31,9 +36,9 @@ cd web-tools && npm run desktop:dist
 推送 tag 后自动执行 [`.github/workflows/release.yml`](../../../.github/workflows/release.yml)：
 
 1. `npm run generate` 预渲染 Web
-2. `electron-builder` 打出 **通用架构** `NexusTools.dmg`
+2. `electron-builder` 打出 `NexusTools.dmg`（macOS 通用架构）与 `NexusTools-setup.exe`（Windows x64）
 3. 上传到 GitHub Releases（tag 如 `web-tools-v0.2.0`）
-4. 更新 [`tdragon8113/homebrew-tap`](https://github.com/tdragon8113/homebrew-tap) 中的 `nexus-tools` cask
+4. 更新 [`tdragon8113/homebrew-tap`](https://github.com/tdragon8113/homebrew-tap) 中的 `nexus-tools` cask（仅 DMG）
 
 ```bash
 git tag web-tools-v0.2.0 && git push origin web-tools-v0.2.0
@@ -66,7 +71,7 @@ xattr -cr "/Applications/Nexus Tools.app"
 
 | 操作 | 路由 |
 |------|------|
-| `Alt+Space`（Mac 为 Option+Space） | 搜索；已在工具/工具集时仅显隐 |
+| `Alt+Space`（Mac 为 Option+Space，Windows 为 Alt+Space） | 搜索；已在工具/工具集时仅显隐 |
 | 工具集 | `/desktop/hub` |
 | 工具 | `/tools/{id}` |
 

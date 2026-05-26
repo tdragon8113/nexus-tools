@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-05-26
+
+### 新增（web-tools 桌面端）
+
+- CI 发布 Windows x64 安装包 `NexusTools-setup.exe`（与 macOS DMG 同一 `web-tools-v*` tag）
+- 本地打包命令：`npm run desktop:dist:win` / `desktop:dist:mac`
+
 ## [0.2.2] - 2026-05-25
 
 ### 新增（web-tools 桌面端）

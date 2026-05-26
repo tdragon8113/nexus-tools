@@ -12,7 +12,9 @@
     "dev:3001": "npm run build && cross-env NEXUS_WEB_DEV=1 NEXUS_WEB_URL=http://127.0.0.1:3001 electron .",
     "start": "electron .",
     "pack": "npm run icons && npm run build && electron-builder --dir",
-    "dist": "npm run icons && npm run build && electron-builder --mac dmg"
+    "dist": "npm run dist:mac",
+    "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg",
+    "dist:win": "npm run icons && npm run build && electron-builder --win nsis --x64"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
@@ -43,7 +45,7 @@
         ]
       }
     ],
-    "icon": "icons/icon.icns",
+    "icon": "icons/icon.png",
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "icons/icon.icns",
@@ -59,6 +61,22 @@
           "arch": ["universal"]
         }
       ]
+    },
+    "win": {
+      "icon": "icons/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "NexusTools-setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerLanguages": ["zh_CN", "en_US"],
+      "language": "2052"
     }
   }
 }

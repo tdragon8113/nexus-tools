@@ -12,13 +12,29 @@ permissions:
 
 jobs:
   build-desktop:
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+            dist_script: dist:mac
+            artifact_file: NexusTools.dmg
+            artifact_name: NexusTools-mac
+          - os: windows-latest
+            platform: win
+            dist_script: dist:win
+            artifact_file: NexusTools-setup.exe
+            artifact_name: NexusTools-win
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Resolve version
+        shell: bash
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/web-tools-v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/web-tools-v}"
@@ -27,7 +43,7 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "RELEASE_TAG=web-tools-v${VERSION}" >> "$GITHUB_ENV"
-          echo "Building Nexus Tools desktop web-tools-v${VERSION}"
+          echo "Building Nexus Tools desktop (${{ matrix.platform }}) web-tools-v${VERSION}"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,24 +55,30 @@ jobs:
             web-tools/desktop/package-lock.json
 
       - name: Install dependencies
+        shell: bash
         working-directory: web-tools
         run: |
           npm ci
           npm ci --prefix desktop
 
       - name: Set desktop package version
+        shell: bash
         working-directory: web-tools/desktop
         run: npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - name: Generate static web
+        shell: bash
         working-directory: web-tools
         run: npm run generate
 
-      - name: Build Electron DMG
+      - name: Build Electron (${{ matrix.platform }})
+        shell: bash
         working-directory: web-tools/desktop
-        run: npm run dist
+        run: npm run ${{ matrix.dist_script }}
 
-      - name: Stage release artifact
+      - name: Stage release artifact (macOS)
+        if: matrix.platform == 'mac'
+        shell: bash
         run: |
           mkdir -p dist
           DMG=$(find web-tools/desktop/release -maxdepth 1 -name 'NexusTools.dmg' | head -1)
@@ -65,14 +87,28 @@ jobs:
             ls -la web-tools/desktop/release || true
             exit 1
           fi
-          cp "$DMG" dist/NexusTools.dmg
-          shasum -a 256 dist/NexusTools.dmg
+          cp "$DMG" "dist/${{ matrix.artifact_file }}"
+          shasum -a 256 "dist/${{ matrix.artifact_file }}"
+
+      - name: Stage release artifact (Windows)
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $exe = Get-ChildItem -Path web-tools/desktop/release -Filter 'NexusTools-setup.exe' -File | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error 'NexusTools-setup.exe not found under web-tools/desktop/release'
+            Get-ChildItem -Path web-tools/desktop/release -ErrorAction SilentlyContinue
+            exit 1
+          }
+          Copy-Item $exe.FullName "dist/${{ matrix.artifact_file }}"
+          Get-FileHash "dist/${{ matrix.artifact_file }}" -Algorithm SHA256 | Format-List
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NexusTools
-          path: dist/NexusTools.dmg
+          name: ${{ matrix.artifact_name }}
+          path: dist/${{ matrix.artifact_file }}
 
   release:
     needs: build-desktop
@@ -121,16 +157,27 @@ jobs:
             } >> $GITHUB_OUTPUT
           fi
 
-      - name: Download Artifact
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: NexusTools
+          pattern: NexusTools-*
+          merge-multiple: true
           path: dist
+
+      - name: Flatten release assets
+        run: |
+          find dist -name 'NexusTools.dmg' -exec cp -f {} dist/ \;
+          find dist -name 'NexusTools-setup.exe' -exec cp -f {} dist/ \;
+          ls -la dist/
+          test -f dist/NexusTools.dmg
+          test -f dist/NexusTools-setup.exe
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/NexusTools.dmg
+          files: |
+            dist/NexusTools.dmg
+            dist/NexusTools-setup.exe
           body: ${{ steps.changelog.outputs.body }}
           generate_release_notes: ${{ steps.changelog.outputs.use_auto == 'true' }}
         env:
