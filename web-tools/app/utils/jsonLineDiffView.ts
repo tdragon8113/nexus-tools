@@ -17,17 +17,25 @@ export type AlignedLineRow = {
   kind: LineDiffKind
 }
 
+function normalizeNewlines(text: string): string {
+  // Make Windows/mac classic line endings comparable & displayable.
+  // Convert CRLF and CR to LF.
+  return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+}
+
 function textToLines(text: string): string[] {
   if (text === '') return []
-  const endsWithNl = text.endsWith('\n')
-  const body = endsWithNl ? text.slice(0, -1) : text
+  const normalized = normalizeNewlines(text)
+  const endsWithNl = normalized.endsWith('\n')
+  const body = endsWithNl ? normalized.slice(0, -1) : normalized
   if (body.length === 0 && !endsWithNl) return []
   return body.split('\n')
 }
 
 function linesFromDiffPartValue(raw: string): string[] {
-  const endsWithNl = raw.endsWith('\n')
-  const body = endsWithNl ? raw.slice(0, -1) : raw
+  const normalized = normalizeNewlines(raw)
+  const endsWithNl = normalized.endsWith('\n')
+  const body = endsWithNl ? normalized.slice(0, -1) : normalized
   if (body.length === 0 && !endsWithNl) return []
   return body.split('\n')
 }
