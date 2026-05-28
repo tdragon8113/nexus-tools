@@ -13,8 +13,8 @@
     "start": "electron .",
     "pack": "npm run icons && npm run build && electron-builder --dir",
     "dist": "npm run dist:mac",
-    "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip",
-    "dist:win": "npm run icons && npm run build && electron-builder --win nsis --x64"
+    "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip --publish never",
+    "dist:win": "npm run icons && npm run build && electron-builder --win nsis --x64 --publish never"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
