@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7] - 2026-05-29
+
+### 修复（web-tools 文本对比）
+
+- 对比 Windows（CRLF）与 Unix（LF）换行时不再整篇误报为差异
+- 在 delete/insert 对齐占位行输入与另一侧相同内容时，不再误报差异（右侧字符数显示为 0 的问题）
+
+## [0.2.6] - 2026-05-29
+
+### 修复（web-tools 文本对比）
+
+- 统一 CRLF/CR 为 LF 后再分行对比，避免整篇标红
+
 ## [0.2.5] - 2026-05-29
 
 ### 新增（web-tools 桌面端）
