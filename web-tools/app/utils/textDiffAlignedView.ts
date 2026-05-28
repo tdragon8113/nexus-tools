@@ -11,6 +11,20 @@ function splitDisplayLines(text: string): string[] {
   return text.split('\n')
 }
 
+/**
+ * 对齐视图里 insert/delete 行在另一侧会有空行占位。
+ * 仅当该行在对侧仅为占位且用户未编辑时，才从源文本还原中跳过。
+ */
+function includeDisplayLineInSource(
+  row: AlignedLineRow,
+  side: 'left' | 'right',
+  displayLine: string
+): boolean {
+  const padKind = side === 'left' ? 'insert' : 'delete'
+  if (row.kind !== padKind) return true
+  return displayLine !== ''
+}
+
 /** 从对齐视图还原左侧源文本（去掉为右侧增行预留的空行） */
 export function extractLeftSourceFromDisplay(displayText: string, rows: AlignedLineRow[]): string {
   const lines = splitDisplayLines(displayText)
@@ -19,8 +33,9 @@ export function extractLeftSourceFromDisplay(displayText: string, rows: AlignedL
 
   const sourceLines: string[] = []
   for (let i = 0; i < rows.length; i++) {
-    if (rows[i].kind === 'insert') continue
-    sourceLines.push(lines[i] ?? '')
+    const line = lines[i] ?? ''
+    if (!includeDisplayLineInSource(rows[i], 'left', line)) continue
+    sourceLines.push(line)
   }
   return sourceLines.join('\n')
 }
@@ -33,8 +48,9 @@ export function extractRightSourceFromDisplay(displayText: string, rows: Aligned
 
   const sourceLines: string[] = []
   for (let i = 0; i < rows.length; i++) {
-    if (rows[i].kind === 'delete') continue
-    sourceLines.push(lines[i] ?? '')
+    const line = lines[i] ?? ''
+    if (!includeDisplayLineInSource(rows[i], 'right', line)) continue
+    sourceLines.push(line)
   }
   return sourceLines.join('\n')
 }
