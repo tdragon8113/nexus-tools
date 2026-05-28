@@ -10,7 +10,7 @@ await esbuild.build({
   platform: 'node',
   format: 'cjs',
   target: 'node20',
-  external: ['electron'],
+  external: ['electron', 'electron-updater'],
   sourcemap: true,
   entryPoints: [path.join(root, 'src/main.ts')],
   outfile: path.join(root, 'dist/main.cjs')

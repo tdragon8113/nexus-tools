@@ -2,12 +2,14 @@ import { app, BrowserWindow, clipboard, globalShortcut, ipcMain } from 'electron
 import fs from 'node:fs'
 import path from 'node:path'
 import { applyDockIcon } from './appIcon'
-import { IPC } from './types'
 import { resolveDevWebUrl } from './resolveWebUrl'
 import { startStaticServer } from './staticServer'
 import { MAX_CLIPBOARD_TEXT_CHARS } from './clipboardLimits'
 import { DesktopPrefsStore } from './prefs'
+import { clearMacAppQuarantine } from './macQuarantine'
+import { AppUpdaterService } from './updater'
 import { WindowManager } from './windowManager'
+import { IPC } from './types'
 
 const isDev = process.env.NEXUS_WEB_DEV === '1'
 const HOTKEY = process.env.NEXUS_HOTKEY ?? 'Alt+Space'
@@ -26,6 +28,11 @@ let webBaseUrl = ''
 let staticServerClose: (() => void) | null = null
 let windows: WindowManager | null = null
 const desktopPrefs = new DesktopPrefsStore()
+let appUpdater: AppUpdaterService | null = null
+
+function allBrowserWindows(): BrowserWindow[] {
+  return BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed())
+}
 
 function preloadPath(file: string) {
   return path.join(distDir, file)
@@ -44,6 +51,8 @@ async function resolveWebBaseUrl(): Promise<string> {
 }
 
 app.whenReady().then(async () => {
+  await clearMacAppQuarantine()
+
   try {
     webBaseUrl = await resolveWebBaseUrl()
   } catch (err) {
@@ -89,8 +98,24 @@ app.whenReady().then(async () => {
     if (typeof p.autoHideOnBlur === 'boolean') {
       next.autoHideOnBlur = p.autoHideOnBlur
     }
-    return desktopPrefs.write(next)
+    if (typeof p.autoUpdateEnabled === 'boolean') {
+      next.autoUpdateEnabled = p.autoUpdateEnabled
+      appUpdater?.setAutoUpdateEnabled(p.autoUpdateEnabled)
+    }
+    const saved = desktopPrefs.write(next)
+    return saved
   })
+
+  appUpdater = new AppUpdaterService(allBrowserWindows)
+  const prefs = desktopPrefs.read()
+  appUpdater.setAutoUpdateEnabled(prefs.autoUpdateEnabled !== false)
+  appUpdater.init()
+
+  ipcMain.handle(IPC.updaterGetState, () => appUpdater?.getState() ?? { status: 'idle', currentVersion: app.getVersion() })
+  ipcMain.handle(IPC.updaterCheck, () => appUpdater?.check() ?? { status: 'idle', currentVersion: app.getVersion() })
+  ipcMain.handle(IPC.updaterDownload, () => appUpdater?.download() ?? { status: 'idle', currentVersion: app.getVersion() })
+  ipcMain.on(IPC.updaterInstall, () => appUpdater?.install())
+  ipcMain.on(IPC.updaterOpenRelease, () => appUpdater?.openReleasePage())
 
   if (process.platform === 'darwin') {
     app.dock?.show()

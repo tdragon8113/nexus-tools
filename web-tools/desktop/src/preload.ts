@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { OpenToolPayload, ShowSearchPayload } from './types'
 import { IPC } from './types'
+import type { UpdateState } from './updater'
 
 let pendingShowSearch: ShowSearchPayload | null = null
 let showSearchHandler: ((payload: ShowSearchPayload) => void) | null = null
@@ -44,6 +45,7 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       lastAppliedClipboardHash?: string
       dismissedClipboardHash?: string
       autoHideOnBlur?: boolean
+      autoUpdateEnabled?: boolean
     }>
   },
   patchClipboardPrefs(patch: {
@@ -51,13 +53,35 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
     lastAppliedClipboardHash?: string
     dismissedClipboardHash?: string
     autoHideOnBlur?: boolean
+    autoUpdateEnabled?: boolean
   }) {
     return ipcRenderer.invoke(IPC.clipboardPrefsPatch, patch) as Promise<{
       clipboardPolicy: 'smart' | 'always' | 'never'
       lastAppliedClipboardHash?: string
       dismissedClipboardHash?: string
       autoHideOnBlur?: boolean
+      autoUpdateEnabled?: boolean
     }>
+  },
+  getUpdateState() {
+    return ipcRenderer.invoke(IPC.updaterGetState) as Promise<UpdateState>
+  },
+  checkForUpdates() {
+    return ipcRenderer.invoke(IPC.updaterCheck) as Promise<UpdateState>
+  },
+  downloadUpdate() {
+    return ipcRenderer.invoke(IPC.updaterDownload) as Promise<UpdateState>
+  },
+  installUpdate() {
+    ipcRenderer.send(IPC.updaterInstall)
+  },
+  openUpdateReleasePage() {
+    ipcRenderer.send(IPC.updaterOpenRelease)
+  },
+  onUpdateState(handler: (state: UpdateState) => void) {
+    const listener = (_e: unknown, state: UpdateState) => handler(state)
+    ipcRenderer.on(IPC.updateState, listener)
+    return () => ipcRenderer.removeListener(IPC.updateState, listener)
   },
   onShowSearch(handler: (payload: ShowSearchPayload) => void) {
     showSearchHandler = handler

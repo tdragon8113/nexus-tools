@@ -20,6 +20,27 @@ export type NexusClipboardPrefs = {
   lastAppliedClipboardHash?: string
   dismissedClipboardHash?: string
   autoHideOnBlur?: boolean
+  autoUpdateEnabled?: boolean
+}
+
+export type NexusUpdateStatus =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'not-available'
+  | 'downloading'
+  | 'downloaded'
+  | 'error'
+
+export type NexusUpdateState = {
+  status: NexusUpdateStatus
+  currentVersion: string
+  latestVersion?: string
+  releaseTag?: string
+  releaseUrl?: string
+  percent?: number
+  error?: string
+  manualInstallRecommended?: boolean
 }
 
 export interface NexusDesktopBridge {
@@ -33,6 +54,12 @@ export interface NexusDesktopBridge {
   onPinnedChange?(handler: (pinned: boolean) => void): () => void
   getClipboardPrefs?(): Promise<NexusClipboardPrefs>
   patchClipboardPrefs?(patch: Partial<NexusClipboardPrefs>): Promise<NexusClipboardPrefs>
+  getUpdateState?(): Promise<NexusUpdateState>
+  checkForUpdates?(): Promise<NexusUpdateState>
+  downloadUpdate?(): Promise<NexusUpdateState>
+  installUpdate?(): void
+  openUpdateReleasePage?(): void
+  onUpdateState?(handler: (state: NexusUpdateState) => void): () => void
   applyOpenTool?(payload: NexusOpenToolPayload): void
   onShowSearch(handler: (payload: NexusShowSearchPayload) => void): () => void
   onOpenTool?(handler: (payload: NexusOpenToolPayload) => void): () => void

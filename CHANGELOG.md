@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5] - 2026-05-29
+
+### 新增（web-tools 桌面端）
+
+- 设置页「软件更新」：检查更新、自动下载；Windows 下载完成后可自动安装并重启
+- macOS 启动时自动清除下载隔离标记（`com.apple.quarantine`），DMG 覆盖安装后一般无需再手动 `xattr -cr`
+
+### 改进（web-tools 桌面端）
+
+- 设置页「版本 / 自动检查更新」分行展示，与其它设置项布局一致
+- CI Release 附带 `latest.yml` / `latest-mac.yml` 与 zip，供应用内更新使用
+
 ## [0.2.4] - 2026-05-28
 
 ### 新增（web-tools 桌面端）

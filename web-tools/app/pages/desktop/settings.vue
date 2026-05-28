@@ -6,10 +6,13 @@ definePageMeta({
 
 useHead({ title: '设置 - Nexus Tools' })
 
-const { autoHideOnBlur, loaded, syncFromMain, setAutoHideOnBlur } = useDesktopAutoHide()
+const { autoHideOnBlur, loaded: autoHideLoaded, syncFromMain, setAutoHideOnBlur } = useDesktopAutoHide()
+const { autoUpdateEnabled, loaded: updaterLoaded, syncFromMain: syncUpdater, setAutoUpdateEnabled } =
+  useDesktopUpdater()
 
 onMounted(() => {
   void syncFromMain()
+  void syncUpdater()
 })
 </script>
 
@@ -22,7 +25,7 @@ onMounted(() => {
       >
         <DesktopSettingsToggle
           :model-value="autoHideOnBlur"
-          :disabled="!loaded"
+          :disabled="!autoHideLoaded"
           compact
           label="失焦时自动隐藏"
           @update:model-value="setAutoHideOnBlur"
@@ -35,6 +38,28 @@ onMounted(() => {
         description="用快捷键打开搜索时，是否将剪贴板内容写入搜索框。应用内点击「搜索」不会自动填入。"
       >
         <DesktopClipboardSettings />
+      </DesktopSettingsField>
+
+      <DesktopSettingsField
+        border-top
+        label="自动检查更新"
+        description="启动后检查 GitHub Release。Windows 可后台下载并安装；macOS 可自动下载，安装需打开 Release 中的 DMG（覆盖安装后会自动清除隔离标记）。"
+      >
+        <DesktopSettingsToggle
+          :model-value="autoUpdateEnabled"
+          :disabled="!updaterLoaded"
+          compact
+          label="自动检查更新"
+          @update:model-value="setAutoUpdateEnabled"
+        />
+      </DesktopSettingsField>
+
+      <DesktopSettingsField
+        border-top
+        label="版本"
+        description="显示当前安装版本，可手动检查 GitHub 最新发布。打包版支持在线检查与下载；开发模式仅显示版本号。"
+      >
+        <DesktopSettingsUpdater />
       </DesktopSettingsField>
     </DesktopSettingsPanel>
   </div>

@@ -16,7 +16,13 @@ export const IPC = {
   pinSet: 'desktop:pin-set',
   pinChanged: 'desktop:pinned-changed',
   clipboardPrefsGet: 'desktop:clipboard-prefs-get',
-  clipboardPrefsPatch: 'desktop:clipboard-prefs-patch'
+  clipboardPrefsPatch: 'desktop:clipboard-prefs-patch',
+  updaterGetState: 'desktop:updater-get-state',
+  updaterCheck: 'desktop:updater-check',
+  updaterDownload: 'desktop:updater-download',
+  updaterInstall: 'desktop:updater-install',
+  updaterOpenRelease: 'desktop:updater-open-release',
+  updateState: 'desktop:update-state'
 } as const
 
 export type ClipboardOpenSource = 'hotkey' | 'navigation'

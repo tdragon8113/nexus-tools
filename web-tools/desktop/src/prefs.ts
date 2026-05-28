@@ -10,11 +10,14 @@ export type DesktopPrefs = {
   dismissedClipboardHash?: string
   /** 失焦或 Cmd+Tab 时隐藏窗口；关闭则仅被其他窗口覆盖。默认开启 */
   autoHideOnBlur?: boolean
+  /** 自动检查、下载并安装更新（打包版） */
+  autoUpdateEnabled?: boolean
 }
 
 const DEFAULT_PREFS: DesktopPrefs = {
   clipboardPolicy: 'smart',
-  autoHideOnBlur: true
+  autoHideOnBlur: true,
+  autoUpdateEnabled: true
 }
 
 export class DesktopPrefsStore {

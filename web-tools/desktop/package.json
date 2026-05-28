@@ -13,7 +13,7 @@
     "start": "electron .",
     "pack": "npm run icons && npm run build && electron-builder --dir",
     "dist": "npm run dist:mac",
-    "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg",
+    "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip",
     "dist:win": "npm run icons && npm run build && electron-builder --win nsis --x64"
   },
   "devDependencies": {
@@ -27,7 +27,11 @@
   "build": {
     "appId": "com.nexus.tools",
     "productName": "Nexus Tools",
-    "publish": null,
+    "publish": {
+      "provider": "github",
+      "owner": "tdragon8113",
+      "repo": "nexus-tools"
+    },
     "directories": {
       "output": "release"
     },
@@ -58,7 +62,15 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["universal"]
+          "arch": [
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "universal"
+          ]
         }
       ]
     },
@@ -67,7 +79,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "NexusTools-setup.${ext}"
@@ -75,8 +89,14 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerLanguages": ["zh_CN", "en_US"],
+      "installerLanguages": [
+        "zh_CN",
+        "en_US"
+      ],
       "language": "2052"
     }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
   }
 }

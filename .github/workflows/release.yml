@@ -81,34 +81,43 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          DMG=$(find web-tools/desktop/release -maxdepth 1 -name 'NexusTools.dmg' | head -1)
+          RELEASE_DIR=web-tools/desktop/release
+          DMG=$(find "$RELEASE_DIR" -maxdepth 1 -name 'NexusTools.dmg' | head -1)
           if [ -z "$DMG" ]; then
-            echo "NexusTools.dmg not found under web-tools/desktop/release"
-            ls -la web-tools/desktop/release || true
+            echo "NexusTools.dmg not found under $RELEASE_DIR"
+            ls -la "$RELEASE_DIR" || true
             exit 1
           fi
           cp "$DMG" "dist/${{ matrix.artifact_file }}"
           shasum -a 256 "dist/${{ matrix.artifact_file }}"
+          # electron-updater：latest-mac.yml + zip + blockmap
+          find "$RELEASE_DIR" -maxdepth 1 \( -name 'latest-mac.yml' -o -name '*.blockmap' -o -name 'NexusTools*.zip' \) -exec cp -f {} dist/ \;
+          ls -la dist/
 
       - name: Stage release artifact (Windows)
         if: matrix.platform == 'win'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          $exe = Get-ChildItem -Path web-tools/desktop/release -Filter 'NexusTools-setup.exe' -File | Select-Object -First 1
+          $releaseDir = 'web-tools/desktop/release'
+          $exe = Get-ChildItem -Path $releaseDir -Filter 'NexusTools-setup.exe' -File | Select-Object -First 1
           if (-not $exe) {
             Write-Error 'NexusTools-setup.exe not found under web-tools/desktop/release'
-            Get-ChildItem -Path web-tools/desktop/release -ErrorAction SilentlyContinue
+            Get-ChildItem -Path $releaseDir -ErrorAction SilentlyContinue
             exit 1
           }
           Copy-Item $exe.FullName "dist/${{ matrix.artifact_file }}"
           Get-FileHash "dist/${{ matrix.artifact_file }}" -Algorithm SHA256 | Format-List
+          Get-ChildItem -Path $releaseDir -File | Where-Object {
+            $_.Name -eq 'latest.yml' -or $_.Name -like '*.blockmap'
+          } | ForEach-Object { Copy-Item $_.FullName dist/ }
+          Get-ChildItem dist
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.artifact_file }}
+          path: dist/
 
   release:
     needs: build-desktop
@@ -168,6 +177,9 @@ jobs:
         run: |
           find dist -name 'NexusTools.dmg' -exec cp -f {} dist/ \;
           find dist -name 'NexusTools-setup.exe' -exec cp -f {} dist/ \;
+          find dist -name 'NexusTools*.zip' -exec cp -f {} dist/ \;
+          find dist -name 'latest*.yml' -exec cp -f {} dist/ \;
+          find dist -name '*.blockmap' -exec cp -f {} dist/ \;
           ls -la dist/
           test -f dist/NexusTools.dmg
           test -f dist/NexusTools-setup.exe
@@ -178,6 +190,9 @@ jobs:
           files: |
             dist/NexusTools.dmg
             dist/NexusTools-setup.exe
+            dist/NexusTools*.zip
+            dist/latest*.yml
+            dist/*.blockmap
           body: ${{ steps.changelog.outputs.body }}
           generate_release_notes: ${{ steps.changelog.outputs.use_auto == 'true' }}
         env:
