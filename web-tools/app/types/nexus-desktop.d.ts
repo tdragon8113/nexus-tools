@@ -19,6 +19,7 @@ export type NexusClipboardPrefs = {
   clipboardPolicy: ClipboardPolicy
   lastAppliedClipboardHash?: string
   dismissedClipboardHash?: string
+  autoHideOnBlur?: boolean
 }
 
 export interface NexusDesktopBridge {

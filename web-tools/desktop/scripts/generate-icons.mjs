@@ -15,6 +15,17 @@ const svgPath = path.join(webToolsRoot, 'public/favicon.svg')
 const iconsDir = path.join(desktopRoot, 'icons')
 const iconsetDir = path.join(iconsDir, 'icon.iconset')
 
+/**
+ * Apple macOS 应用图标规范（Sonoma / Sequoia Production Template）：
+ * - 画布：1024×1024 px
+ * - 主内容安全区：824×824 px 居中（四边各留白 100 px）
+ * - 系统会自动套 squircle 遮罩，勿自行加圆角
+ * @see https://developer.apple.com/design/resources/
+ */
+const MAC_ICON_CANVAS = 1024
+const MAC_ICON_SAFE_AREA = 824
+const MAC_ICON_SAFE_SCALE = MAC_ICON_SAFE_AREA / MAC_ICON_CANVAS // ≈ 0.8047
+
 const ICONSET = [
   [16, 'icon_16x16.png'],
   [32, 'icon_16x16@2x.png'],
@@ -36,14 +47,33 @@ if (!fs.existsSync(svgPath)) {
 fs.mkdirSync(iconsetDir, { recursive: true })
 const svg = fs.readFileSync(svgPath)
 
+/** 将 SVG 缩放到安全区内并居中，避免满画布图标在系统切换器中显大 */
+async function renderMacAppIconPng(size) {
+  const inner = Math.max(1, Math.round(size * MAC_ICON_SAFE_SCALE))
+  const pad = Math.floor((size - inner) / 2)
+  const innerBuf = await sharp(svg).resize(inner, inner).png().toBuffer()
+  return sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 }
+    }
+  })
+    .composite([{ input: innerBuf, left: pad, top: pad }])
+    .png()
+    .toBuffer()
+}
+
 for (const [size, name] of ICONSET) {
   const out = path.join(iconsetDir, name)
-  await sharp(svg).resize(size, size).png().toFile(out)
+  const buf = await renderMacAppIconPng(size)
+  await sharp(buf).toFile(out)
   console.log('wrote', name)
 }
 
 const pngPath = path.join(iconsDir, 'icon.png')
-await sharp(svg).resize(1024, 1024).png().toFile(pngPath)
+await sharp(await renderMacAppIconPng(1024)).toFile(pngPath)
 console.log('wrote icon.png')
 
 if (process.platform === 'darwin') {

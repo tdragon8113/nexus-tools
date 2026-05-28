@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2026-05-28
+
+### 新增（web-tools 桌面端）
+
+- **文本对比**：对比选项（忽略行尾空白 / 空白 / 大小写 / 空行）、复制 Unified Diff、大文本防抖与字符级高亮降级
+- **文本对比**：按当前语法格式化（JSON / JS / TS / HTML / CSS / Markdown），左右栏独立复制与格式化图标
+- 桌面设置页组件化（`DesktopSettings*`），失焦自动隐藏可在设置中关闭
+
+### 改进（web-tools 桌面端）
+
+- 文本对比并排对齐 diff、差异块跳转、滚动同步与 CodeMirror 行内高亮
+- 启动器失焦行为：图钉置顶；自动隐藏开则收起；关则沉到其它窗口下方
+- 应用图标体积优化
+
 ## [0.2.3] - 2026-05-26
 
 ### 新增（web-tools 桌面端）

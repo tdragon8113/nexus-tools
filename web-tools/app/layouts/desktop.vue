@@ -280,8 +280,15 @@ html[data-nexus-desktop='1'] .text-tool-page .text-editor-shell {
   min-height: 28rem;
 }
 
+html[data-nexus-desktop='1'] .text-diff-tool-page .text-diff-workspace {
+  flex: 1 1 auto;
+  min-height: 28rem;
+}
+
 html[data-nexus-desktop='1'] .text-tool-page .text-editor-shell > div,
-html[data-nexus-desktop='1'] .text-tool-page .text-diff-cm-wrap {
+html[data-nexus-desktop='1'] .text-tool-page .text-diff-cm-wrap,
+html[data-nexus-desktop='1'] .text-diff-tool-page .text-diff-pane__editor,
+html[data-nexus-desktop='1'] .text-diff-tool-page .text-diff-cm-wrap {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;

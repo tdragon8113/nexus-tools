@@ -1,329 +1,335 @@
 <template>
-  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
-<div class="mb-3 flex flex-wrap items-center gap-1 rounded-xl border border-slate-200/85 bg-slate-50/90 px-1.5 py-1 shadow-sm">
-      <label class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-slate-600">
-        <span class="shrink-0 text-xs font-medium text-slate-500">语言</span>
-        <select
-          v-model="diffLanguage"
-          class="max-w-[8.5rem] rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 shadow-sm focus:border-lime-400 focus:outline-none focus:ring-2 focus:ring-lime-200/80"
+  <div class="text-diff-tool-page desktop-tool-page flex h-full min-h-0 flex-col">
+    <div
+      class="relative z-30 mb-2 flex shrink-0 flex-col gap-2 overflow-visible rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex shrink-0 flex-wrap items-center gap-0.5">
+          <button
+            type="button"
+            class="text-diff-tbar-tip"
+            :class="tbarBtn"
+            data-tip="交换左右"
+            aria-label="交换左右"
+            @click="swapTexts"
+          >
+            <van-icon name="exchange" size="18" />
+          </button>
+          <button
+            type="button"
+            class="text-diff-tbar-tip"
+            :class="[tbarBtn, tbarDisabled]"
+            data-tip="复制 Unified Diff"
+            aria-label="复制 Unified Diff"
+            :disabled="!hasInput || diffCount === 0 || diffComputing"
+            @click="copyUnifiedDiff"
+          >
+            <svg
+              class="size-[18px] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M8 6h11M8 12h11M8 18h11M5 6h.01M5 12h.01M5 18h.01" />
+            </svg>
+          </button>
+          <button
+            v-if="canFormat"
+            type="button"
+            class="text-diff-tbar-tip"
+            :class="[tbarBtn, tbarDisabled]"
+            :data-tip="formatBothTip"
+            :aria-label="formatBothTip"
+            :disabled="formatting || (!leftText.trim() && !rightText.trim())"
+            @click="formatBothWithSync"
+          >
+            <svg
+              class="size-[18px] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M5 7h14M5 12h8.5M5 17h14" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="text-diff-tbar-tip"
+            :class="tbarBtnDanger"
+            data-tip="清空"
+            aria-label="清空"
+            :disabled="!hasInput"
+            @click="clearAll"
+          >
+            <van-icon name="delete-o" size="18" />
+          </button>
+        </div>
+
+        <span class="hidden h-5 w-px shrink-0 bg-slate-200/90 sm:inline" aria-hidden="true" />
+
+        <label class="flex items-center gap-1.5 text-xs text-slate-600">
+          <span class="shrink-0">语法</span>
+          <select
+            v-model="diffLanguage"
+            class="max-w-[7.5rem] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          >
+            <option v-for="item in textDiffLanguages" :key="item.id" :value="item.id">
+              {{ item.label }}
+            </option>
+          </select>
+          <span v-if="!canFormat" class="text-[11px] text-slate-400">不可格式化</span>
+        </label>
+
+        <label class="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600">
+          <input v-model="wordWrap" type="checkbox" class="rounded border-slate-300 text-blue-600" />
+          自动换行
+        </label>
+
+        <span class="hidden h-5 w-px shrink-0 bg-slate-200/90 sm:inline" aria-hidden="true" />
+
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+            <input
+              v-model="compareOptions.ignoreTrimWhitespace"
+              type="checkbox"
+              class="rounded border-slate-300 text-blue-600"
+            />
+            忽略行尾空白
+          </label>
+          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+            <input
+              v-model="compareOptions.ignoreWhitespace"
+              type="checkbox"
+              class="rounded border-slate-300 text-blue-600"
+            />
+            忽略空白
+          </label>
+          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+            <input
+              v-model="compareOptions.ignoreCase"
+              type="checkbox"
+              class="rounded border-slate-300 text-blue-600"
+            />
+            忽略大小写
+          </label>
+          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+            <input
+              v-model="compareOptions.ignoreEmptyLines"
+              type="checkbox"
+              class="rounded border-slate-300 text-blue-600"
+            />
+            忽略空行
+          </label>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-0.5">
+          <button
+            type="button"
+            class="text-diff-tbar-tip"
+            :class="[tbarBtn, tbarDisabled]"
+            data-tip="上一处差异"
+            aria-label="上一处差异"
+            :disabled="diffBlocks.length === 0 || activeDiffIndex <= 0 || diffComputing"
+            @click="jumpDiff(-1, scrollToDiffLine)"
+          >
+            <van-icon name="arrow-left" size="18" />
+          </button>
+          <button
+            type="button"
+            class="text-diff-tbar-tip"
+            :class="[tbarBtn, tbarDisabled]"
+            data-tip="下一处差异"
+            aria-label="下一处差异"
+            :disabled="diffBlocks.length === 0 || activeDiffIndex >= diffBlocks.length - 1 || diffComputing"
+            @click="jumpDiff(1, scrollToDiffLine)"
+          >
+            <van-icon name="arrow" size="18" />
+          </button>
+        </div>
+
+        <span
+          v-if="diffBlocks.length > 0"
+          class="text-xs tabular-nums text-slate-500"
         >
-          <option v-for="item in textDiffLanguages" :key="item.id" :value="item.id">
-            {{ item.label }}
-          </option>
-        </select>
-      </label>
-      <span class="h-5 w-px bg-slate-200" aria-hidden="true" />
-      <button type="button" class="text-diff-tool-btn" @click="swapTexts">
-        <van-icon name="exchange" size="18" />
-        <span>交换</span>
-      </button>
-      <button type="button" class="text-diff-tool-btn" :disabled="!leftText" @click="copyWithToast(leftText)">
-        <van-icon name="notes-o" size="18" />
-        <span>复制左侧</span>
-      </button>
-      <button type="button" class="text-diff-tool-btn" :disabled="!rightText" @click="copyWithToast(rightText)">
-        <van-icon name="description" size="18" />
-        <span>复制右侧</span>
-      </button>
-      <button type="button" class="text-diff-tool-btn text-red-600 hover:bg-red-50" @click="clearAll">
-        <van-icon name="delete-o" size="18" />
-        <span>清空</span>
-      </button>
-      <span class="h-5 w-px bg-slate-200" aria-hidden="true" />
-      <button
-        type="button"
-        class="text-diff-tool-btn"
-        :disabled="!canFormat || formatting || !leftText.trim()"
-        title="按当前语言格式化左侧"
-        @click="formatSide('left')"
-      >
-        <van-icon name="orders-o" size="18" />
-        <span>{{ formatting ? '格式化中…' : '格式化左' }}</span>
-      </button>
-      <button
-        type="button"
-        class="text-diff-tool-btn"
-        :disabled="!canFormat || formatting || !rightText.trim()"
-        title="按当前语言格式化右侧"
-        @click="formatSide('right')"
-      >
-        <van-icon name="orders-o" size="18" />
-        <span>格式化右</span>
-      </button>
-      <button
-        type="button"
-        class="text-diff-tool-btn"
-        :disabled="!canFormat || formatting || (!leftText.trim() && !rightText.trim())"
-        title="按当前语言格式化两侧"
-        @click="formatBoth"
-      >
-        <van-icon name="completed" size="18" />
-        <span>格式化全部</span>
-      </button>
-      <span class="mx-1 h-5 w-px bg-slate-200" aria-hidden="true" />
-      <button
-        type="button"
-        class="text-diff-tool-btn"
-        :disabled="diffBlocks.length === 0 || activeDiffIndex <= 0"
-        aria-label="上一处差异"
-        title="上一处差异"
-        @click="jumpDiff(-1)"
-      >
-        <van-icon name="arrow-left" size="18" />
-      </button>
-      <button
-        type="button"
-        class="text-diff-tool-btn"
-        :disabled="diffBlocks.length === 0 || activeDiffIndex >= diffBlocks.length - 1"
-        aria-label="下一处差异"
-        title="下一处差异"
-        @click="jumpDiff(1)"
-      >
-        <van-icon name="arrow" size="18" />
-      </button>
-      <span v-if="diffBlocks.length > 0" class="px-2 text-xs text-slate-500 tabular-nums">
-        {{ activeDiffIndex + 1 }} / {{ diffBlocks.length }}
-      </span>
-      <div class="ml-auto flex items-center gap-3 px-2 text-xs text-slate-500 tabular-nums">
-        <span v-if="hasInput && diffCount === 0" class="font-medium text-emerald-700">文本一致</span>
-        <span v-else>{{ diffCount }} 处差异</span>
-        <span>左 {{ leftLineCount }} 行</span>
-        <span>右 {{ rightLineCount }} 行</span>
+          {{ activeDiffIndex + 1 }} / {{ diffBlocks.length }}
+        </span>
+
+        <span
+          class="text-xs tabular-nums"
+          :class="hasInput && diffCount === 0 ? 'font-medium text-emerald-700' : 'text-slate-500'"
+        >
+          {{ diffStatusText }}
+        </span>
+
+        <span v-if="formatting" class="text-xs text-slate-400">格式化中…</span>
+        <span v-else-if="diffComputing" class="text-xs text-slate-400">对比更新中…</span>
+
+        <span class="ml-auto shrink-0 text-xs tabular-nums text-slate-400">
+          左 {{ leftLineCount }} 行 · 右 {{ rightLineCount }} 行
+        </span>
       </div>
     </div>
 
-    <div class="grid min-h-0 grid-cols-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <section class="min-w-0 border-r border-slate-200">
-        <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">左侧文本</span>
-          <span class="text-xs text-slate-400 tabular-nums">{{ leftText.length }} 字符</span>
+    <div
+      class="text-diff-workspace doc-surface grid min-h-[28rem] flex-1 grid-cols-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+    >
+      <section class="text-diff-pane flex min-h-0 min-w-0 flex-col border-r border-slate-200">
+        <div
+          class="flex shrink-0 items-center justify-between border-b border-slate-200/90 bg-slate-50/80 px-3 py-1.5"
+        >
+          <span class="text-xs font-medium text-slate-500">原始</span>
+          <div class="flex items-center gap-0.5">
+            <TextDiffPaneActions
+              :has-text="Boolean(leftText)"
+              :can-format="canFormat"
+              :format-tip="formatSideTip('left')"
+              :format-disabled="formatting || !leftText.trim()"
+              @copy="copyWithToast(leftText)"
+              @format="formatSideWithSync('left')"
+            />
+            <span class="ml-1 text-xs tabular-nums text-slate-400">{{ leftText.length }} 字符</span>
+          </div>
         </div>
-        <ClientOnly>
-          <TextDiffCodeMirrorPane
-            ref="leftPaneRef"
-            v-model="leftText"
-            :language="diffLanguage"
-            class="h-[calc(100vh-15rem)] min-h-[34rem]"
-            :decorations="leftDecorations"
-            :range-decorations="leftRangeDecorations"
-            @scroll="syncRightScroll"
-          />
-        </ClientOnly>
+        <div class="text-diff-pane__editor min-h-0 flex-1">
+          <ClientOnly>
+            <TextDiffCodeMirrorPane
+              ref="leftPaneRef"
+              :model-value="leftDisplayText"
+              :language="diffLanguage"
+              :word-wrap="wordWrap"
+              :decorations="leftDecorations"
+              :range-decorations="leftRangeDecorations"
+              placeholder="粘贴或输入原始文本…"
+              @update:model-value="setLeftDisplay"
+              @scroll="syncRightScroll"
+            />
+          </ClientOnly>
+        </div>
       </section>
 
-      <section class="min-w-0">
-        <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">右侧文本</span>
-          <span class="text-xs text-slate-400 tabular-nums">{{ rightText.length }} 字符</span>
+      <section class="text-diff-pane flex min-h-0 min-w-0 flex-col">
+        <div
+          class="flex shrink-0 items-center justify-between border-b border-slate-200/90 bg-slate-50/80 px-3 py-1.5"
+        >
+          <span class="text-xs font-medium text-slate-500">对比</span>
+          <div class="flex items-center gap-0.5">
+            <TextDiffPaneActions
+              :has-text="Boolean(rightText)"
+              :can-format="canFormat"
+              :format-tip="formatSideTip('right')"
+              :format-disabled="formatting || !rightText.trim()"
+              @copy="copyWithToast(rightText)"
+              @format="formatSideWithSync('right')"
+            />
+            <span class="ml-1 text-xs tabular-nums text-slate-400">{{ rightText.length }} 字符</span>
+          </div>
         </div>
-        <ClientOnly>
-          <TextDiffCodeMirrorPane
-            ref="rightPaneRef"
-            v-model="rightText"
-            :language="diffLanguage"
-            class="h-[calc(100vh-15rem)] min-h-[34rem]"
-            :decorations="rightDecorations"
-            :range-decorations="rightRangeDecorations"
-            @scroll="syncLeftScroll"
-          />
-        </ClientOnly>
+        <div class="text-diff-pane__editor min-h-0 flex-1">
+          <ClientOnly>
+            <TextDiffCodeMirrorPane
+              ref="rightPaneRef"
+              :model-value="rightDisplayText"
+              :language="diffLanguage"
+              :word-wrap="wordWrap"
+              :decorations="rightDecorations"
+              :range-decorations="rightRangeDecorations"
+              placeholder="粘贴或输入对比文本…"
+              @update:model-value="setRightDisplay"
+              @scroll="syncLeftScroll"
+            />
+          </ClientOnly>
+        </div>
       </section>
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { diffChars } from 'diff'
-import { alignedLineDiff, buildLineDiffViewRows, type AlignedLineRow, type LineDiffViewRow } from '~/utils/jsonLineDiffView'
-import { lineCountFor } from '~/utils/jsonTool'
-import { showToast } from 'vant'
-import {
-  isTextDiffLanguageId,
-  textDiffLanguages,
-  type TextDiffLanguageId
-} from '~/utils/textDiffCodeMirrorLanguage'
-import { canFormatTextDiffLanguage, formatTextDiffSource } from '~/utils/textDiffFormat'
-import type { TextDiffLineDecoration, TextDiffRangeDecoration } from '~/components/TextDiffCodeMirrorPane.vue'
+import { textDiffLanguages } from '~/utils/textDiffCodeMirrorLanguage'
+import TextDiffCodeMirrorPane from '~/components/TextDiffCodeMirrorPane.vue'
 
 useHead({ title: '文本对比 - Nexus Tools' })
 
-const leftText = useState('text-diff-left', () => '')
-const rightText = useState('text-diff-right', () => '')
-const diffLanguage = useState<TextDiffLanguageId>('text-diff-language', () => 'plain')
-
-watch(diffLanguage, (value) => {
-  if (!isTextDiffLanguageId(value)) diffLanguage.value = 'plain'
-})
-
-const formatting = ref(false)
-const canFormat = computed(() => canFormatTextDiffLanguage(diffLanguage.value))
+const tbarCore =
+  'inline-flex size-9 shrink-0 items-center justify-center rounded-full border-0 outline-none transition-[background-color,opacity] duration-150 focus-visible:ring-2 focus-visible:ring-offset-2'
+const tbarBtn = `${tbarCore} bg-transparent text-slate-600 hover:bg-black/[0.055] active:bg-black/[0.08] focus-visible:ring-slate-300/60`
+const tbarBtnDanger = `${tbarCore} bg-transparent text-red-600 hover:bg-red-500/[0.08] active:bg-red-500/[0.12] focus-visible:ring-red-300/50`
+const tbarDisabled = 'disabled:opacity-40 disabled:pointer-events-none'
+const {
+  leftText,
+  rightText,
+  leftDisplayText,
+  rightDisplayText,
+  setLeftDisplay,
+  setRightDisplay,
+  diffLanguage,
+  compareOptions,
+  activeDiffIndex,
+  wordWrap,
+  formatting,
+  diffComputing,
+  canFormat,
+  formatBothTip,
+  formatSideTip,
+  hasInput,
+  diffBlocks,
+  diffCount,
+  diffStatusText,
+  leftLineCount,
+  rightLineCount,
+  leftDecorations,
+  rightDecorations,
+  leftRangeDecorations,
+  rightRangeDecorations,
+  swapTexts,
+  clearAll,
+  formatSide,
+  formatBoth,
+  copyUnifiedDiff,
+  jumpDiff
+} = useTextDiff()
 
 const leftPaneRef = ref<InstanceType<typeof TextDiffCodeMirrorPane> | null>(null)
 const rightPaneRef = ref<InstanceType<typeof TextDiffCodeMirrorPane> | null>(null)
 
-const hasInput = computed(() => Boolean(leftText.value || rightText.value))
-const alignedRows = computed(() => alignedLineDiff(leftText.value, rightText.value))
-const diffRows = computed(() => buildLineDiffViewRows(leftText.value, rightText.value).rows)
-const diffCount = computed(() => diffRows.value.filter((row) => row.kind !== 'equal').length)
-const leftLineCount = computed(() => lineCountFor(leftText.value))
-const rightLineCount = computed(() => lineCountFor(rightText.value))
-const activeDiffIndex = useState('text-diff-active-index', () => 0)
-
-interface DiffBlock {
-  leftLineNo: number | null
-  rightLineNo: number | null
+function scrollToDiffLine(alignedLineNo: number) {
+  leftPaneRef.value?.scrollToLine(alignedLineNo)
+  rightPaneRef.value?.scrollToLine(alignedLineNo)
 }
 
-const diffBlocks = computed<DiffBlock[]>(() => {
-  const blocks: DiffBlock[] = []
-  let current: DiffBlock | null = null
-  let previousChanged = false
-
-  for (const row of diffRows.value) {
-    if (row.kind === 'equal') {
-      current = null
-      previousChanged = false
-      continue
+function syncPaneAfterFormat(side?: 'left' | 'right') {
+  void nextTick(() => {
+    const panes =
+      side === 'left'
+        ? [leftPaneRef.value]
+        : side === 'right'
+          ? [rightPaneRef.value]
+          : [leftPaneRef.value, rightPaneRef.value]
+    for (const pane of panes) {
+      pane?.syncDocFromModel?.()
+      requestAnimationFrame(() => pane?.syncDocFromModel?.())
     }
-
-    if (!current || !previousChanged) {
-      current = { leftLineNo: row.leftLineNo, rightLineNo: row.rightLineNo }
-      blocks.push(current)
-    } else {
-      current.leftLineNo ??= row.leftLineNo
-      current.rightLineNo ??= row.rightLineNo
-    }
-    previousChanged = true
-  }
-
-  return blocks
-})
-
-watch(diffBlocks, (blocks) => {
-  if (blocks.length === 0) {
-    activeDiffIndex.value = 0
-  } else if (activeDiffIndex.value >= blocks.length) {
-    activeDiffIndex.value = blocks.length - 1
-  }
-})
-
-function buildDecorations(rows: LineDiffViewRow[], side: 'left' | 'right'): TextDiffLineDecoration[] {
-  const seen = new Set<number>()
-  const decorations: TextDiffLineDecoration[] = []
-
-  for (const row of rows) {
-    if (row.kind === 'equal') continue
-    const line = side === 'left' ? row.leftLineNo : row.rightLineNo
-    if (line == null || seen.has(line)) continue
-    seen.add(line)
-
-    if (row.kind === 'delete' && side === 'left') {
-      decorations.push({ line, className: 'text-diff-line-del' })
-    } else if (row.kind === 'insert' && side === 'right') {
-      decorations.push({ line, className: 'text-diff-line-add' })
-    } else if (row.kind === 'change') {
-      decorations.push({
-        line,
-        className: side === 'left' ? 'text-diff-line-change-left' : 'text-diff-line-change-right'
-      })
-    }
-  }
-
-  return decorations
+  })
 }
 
-const leftDecorations = computed(() => buildDecorations(diffRows.value, 'left'))
-const rightDecorations = computed(() => buildDecorations(diffRows.value, 'right'))
-
-function buildRangeDecorations(rows: AlignedLineRow[], side: 'left' | 'right'): TextDiffRangeDecoration[] {
-  const ranges: TextDiffRangeDecoration[] = []
-  let leftLine = 1
-  let rightLine = 1
-
-  for (const row of rows) {
-    if (row.kind === 'equal') {
-      leftLine++
-      rightLine++
-      continue
-    }
-
-    if (row.kind === 'delete') {
-      if (side === 'left' && row.left.length > 0) {
-        ranges.push({
-          line: leftLine,
-          fromCh: 0,
-          toCh: row.left.length,
-          className: 'text-diff-char-del'
-        })
-      }
-      leftLine++
-      continue
-    }
-
-    if (row.kind === 'insert') {
-      if (side === 'right' && row.right.length > 0) {
-        ranges.push({
-          line: rightLine,
-          fromCh: 0,
-          toCh: row.right.length,
-          className: 'text-diff-char-add'
-        })
-      }
-      rightLine++
-      continue
-    }
-
-    let leftCh = 0
-    let rightCh = 0
-    for (const part of diffChars(row.left, row.right)) {
-      const len = part.value.length
-      if (part.removed) {
-        if (side === 'left' && len > 0) {
-          ranges.push({
-            line: leftLine,
-            fromCh: leftCh,
-            toCh: leftCh + len,
-            className: 'text-diff-char-del'
-          })
-        }
-        leftCh += len
-      } else if (part.added) {
-        if (side === 'right' && len > 0) {
-          ranges.push({
-            line: rightLine,
-            fromCh: rightCh,
-            toCh: rightCh + len,
-            className: 'text-diff-char-add'
-          })
-        }
-        rightCh += len
-      } else {
-        leftCh += len
-        rightCh += len
-      }
-    }
-    leftLine++
-    rightLine++
-  }
-
-  return ranges
+async function formatSideWithSync(side: 'left' | 'right') {
+  await formatSide(side)
+  syncPaneAfterFormat(side)
 }
 
-const leftRangeDecorations = computed(() => buildRangeDecorations(alignedRows.value, 'left'))
-const rightRangeDecorations = computed(() => buildRangeDecorations(alignedRows.value, 'right'))
-
-function scrollToDiff(index: number) {
-  const block = diffBlocks.value[index]
-  if (!block) return
-  if (block.leftLineNo != null) leftPaneRef.value?.scrollToLine(block.leftLineNo)
-  if (block.rightLineNo != null) rightPaneRef.value?.scrollToLine(block.rightLineNo)
-}
-
-function jumpDiff(delta: number) {
-  if (diffBlocks.value.length === 0) return
-  const next = Math.min(Math.max(activeDiffIndex.value + delta, 0), diffBlocks.value.length - 1)
-  activeDiffIndex.value = next
-  scrollToDiff(next)
+async function formatBothWithSync() {
+  await formatBoth()
+  syncPaneAfterFormat()
 }
 
 function syncRightScroll(top: number) {
@@ -334,85 +340,71 @@ function syncLeftScroll(top: number) {
   leftPaneRef.value?.setScrollTop(top)
 }
 
-function swapTexts() {
-  const nextLeft = rightText.value
-  rightText.value = leftText.value
-  leftText.value = nextLeft
-}
-
-function clearAll() {
-  leftText.value = ''
-  rightText.value = ''
-}
-
-async function formatSide(side: 'left' | 'right') {
-  if (!canFormat.value || formatting.value) return
-  const source = side === 'left' ? leftText.value : rightText.value
-  if (!source.trim()) return
-  formatting.value = true
-  try {
-    const formatted = await formatTextDiffSource(diffLanguage.value, source)
-    if (side === 'left') leftText.value = formatted
-    else rightText.value = formatted
-    showToast('已格式化')
-  } catch (e) {
-    showToast(e instanceof Error ? e.message : '格式化失败')
-  } finally {
-    formatting.value = false
-  }
-}
-
-async function formatBoth() {
-  if (!canFormat.value || formatting.value) return
-  if (!leftText.value.trim() && !rightText.value.trim()) return
-  formatting.value = true
-  try {
-    const tasks: Promise<void>[] = []
-    if (leftText.value.trim()) {
-      tasks.push(
-        formatTextDiffSource(diffLanguage.value, leftText.value).then((text) => {
-          leftText.value = text
-        })
-      )
-    }
-    if (rightText.value.trim()) {
-      tasks.push(
-        formatTextDiffSource(diffLanguage.value, rightText.value).then((text) => {
-          rightText.value = text
-        })
-      )
-    }
-    await Promise.all(tasks)
-    showToast('已格式化')
-  } catch (e) {
-    showToast(e instanceof Error ? e.message : '格式化失败')
-  } finally {
-    formatting.value = false
-  }
-}
+useConsumeToolPrefill(
+  'text-diff',
+  withCodeMirrorPrefillSync((raw) => {
+    leftText.value = raw
+  }, leftPaneRef)
+)
 </script>
 
 <style>
-.text-diff-tool-btn {
-  display: inline-flex;
-  height: 2rem;
-  align-items: center;
-  gap: 0.35rem;
-  border-radius: 0.5rem;
-  padding: 0 0.6rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
+.text-diff-tbar-tip[data-tip] {
+  position: relative;
+}
+
+.text-diff-tbar-tip[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  z-index: 200;
+  transform: translateX(-50%);
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid rgb(226 232 240);
+  background: #fff;
   color: rgb(51 65 85);
-  transition: background-color 0.14s ease, color 0.14s ease;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 0.08);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.14s ease, visibility 0.14s ease;
 }
 
-.text-diff-tool-btn:hover:not(:disabled) {
-  background: rgb(241 245 249);
-  color: rgb(15 23 42);
+.text-diff-tbar-tip[data-tip]:hover:not(:disabled)::after {
+  opacity: 1;
+  visibility: visible;
 }
 
-.text-diff-tool-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.42;
+.text-diff-workspace {
+  display: grid;
+  min-height: 0;
+  height: 100%;
+}
+
+.text-diff-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.text-diff-pane__editor {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.text-diff-pane__editor .text-diff-cm-wrap {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
 }
 </style>

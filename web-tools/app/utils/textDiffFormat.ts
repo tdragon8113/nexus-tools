@@ -1,5 +1,5 @@
 import type { Options } from 'prettier'
-import type { TextDiffLanguageId } from '~/utils/textDiffCodeMirrorLanguage'
+import { textDiffLanguageLabel, type TextDiffLanguageId } from '~/utils/textDiffCodeMirrorLanguage'
 
 const formattableLanguages = new Set<TextDiffLanguageId>([
   'json',
@@ -12,6 +12,22 @@ const formattableLanguages = new Set<TextDiffLanguageId>([
 
 export function canFormatTextDiffLanguage(language: TextDiffLanguageId): boolean {
   return formattableLanguages.has(language)
+}
+
+export function formatActionLabel(language: TextDiffLanguageId): string {
+  return `格式化为 ${textDiffLanguageLabel(language)}`
+}
+
+export function formatSideActionLabel(
+  language: TextDiffLanguageId,
+  side: 'left' | 'right'
+): string {
+  const pane = side === 'left' ? '左侧' : '右侧'
+  return `将${pane}${formatActionLabel(language)}`
+}
+
+export function formatBothActionLabel(language: TextDiffLanguageId): string {
+  return `将两侧${formatActionLabel(language)}`
 }
 
 function asPlugins(m: unknown): unknown[] {

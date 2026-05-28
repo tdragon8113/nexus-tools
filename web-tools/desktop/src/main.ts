@@ -52,7 +52,7 @@ app.whenReady().then(async () => {
     return
   }
 
-  windows = new WindowManager(webBaseUrl, preloadPath)
+  windows = new WindowManager(webBaseUrl, preloadPath, desktopPrefs)
 
   const ok = globalShortcut.register(HOTKEY, () => {
     windows?.toggleSearch(readClipboardForSearch())
@@ -86,6 +86,9 @@ app.whenReady().then(async () => {
     if (typeof p.dismissedClipboardHash === 'string') {
       next.dismissedClipboardHash = p.dismissedClipboardHash
     }
+    if (typeof p.autoHideOnBlur === 'boolean') {
+      next.autoHideOnBlur = p.autoHideOnBlur
+    }
     return desktopPrefs.write(next)
   })
 
@@ -97,6 +100,12 @@ app.whenReady().then(async () => {
   console.log(`[Nexus Tools] 已启动 · ${webBaseUrl} · ${HOTKEY} 唤起搜索`)
   windows.showSearch({ clipboard: readClipboardForSearch(), source: 'hotkey' })
 })
+
+if (process.platform === 'darwin') {
+  app.on('activate', () => {
+    windows?.activateFromUser(readClipboardForSearch())
+  })
+}
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll()
@@ -111,6 +120,6 @@ if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
   app.on('second-instance', () => {
-    windows?.toggleSearch(readClipboardForSearch())
+    windows?.activateFromUser(readClipboardForSearch())
   })
 }

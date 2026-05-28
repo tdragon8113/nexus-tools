@@ -12,6 +12,7 @@ import {
   type ShowSearchPayload
 } from './types'
 import { getAppIcon } from './appIcon'
+import type { DesktopPrefsStore } from './prefs'
 
 type PreloadFn = (file: string) => string
 
@@ -40,7 +41,8 @@ export class WindowManager {
 
   constructor(
     private readonly webBaseUrl: string,
-    private readonly preloadPath: PreloadFn
+    private readonly preloadPath: PreloadFn,
+    private readonly desktopPrefs: DesktopPrefsStore
   ) {
     this.pinned = this.readPinnedFromDisk()
   }
@@ -156,6 +158,10 @@ export class WindowManager {
     }
     this.pinned = next
     this.writePinnedToDisk()
+    if (next) {
+      const win = this.shell
+      if (win && !win.isDestroyed()) this.restoreLauncherOnTop(win)
+    }
     this.notifyPinState()
     return this.pinned
   }
@@ -214,6 +220,34 @@ export class WindowManager {
     }
   }
 
+  private isAutoHideOnBlurEnabled(): boolean {
+    return this.desktopPrefs.read().autoHideOnBlur !== false
+  }
+
+  private restoreLauncherOnTop(win: BrowserWindow) {
+    if (win.isDestroyed()) return
+    win.setAlwaysOnTop(true, 'floating')
+  }
+
+  /** 图钉：保持置顶；自动隐藏开：收起窗口；自动隐藏关：取消置顶，由其他窗口覆盖 */
+  private handleFocusLoss() {
+    if (process.env.NEXUS_KEEP_VISIBLE === '1') return
+
+    const win = this.shell
+    if (!win || win.isDestroyed() || !this.isShellVisible()) return
+
+    if (this.pinned) return
+
+    this.savePanelBounds()
+
+    if (this.isAutoHideOnBlurEnabled()) {
+      this.hide()
+      return
+    }
+
+    win.setAlwaysOnTop(false)
+  }
+
   private ensureShell(): BrowserWindow {
     if (this.shell && !this.shell.isDestroyed()) return this.shell
 
@@ -243,18 +277,30 @@ export class WindowManager {
       }
     })
 
-    // 点击窗口外失焦时隐藏（uTools 式）；图钉开启时保持显示
+    // 失焦：图钉保持置顶；自动隐藏开则收起；自动隐藏关则沉到其他窗口下方
     this.shell.on('blur', () => {
       if (process.env.NEXUS_KEEP_VISIBLE === '1' || this.pinned) return
       const win = this.shell
       if (!win || win.isDestroyed()) return
       setTimeout(() => {
-        if (win.isDestroyed() || !win.isVisible() || this.pinned) return
-        const focused = BrowserWindow.getFocusedWindow()
-        if (focused === win) return
-        this.savePanelBounds()
-        this.hide()
-      }, 200)
+        if (win.isDestroyed() || !this.isShellVisible()) return
+        if (BrowserWindow.getFocusedWindow() === win) return
+        this.handleFocusLoss()
+      }, 50)
+    })
+
+    this.shell.on('focus', () => {
+      const win = this.shell
+      if (!win || win.isDestroyed()) return
+      this.restoreLauncherOnTop(win)
+    })
+
+    this.shell.webContents.on('before-input-event', (_event, input) => {
+      if (process.env.NEXUS_KEEP_VISIBLE === '1' || this.pinned) return
+      if (input.type !== 'keyDown') return
+      if (process.platform === 'darwin' && input.meta && input.key === 'Tab') {
+        this.handleFocusLoss()
+      }
     })
 
     this.shell.on('moved', () => this.scheduleSavePanelBounds())
@@ -377,18 +423,31 @@ export class WindowManager {
 
   private revealSearchWindow(win: BrowserWindow) {
     if (!this.deferShowUntilSearchMeasured) {
-      win.show()
-      win.focus()
+      this.showAndFocus(win)
       return
     }
     const fallback = setTimeout(() => {
       if (!this.deferShowUntilSearchMeasured) return
       if (win.isDestroyed()) return
       this.deferShowUntilSearchMeasured = false
-      win.show()
-      win.focus()
+      this.showAndFocus(win)
     }, 480)
     win.once('closed', () => clearTimeout(fallback))
+  }
+
+  /** macOS 用 app.hide/show（等同 ⌘H），Cmd+Tab / 台前调度才能正确恢复 */
+  private isShellVisible(): boolean {
+    const win = this.shell
+    if (!win || win.isDestroyed()) return false
+    if (process.platform === 'darwin') return !app.isHidden()
+    return win.isVisible()
+  }
+
+  private showAndFocus(win: BrowserWindow) {
+    this.restoreLauncherOnTop(win)
+    if (process.platform === 'darwin') app.show()
+    if (!win.isVisible()) win.show()
+    win.focus()
   }
 
   resizeSearch(contentHeight: number) {
@@ -400,8 +459,7 @@ export class WindowManager {
     this.applySearchBounds(win, height, { keepPosition: true })
     if (this.deferShowUntilSearchMeasured) {
       this.deferShowUntilSearchMeasured = false
-      win.show()
-      win.focus()
+      this.showAndFocus(win)
     }
   }
 
@@ -432,6 +490,10 @@ export class WindowManager {
     const win = this.shell
     if (!win || win.isDestroyed()) return
     this.savePanelBounds()
+    if (process.platform === 'darwin') {
+      app.hide()
+      return
+    }
     win.hide()
   }
 
@@ -461,25 +523,15 @@ export class WindowManager {
     if (this.isPanelRoute(win.webContents.getURL())) {
       this.setPanelMode(path)
     }
-    win.show()
-    win.focus()
+    this.showAndFocus(win)
   }
 
-  /**
-   * 全局快捷键：显隐切换。
-   * - 窗口可见：隐藏
-   * - 隐藏后唤起：若上次在工具/工具集，仅恢复该页；否则打开搜索并带入剪贴板
-   */
-  toggleSearch(clipboard = '') {
+  /** 窗口隐藏时恢复显示（快捷键 / Dock / 应用切换器共用） */
+  private revealWhenHidden(clipboard = '') {
     const payload: ShowSearchPayload = { clipboard, source: 'hotkey' }
     const win = this.shell
     if (!win || win.isDestroyed()) {
       this.showSearch(payload)
-      return
-    }
-
-    if (win.isVisible()) {
-      this.hide()
       return
     }
 
@@ -490,6 +542,44 @@ export class WindowManager {
     }
 
     this.showSearch(payload)
+  }
+
+  /** Dock 点击或 Cmd+Tab 切回本应用时恢复窗口 */
+  activateFromUser(clipboard = '') {
+    if (this.deferShowUntilSearchMeasured) return
+
+    const win = this.shell
+    if (!win || win.isDestroyed()) {
+      this.showSearch({ clipboard, source: 'hotkey' })
+      return
+    }
+
+    if (this.isShellVisible()) {
+      win.focus()
+      return
+    }
+
+    this.revealWhenHidden(clipboard)
+  }
+
+  /**
+   * 全局快捷键：显隐切换。
+   * - 窗口可见：隐藏
+   * - 隐藏后唤起：若上次在工具/工具集，仅恢复该页；否则打开搜索并带入剪贴板
+   */
+  toggleSearch(clipboard = '') {
+    const win = this.shell
+    if (!win || win.isDestroyed()) {
+      this.showSearch({ clipboard, source: 'hotkey' })
+      return
+    }
+
+    if (this.isShellVisible()) {
+      this.hide()
+      return
+    }
+
+    this.revealWhenHidden(clipboard)
   }
 
   panelSizeForPath(_path: string) {

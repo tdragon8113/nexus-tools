@@ -43,17 +43,20 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       clipboardPolicy: 'smart' | 'always' | 'never'
       lastAppliedClipboardHash?: string
       dismissedClipboardHash?: string
+      autoHideOnBlur?: boolean
     }>
   },
   patchClipboardPrefs(patch: {
     clipboardPolicy?: 'smart' | 'always' | 'never'
     lastAppliedClipboardHash?: string
     dismissedClipboardHash?: string
+    autoHideOnBlur?: boolean
   }) {
     return ipcRenderer.invoke(IPC.clipboardPrefsPatch, patch) as Promise<{
       clipboardPolicy: 'smart' | 'always' | 'never'
       lastAppliedClipboardHash?: string
       dismissedClipboardHash?: string
+      autoHideOnBlur?: boolean
     }>
   },
   onShowSearch(handler: (payload: ShowSearchPayload) => void) {

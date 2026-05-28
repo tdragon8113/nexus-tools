@@ -216,11 +216,14 @@ function buildExtensions(): Extension[] {
         backgroundColor: 'rgb(248 250 252)',
         borderRight: '1px solid rgb(226 232 240)',
         color: lineNoColor,
-        paddingLeft: '0'
+        paddingLeft: '0',
+        width: 'auto !important'
       },
       '.cm-lineNumbers': {
         color: lineNoColor,
-        minWidth: '0'
+        minWidth: '0',
+        width: 'auto !important',
+        flex: '0 0 auto'
       },
       '.cm-lineNumbers .cm-gutterElement': {
         display: 'flex',
@@ -228,8 +231,9 @@ function buildExtensions(): Extension[] {
         justifyContent: 'flex-end',
         boxSizing: 'border-box',
         minWidth: '0',
-        padding: '0 6px 0 2px',
-        fontSize: '12px',
+        padding: '0 2px',
+        fontSize: '11px',
+        fontVariantNumeric: 'tabular-nums',
         textAlign: 'right',
         whiteSpace: 'nowrap'
       },
@@ -275,6 +279,9 @@ function buildExtensions(): Extension[] {
       },
       '.text-diff-line-change-right': {
         backgroundColor: 'rgb(236 253 245 / 0.95)'
+      },
+      '.text-diff-line-pad': {
+        backgroundColor: 'rgb(248 250 252 / 0.95)'
       },
       '.text-diff-char-del': {
         backgroundColor: 'rgb(248 113 113 / 0.72)',
@@ -351,7 +358,7 @@ onUnmounted(() => {
   height: 100%;
 }
 
-.text-diff-cm-wrap--plain .cm-lineNumbers {
+.text-diff-cm-wrap .cm-lineNumbers {
   flex: 0 0 auto;
   width: auto !important;
   min-width: 0 !important;

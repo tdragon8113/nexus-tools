@@ -3,7 +3,7 @@ export type DesktopHubViewMode = 'list' | 'icons'
 const STORAGE_KEY = 'nexus-desktop-hub-view'
 
 export function useDesktopHubView() {
-  const viewMode = ref<DesktopHubViewMode>('list')
+  const viewMode = ref<DesktopHubViewMode>('icons')
 
   onMounted(() => {
     if (!import.meta.client) return

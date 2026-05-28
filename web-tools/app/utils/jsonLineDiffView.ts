@@ -1,5 +1,11 @@
 import { diffChars, diffLines } from 'diff'
 import { escapeHtml } from '~/utils/textTool'
+import {
+  linesEqualForCompare,
+  mergeTextDiffCompareOptions,
+  normalizeLineForCompare,
+  type TextDiffCompareOptions
+} from '~/utils/textDiffOptions'
 
 export const LINE_DIFF_MAX_ROWS = 12000
 
@@ -11,50 +17,91 @@ export type AlignedLineRow = {
   kind: LineDiffKind
 }
 
+function textToLines(text: string): string[] {
+  if (text === '') return []
+  const endsWithNl = text.endsWith('\n')
+  const body = endsWithNl ? text.slice(0, -1) : text
+  if (body.length === 0 && !endsWithNl) return []
+  return body.split('\n')
+}
+
+function linesFromDiffPartValue(raw: string): string[] {
+  const endsWithNl = raw.endsWith('\n')
+  const body = endsWithNl ? raw.slice(0, -1) : raw
+  if (body.length === 0 && !endsWithNl) return []
+  return body.split('\n')
+}
+
 /**
  * 将 diffLines 的删/增块成对 zip，得到左右对齐的行（便于并排滚动）。
+ * 展示用原文行；比较按 compareOptions 规范化。
  */
-export function alignedLineDiff(a: string, b: string): AlignedLineRow[] {
-  const parts = diffLines(a, b, { ignoreWhitespace: false })
+export function alignedLineDiff(
+  a: string,
+  b: string,
+  partialOpts?: Partial<TextDiffCompareOptions>
+): AlignedLineRow[] {
+  const opts = mergeTextDiffCompareOptions(partialOpts)
+  const aLines = textToLines(a)
+  const bLines = textToLines(b)
+  const aCompare = aLines.map((line) => normalizeLineForCompare(line, opts)).join('\n')
+  const bCompare = bLines.map((line) => normalizeLineForCompare(line, opts)).join('\n')
+  const parts = diffLines(aCompare, bCompare, { ignoreWhitespace: opts.ignoreWhitespace })
   const rows: AlignedLineRow[] = []
+  let aIdx = 0
+  let bIdx = 0
 
   for (let i = 0; i < parts.length; i++) {
     const p = parts[i]
-    const raw = p.value
-    const endsWithNl = raw.endsWith('\n')
-    const body = endsWithNl ? raw.slice(0, -1) : raw
-    const lines = body.length === 0 && !endsWithNl ? [] : body.split('\n')
+    const lines = linesFromDiffPartValue(p.value)
 
     if (p.removed) {
       const next = parts[i + 1]
       if (next?.added) {
-        const nraw = next.value
-        const nEnds = nraw.endsWith('\n')
-        const nBody = nEnds ? nraw.slice(0, -1) : nraw
-        const addLines = nBody.length === 0 && !nEnds ? [] : nBody.split('\n')
+        const addLines = linesFromDiffPartValue(next.value)
         const max = Math.max(lines.length, addLines.length)
         for (let k = 0; k < max; k++) {
-          const L = lines[k] ?? ''
-          const R = addLines[k] ?? ''
+          const left = k < lines.length ? (aLines[aIdx++] ?? '') : ''
+          const right = k < addLines.length ? (bLines[bIdx++] ?? '') : ''
           rows.push({
-            left: L,
-            right: R,
-            kind: L === R ? 'equal' : 'change'
+            left,
+            right,
+            kind: linesEqualForCompare(left, right, opts) ? 'equal' : 'change'
           })
         }
         i++
       } else {
-        for (const line of lines) {
-          rows.push({ left: line, right: '', kind: 'delete' })
+        for (let k = 0; k < lines.length; k++) {
+          const left = aLines[aIdx] ?? ''
+          aIdx++
+          if (opts.ignoreEmptyLines && left.trim() === '') {
+            rows.push({ left, right: '', kind: 'equal' })
+            continue
+          }
+          rows.push({ left, right: '', kind: 'delete' })
         }
       }
     } else if (p.added) {
-      for (const line of lines) {
-        rows.push({ left: '', right: line, kind: 'insert' })
+      for (let k = 0; k < lines.length; k++) {
+        const right = bLines[bIdx] ?? ''
+        bIdx++
+        if (opts.ignoreEmptyLines && right.trim() === '') {
+          rows.push({ left: '', right, kind: 'equal' })
+          continue
+        }
+        rows.push({ left: '', right, kind: 'insert' })
       }
     } else {
-      for (const line of lines) {
-        rows.push({ left: line, right: line, kind: 'equal' })
+      for (let k = 0; k < lines.length; k++) {
+        const left = aLines[aIdx] ?? ''
+        const right = bLines[bIdx] ?? ''
+        aIdx++
+        bIdx++
+        rows.push({
+          left,
+          right,
+          kind: linesEqualForCompare(left, right, opts) ? 'equal' : 'change'
+        })
       }
     }
   }
@@ -111,12 +158,16 @@ function charDiffToHtml(left: string, right: string): { leftHtml: string; rightH
   return { leftHtml, rightHtml }
 }
 
-export function buildLineDiffViewRows(a: string, b: string): {
+export function buildLineDiffViewRows(
+  a: string,
+  b: string,
+  partialOpts?: Partial<TextDiffCompareOptions>
+): {
   rows: LineDiffViewRow[]
   capped: boolean
 } {
   let capped = false
-  let raw = alignedLineDiff(a, b)
+  let raw = alignedLineDiff(a, b, partialOpts)
   if (raw.length > LINE_DIFF_MAX_ROWS) {
     raw = raw.slice(0, LINE_DIFF_MAX_ROWS)
     capped = true

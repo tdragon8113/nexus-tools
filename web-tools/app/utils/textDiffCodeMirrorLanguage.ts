@@ -39,6 +39,10 @@ export function isTextDiffLanguageId(value: string): value is TextDiffLanguageId
   return textDiffLanguages.some((item) => item.id === value)
 }
 
+export function textDiffLanguageLabel(id: TextDiffLanguageId): string {
+  return textDiffLanguages.find((item) => item.id === id)?.label ?? '纯文本'
+}
+
 async function loadTextDiffLanguageSupport(id: TextDiffLanguageId): Promise<Extension> {
   switch (id) {
     case 'plain':

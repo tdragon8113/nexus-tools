@@ -101,27 +101,27 @@ onUnmounted(() => {
           type="button"
           class="rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors"
           :class="
-            viewMode === 'list'
+            viewMode === 'icons'
               ? 'bg-blue-50 text-blue-700'
               : 'text-slate-500 hover:bg-slate-50'
           "
-          aria-pressed="viewMode === 'list'"
-          @click="viewMode = 'list'"
+          :aria-pressed="viewMode === 'icons'"
+          @click="viewMode = 'icons'"
         >
-          列表
+          图标
         </button>
         <button
           type="button"
           class="rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors"
           :class="
-            viewMode === 'icons'
+            viewMode === 'list'
               ? 'bg-blue-50 text-blue-700'
               : 'text-slate-500 hover:bg-slate-50'
           "
-          aria-pressed="viewMode === 'icons'"
-          @click="viewMode = 'icons'"
+          :aria-pressed="viewMode === 'list'"
+          @click="viewMode = 'list'"
         >
-          图标
+          列表
         </button>
       </div>
     </div>

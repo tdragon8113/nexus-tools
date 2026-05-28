@@ -1,7 +1,7 @@
 import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language'
-import { lintGutter, lintKeymap } from '@codemirror/lint'
+import { bracketMatching, indentOnInput } from '@codemirror/language'
+import { lintKeymap } from '@codemirror/lint'
 import { EditorState, type Extension } from '@codemirror/state'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import {
@@ -16,13 +16,12 @@ import {
   rectangularSelection
 } from '@codemirror/view'
 
-/** 文本对比编辑器：缩进、括号、补全、折叠、lint 槽位等 */
+/** 文本对比编辑器：保留语法与 lint，不占用折叠 / lint 栏宽度 */
 export const textDiffCodeMirrorSetup: Extension[] = [
   lineNumbers(),
   highlightActiveLineGutter(),
   highlightSpecialChars(),
   history(),
-  foldGutter(),
   drawSelection(),
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
@@ -34,13 +33,11 @@ export const textDiffCodeMirrorSetup: Extension[] = [
   crosshairCursor(),
   highlightActiveLine(),
   highlightSelectionMatches(),
-  lintGutter(),
   keymap.of([
     ...closeBracketsKeymap,
     ...defaultKeymap,
     ...searchKeymap,
     ...historyKeymap,
-    ...foldKeymap,
     ...completionKeymap,
     ...lintKeymap
   ])
