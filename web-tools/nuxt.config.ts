@@ -67,7 +67,8 @@ export default defineNuxtConfig({
         '/tools/hash',
         '/tools/code',
         '/tools/text',
-        '/tools/text-diff'
+        '/tools/text-diff',
+        '/tools/js-playground'
       ]
     },
     compressPublicAssets: true
@@ -106,7 +107,8 @@ export default defineNuxtConfig({
         'jsqr',
         'spark-md5',
         'prettier',
-        'prettier/standalone'
+        'prettier/standalone',
+        'markdown-it'
       ]
     }
   },

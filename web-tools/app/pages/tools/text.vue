@@ -27,10 +27,32 @@
             <van-icon name="upgrade" size="18" />
           </button>
           <button
+            v-if="canFormat"
             type="button"
             class="text-tbar-tip"
             :class="[tbarBtn, tbarDisabled]"
-            data-tip="下载为 .txt"
+            :data-tip="formatTip"
+            :aria-label="formatTip"
+            :disabled="formatting || !hasEditorContent"
+            @click="formatDocument"
+          >
+            <svg
+              class="size-[18px] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M5 7h14M5 12h8.5M5 17h14" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="text-tbar-tip"
+            :class="[tbarBtn, tbarDisabled]"
+            :data-tip="downloadTip"
             aria-label="下载"
             :disabled="!text"
             @click="downloadText"
@@ -68,6 +90,30 @@
           <input v-model="wordWrap" type="checkbox" class="rounded border-slate-300 text-stone-600" />
           自动换行
         </label>
+
+        <template v-if="isMarkdownMode">
+          <span class="hidden h-5 w-px shrink-0 bg-slate-200/90 sm:inline" aria-hidden="true" />
+          <div class="flex flex-wrap items-center gap-1 text-xs text-slate-600">
+            <span class="shrink-0">视图</span>
+            <div class="inline-flex rounded-md border border-slate-200 bg-white p-0.5 shadow-sm">
+              <button
+                v-for="item in markdownViewOptions"
+                :key="item.id"
+                type="button"
+                class="rounded px-2 py-0.5 font-medium transition-colors"
+                :class="
+                  markdownView === item.id
+                    ? 'bg-stone-100 text-stone-900'
+                    : 'text-slate-500 hover:text-slate-800'
+                "
+                @click="markdownView = item.id"
+              >
+                {{ item.label }}
+              </button>
+            </div>
+            <span class="hidden text-[11px] text-slate-400 lg:inline">如 # 标题、**粗体** 或 &lt;h1&gt;</span>
+          </div>
+        </template>
 
         <span class="hidden h-5 w-px shrink-0 bg-slate-200/90 sm:inline" aria-hidden="true" />
 
@@ -135,14 +181,22 @@
 
     <section
       class="text-editor-shell doc-surface flex min-h-[28rem] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white"
+      :class="{ 'text-editor-shell--md-split': isMarkdownMode && markdownView === 'split' }"
     >
       <TextDiffCodeMirrorPane
+        v-show="!isMarkdownMode || markdownView !== 'preview'"
         ref="editorRef"
         v-model="text"
         :language="language"
         variant="plain"
         :word-wrap="wordWrap"
         class="min-h-0 flex-1"
+      />
+      <MarkdownPreviewPane
+        v-if="isMarkdownMode && markdownView !== 'edit'"
+        :source="text"
+        class="min-h-0 flex-1"
+        :class="{ 'md-preview-only': markdownView === 'preview' }"
       />
     </section>
 
@@ -176,15 +230,25 @@ import {
   textDiffLanguages,
   type TextDiffLanguageId
 } from '~/utils/textDiffCodeMirrorLanguage'
+import {
+  canFormatTextDiffLanguage,
+  formatActionLabel,
+  formatTextDiffSource
+} from '~/utils/textDiffFormat'
 
 useHead({ title: '文本编辑 - Nexus Tools' })
 
 const LANGUAGE_KEY = 'nexus-text-editor-language'
 const WRAP_KEY = 'nexus-text-editor-wrap'
+const MD_VIEW_KEY = 'nexus-text-editor-md-view'
+
+type MarkdownViewMode = 'edit' | 'split' | 'preview'
 
 const text = ref('')
 const language = ref<TextDiffLanguageId>('plain')
 const wordWrap = ref(true)
+const formatting = ref(false)
+const markdownView = ref<MarkdownViewMode>('edit')
 const editorRef = ref<{
   syncDocFromModel?: () => void
   getDocument?: () => string
@@ -223,7 +287,27 @@ const stats = computed(() => textEditorStats(text.value))
 
 const hasEditorContent = computed(() => Boolean(text.value.trim()))
 
+const isMarkdownMode = computed(() => language.value === 'markdown')
+
+const canFormat = computed(() => canFormatTextDiffLanguage(language.value))
+
+const formatTip = computed(() => formatActionLabel(language.value))
+
+const downloadTip = computed(() =>
+  language.value === 'markdown' ? '下载为 .md' : '下载为 .txt'
+)
+
+const markdownViewOptions: { id: MarkdownViewMode; label: string }[] = [
+  { id: 'edit', label: '编辑' },
+  { id: 'split', label: '分栏' },
+  { id: 'preview', label: '预览' }
+]
+
 useConsumeToolPrefill('text', withCodeMirrorPrefillSync((raw) => { text.value = raw }, editorRef))
+
+function isMarkdownViewMode(value: string): value is MarkdownViewMode {
+  return value === 'edit' || value === 'split' || value === 'preview'
+}
 
 onMounted(() => {
   if (!import.meta.client) return
@@ -232,6 +316,8 @@ onMounted(() => {
   const savedWrap = localStorage.getItem(WRAP_KEY)
   if (savedWrap === '0') wordWrap.value = false
   if (savedWrap === '1') wordWrap.value = true
+  const savedMdView = localStorage.getItem(MD_VIEW_KEY)
+  if (savedMdView && isMarkdownViewMode(savedMdView)) markdownView.value = savedMdView
 })
 
 watch(language, (v) => {
@@ -240,6 +326,19 @@ watch(language, (v) => {
 
 watch(wordWrap, (v) => {
   if (import.meta.client) localStorage.setItem(WRAP_KEY, v ? '1' : '0')
+})
+
+watch(markdownView, (v) => {
+  if (import.meta.client) localStorage.setItem(MD_VIEW_KEY, v)
+})
+
+watch(language, (id, prev) => {
+  if (id === 'markdown' && prev !== 'markdown' && markdownView.value === 'edit') {
+    markdownView.value = 'split'
+  }
+  if (id !== 'markdown' && markdownView.value !== 'edit') {
+    markdownView.value = 'edit'
+  }
 })
 
 function formatBytes(n: number): string {
@@ -257,6 +356,21 @@ function applyText(next: string, toast?: string) {
   editorRef.value?.setDocument?.(next)
   void nextTick(() => editorRef.value?.setDocument?.(next))
   if (toast) showToast(toast)
+}
+
+async function formatDocument() {
+  if (!canFormat.value || formatting.value) return
+  const source = readEditorText()
+  if (!source.trim()) return
+  formatting.value = true
+  try {
+    const formatted = await formatTextDiffSource(language.value, source)
+    applyText(formatted, formatActionLabel(language.value))
+  } catch (e) {
+    showToast(e instanceof Error ? e.message : '格式化失败')
+  } finally {
+    formatting.value = false
+  }
 }
 
 function runTransform(id: string) {
@@ -322,6 +436,11 @@ function onFileSelected(e: Event) {
   const file = input.files?.[0]
   input.value = ''
   if (!file) return
+  const lowerName = file.name.toLowerCase()
+  if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
+    language.value = 'markdown'
+    if (markdownView.value === 'edit') markdownView.value = 'split'
+  }
   const reader = new FileReader()
   reader.onload = () => applyText(String(reader.result ?? ''), `已导入 ${file.name}`)
   reader.onerror = () => showToast('读取失败')
@@ -330,11 +449,14 @@ function onFileSelected(e: Event) {
 
 function downloadText() {
   if (!text.value) return
-  const blob = new Blob([text.value], { type: 'text/plain;charset=utf-8' })
+  const isMd = language.value === 'markdown'
+  const blob = new Blob([text.value], {
+    type: isMd ? 'text/markdown;charset=utf-8' : 'text/plain;charset=utf-8'
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'document.txt'
+  a.download = isMd ? 'document.md' : 'document.txt'
   a.click()
   URL.revokeObjectURL(url)
   showToast('已开始下载')
@@ -393,5 +515,27 @@ function clearAll() {
   flex-direction: column;
   min-height: 0;
   height: 100%;
+}
+
+.text-editor-shell--md-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.text-editor-shell--md-split .text-diff-cm-wrap {
+  border-right: 1px solid rgb(226 232 240);
+}
+
+.text-editor-shell--md-split .markdown-preview-pane {
+  border: none;
+  border-radius: 0;
+  background: rgb(248 250 252 / 0.5);
+}
+
+.text-editor-shell .md-preview-only {
+  border: none;
+  border-radius: 0;
+  background: rgb(248 250 252 / 0.35);
 }
 </style>

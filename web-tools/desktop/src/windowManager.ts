@@ -324,6 +324,10 @@ export class WindowManager {
     return this.shell
   }
 
+  private pageUrl(pathname: string) {
+    return new URL(pathname, this.webBaseUrl).toString()
+  }
+
   private searchUrl(q = '') {
     const url = new URL('/desktop/search', this.webBaseUrl)
     const safeQ = q.trim()
@@ -463,6 +467,23 @@ export class WindowManager {
     }
   }
 
+  showSettings() {
+    const win = this.ensureShell()
+    const target = this.pageUrl('/desktop/settings')
+    const reveal = () => {
+      this.setPanelMode('/desktop/settings')
+      this.showAndFocus(win)
+    }
+
+    const onSettingsPage = win.webContents.getURL().includes('/desktop/settings')
+    if (!this.loaded || !onSettingsPage) {
+      win.loadURL(target)
+      win.webContents.once('did-finish-load', reveal)
+    } else {
+      reveal()
+    }
+  }
+
   showSearch(input: ShowSearchPayload = {}) {
     const { clipboard = '', q = '', source = 'hotkey' } = input
     const win = this.ensureShell()
@@ -544,9 +565,12 @@ export class WindowManager {
     this.showSearch(payload)
   }
 
-  /** Dock 点击或 Cmd+Tab 切回本应用时恢复窗口 */
+  /** Dock / 菜单栏图标 / Cmd+Tab 切回本应用时恢复窗口 */
   activateFromUser(clipboard = '') {
-    if (this.deferShowUntilSearchMeasured) return
+    if (this.deferShowUntilSearchMeasured) {
+      this.showSearch({ clipboard, source: 'hotkey' })
+      return
+    }
 
     const win = this.shell
     if (!win || win.isDestroyed()) {

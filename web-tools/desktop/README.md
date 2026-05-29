@@ -17,6 +17,8 @@ cd web-tools && npm run desktop:dev  # 终端 2（会轮询等待 Nuxt，约 30s
 
 `NEXUS_KEEP_VISIBLE=1` 可保持窗口不因失焦隐藏。
 
+启动后会在 **macOS 菜单栏** / **Windows 任务栏托盘** 显示图标：左键打开搜索，右键菜单可退出。
+
 ## 本地打包
 
 ```bash

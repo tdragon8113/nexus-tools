@@ -5,9 +5,12 @@ import { applyDockIcon } from './appIcon'
 import { resolveDevWebUrl } from './resolveWebUrl'
 import { startStaticServer } from './staticServer'
 import { MAX_CLIPBOARD_TEXT_CHARS } from './clipboardLimits'
+import { applyOpenAtLogin, getOpenAtLoginFromSystem, wasOpenedAtLogin } from './loginItem'
+import { applyPrefsPatch } from './prefsPatch'
 import { DesktopPrefsStore } from './prefs'
 import { clearMacAppQuarantine } from './macQuarantine'
 import { AppUpdaterService } from './updater'
+import { setupAppTray } from './trayManager'
 import { WindowManager } from './windowManager'
 import { IPC } from './types'
 
@@ -29,6 +32,7 @@ let staticServerClose: (() => void) | null = null
 let windows: WindowManager | null = null
 const desktopPrefs = new DesktopPrefsStore()
 let appUpdater: AppUpdaterService | null = null
+let appTray: ReturnType<typeof setupAppTray> = null
 
 function allBrowserWindows(): BrowserWindow[] {
   return BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed())
@@ -81,35 +85,23 @@ app.whenReady().then(async () => {
     if (typeof pinned === 'boolean') windows?.setPinned(pinned)
     return windows?.isPinned() ?? false
   })
-  ipcMain.handle(IPC.clipboardPrefsGet, () => desktopPrefs.read())
+  ipcMain.handle(IPC.clipboardPrefsGet, () => {
+    const prefs = desktopPrefs.read()
+    return { ...prefs, openAtLogin: getOpenAtLoginFromSystem() }
+  })
+  appUpdater = new AppUpdaterService(allBrowserWindows)
+
   ipcMain.handle(IPC.clipboardPrefsPatch, (_e, patch: unknown) => {
     if (!patch || typeof patch !== 'object') return desktopPrefs.read()
-    const p = patch as Record<string, unknown>
-    const next: Partial<ReturnType<DesktopPrefsStore['read']>> = {}
-    if (p.clipboardPolicy === 'smart' || p.clipboardPolicy === 'always' || p.clipboardPolicy === 'never') {
-      next.clipboardPolicy = p.clipboardPolicy
-    }
-    if (typeof p.lastAppliedClipboardHash === 'string') {
-      next.lastAppliedClipboardHash = p.lastAppliedClipboardHash
-    }
-    if (typeof p.dismissedClipboardHash === 'string') {
-      next.dismissedClipboardHash = p.dismissedClipboardHash
-    }
-    if (typeof p.autoHideOnBlur === 'boolean') {
-      next.autoHideOnBlur = p.autoHideOnBlur
-    }
-    if (typeof p.autoUpdateEnabled === 'boolean') {
-      next.autoUpdateEnabled = p.autoUpdateEnabled
-      appUpdater?.setAutoUpdateEnabled(p.autoUpdateEnabled)
-    }
-    const saved = desktopPrefs.write(next)
-    return saved
+    return applyPrefsPatch(desktopPrefs, patch as Record<string, unknown>, { appUpdater })
   })
-
-  appUpdater = new AppUpdaterService(allBrowserWindows)
   const prefs = desktopPrefs.read()
   appUpdater.setAutoUpdateEnabled(prefs.autoUpdateEnabled !== false)
   appUpdater.init()
+
+  if (prefs.openAtLogin === true) {
+    applyOpenAtLogin(true)
+  }
 
   ipcMain.handle(IPC.updaterGetState, () => appUpdater?.getState() ?? { status: 'idle', currentVersion: app.getVersion() })
   ipcMain.handle(IPC.updaterCheck, () => appUpdater?.check() ?? { status: 'idle', currentVersion: app.getVersion() })
@@ -122,8 +114,22 @@ app.whenReady().then(async () => {
     applyDockIcon()
   }
 
+  appTray = setupAppTray({
+    hotkey: HOTKEY,
+    prefs: desktopPrefs,
+    prefsPatchDeps: { appUpdater },
+    onSearch: () => windows?.activateFromUser(readClipboardForSearch()),
+    onSettings: () => windows?.showSettings(),
+    onCheckUpdate: () => {
+      void appUpdater?.check()
+      windows?.showSettings()
+    }
+  })
+
   console.log(`[Nexus Tools] 已启动 · ${webBaseUrl} · ${HOTKEY} 唤起搜索`)
-  windows.showSearch({ clipboard: readClipboardForSearch(), source: 'hotkey' })
+  if (!wasOpenedAtLogin()) {
+    windows.showSearch({ clipboard: readClipboardForSearch(), source: 'hotkey' })
+  }
 })
 
 if (process.platform === 'darwin') {
@@ -133,6 +139,7 @@ if (process.platform === 'darwin') {
 }
 
 app.on('will-quit', () => {
+  appTray?.dispose()
   globalShortcut.unregisterAll()
   staticServerClose?.()
 })

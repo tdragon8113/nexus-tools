@@ -9,10 +9,13 @@ useHead({ title: '设置 - Nexus Tools' })
 const { autoHideOnBlur, loaded: autoHideLoaded, syncFromMain, setAutoHideOnBlur } = useDesktopAutoHide()
 const { autoUpdateEnabled, loaded: updaterLoaded, syncFromMain: syncUpdater, setAutoUpdateEnabled } =
   useDesktopUpdater()
+const { openAtLogin, loaded: launchAtLoginLoaded, syncFromMain: syncLaunchAtLogin, setOpenAtLogin } =
+  useDesktopLaunchAtLogin()
 
 onMounted(() => {
   void syncFromMain()
   void syncUpdater()
+  void syncLaunchAtLogin()
 })
 </script>
 
@@ -38,6 +41,20 @@ onMounted(() => {
         description="用快捷键打开搜索时，是否将剪贴板内容写入搜索框。应用内点击「搜索」不会自动填入。"
       >
         <DesktopClipboardSettings />
+      </DesktopSettingsField>
+
+      <DesktopSettingsField
+        border-top
+        label="开机自动启动"
+        description="登录系统后在后台运行 Nexus Tools，可用全局快捷键唤起；开机启动时不会自动弹出搜索窗。"
+      >
+        <DesktopSettingsToggle
+          :model-value="openAtLogin"
+          :disabled="!launchAtLoginLoaded"
+          compact
+          label="开机自动启动"
+          @update:model-value="setOpenAtLogin"
+        />
       </DesktopSettingsField>
 
       <DesktopSettingsField

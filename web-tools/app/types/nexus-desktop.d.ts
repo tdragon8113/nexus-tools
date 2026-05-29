@@ -21,6 +21,7 @@ export type NexusClipboardPrefs = {
   dismissedClipboardHash?: string
   autoHideOnBlur?: boolean
   autoUpdateEnabled?: boolean
+  openAtLogin?: boolean
 }
 
 export type NexusUpdateStatus =

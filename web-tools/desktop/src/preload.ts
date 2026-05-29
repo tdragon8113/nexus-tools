@@ -46,6 +46,7 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       dismissedClipboardHash?: string
       autoHideOnBlur?: boolean
       autoUpdateEnabled?: boolean
+      openAtLogin?: boolean
     }>
   },
   patchClipboardPrefs(patch: {
@@ -54,6 +55,7 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
     dismissedClipboardHash?: string
     autoHideOnBlur?: boolean
     autoUpdateEnabled?: boolean
+    openAtLogin?: boolean
   }) {
     return ipcRenderer.invoke(IPC.clipboardPrefsPatch, patch) as Promise<{
       clipboardPolicy: 'smart' | 'always' | 'never'
@@ -61,6 +63,7 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       dismissedClipboardHash?: string
       autoHideOnBlur?: boolean
       autoUpdateEnabled?: boolean
+      openAtLogin?: boolean
     }>
   },
   getUpdateState() {

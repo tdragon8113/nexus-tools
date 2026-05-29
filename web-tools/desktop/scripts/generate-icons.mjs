@@ -76,6 +76,37 @@ const pngPath = path.join(iconsDir, 'icon.png')
 await sharp(await renderMacAppIconPng(1024)).toFile(pngPath)
 console.log('wrote icon.png')
 
+const traySvgPath = path.join(iconsDir, 'tray-icon.svg')
+const traySvg = fs.existsSync(traySvgPath) ? fs.readFileSync(traySvgPath) : svg
+
+/** macOS 菜单栏 Template：线框 + N（与 Notion 等线框图标一致） */
+const TRAY_TEMPLATE_SCALE = 0.95
+
+async function renderTrayTemplatePng(size) {
+  const inner = Math.max(1, Math.round(size * TRAY_TEMPLATE_SCALE))
+  const pad = Math.floor((size - inner) / 2)
+  return sharp(traySvg)
+    .resize(inner, inner, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .extend({
+      top: pad,
+      bottom: pad,
+      left: pad,
+      right: pad,
+      background: { r: 0, g: 0, b: 0, alpha: 0 }
+    })
+    .png()
+    .toBuffer()
+}
+
+for (const [size, name] of [
+  [18, 'trayTemplate.png'],
+  [36, 'trayTemplate@2x.png']
+]) {
+  const out = path.join(iconsDir, name)
+  await sharp(await renderTrayTemplatePng(size)).toFile(out)
+  console.log('wrote', name)
+}
+
 if (process.platform === 'darwin') {
   const icnsPath = path.join(iconsDir, 'icon.icns')
   execSync(`iconutil -c icns "${iconsetDir}" -o "${icnsPath}"`, { stdio: 'inherit' })

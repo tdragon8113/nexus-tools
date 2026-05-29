@@ -54,6 +54,7 @@ export function useTextDiff() {
   const diffLanguage = useState<TextDiffLanguageId>('text-diff-language', () => 'plain')
   const activeDiffIndex = useState('text-diff-active-index', () => 0)
   const compareOptions = ref<TextDiffCompareOptions>(defaultTextDiffCompareOptions())
+  const compareMode = ref(false)
   const wordWrap = ref(true)
   const formatting = ref(false)
   const diffComputing = ref(false)
@@ -101,10 +102,14 @@ export function useTextDiff() {
     if (savedWrap === '1') wordWrap.value = true
     const savedOptions = loadTextDiffCompareOptionsFromStorage()
     if (savedOptions) compareOptions.value = savedOptions
-    flushDebouncedDiffNow()
   })
 
-  watch([leftText, rightText, compareOptions], scheduleDebouncedDiff, { deep: true })
+  watch([leftText, rightText, compareOptions], scheduleDebouncedDiffIfComparing, { deep: true })
+
+  function scheduleDebouncedDiffIfComparing() {
+    if (!compareMode.value) return
+    scheduleDebouncedDiff()
+  }
 
   onUnmounted(() => {
     if (debounceTimer) clearTimeout(debounceTimer)
@@ -135,8 +140,10 @@ export function useTextDiff() {
   }
 
   const hasInput = computed(() => Boolean(leftText.value || rightText.value))
+  const canStartCompare = computed(() => hasInput.value && !formatting.value)
 
   const alignedRows = computed(() => {
+    if (!compareMode.value) return []
     const { left, right, options } = debouncedInput.value
     let rows = alignedLineDiff(left, right, options)
     if (rows.length > LINE_DIFF_MAX_ROWS) {
@@ -216,6 +223,25 @@ export function useTextDiff() {
   function clearAll() {
     leftText.value = ''
     rightText.value = ''
+    compareMode.value = false
+    diffComputing.value = false
+  }
+
+  function enterCompareMode() {
+    if (!canStartCompare.value) return
+    compareMode.value = true
+    flushDebouncedDiffNow()
+    activeDiffIndex.value = 0
+  }
+
+  function exitCompareMode() {
+    compareMode.value = false
+    diffComputing.value = false
+  }
+
+  function refreshCompare() {
+    if (!compareMode.value) return
+    flushDebouncedDiffNow()
   }
 
   function jumpDiff(delta: number, scrollToLine: (alignedLineNo: number) => void) {
@@ -296,6 +322,7 @@ export function useTextDiff() {
     setRightDisplay,
     diffLanguage,
     compareOptions,
+    compareMode,
     activeDiffIndex,
     wordWrap,
     formatting,
@@ -307,6 +334,7 @@ export function useTextDiff() {
     formatBothTip,
     formatSideTip,
     hasInput,
+    canStartCompare,
     diffBlocks,
     diffCount,
     diffStatusText,
@@ -318,6 +346,9 @@ export function useTextDiff() {
     rightRangeDecorations,
     swapTexts,
     clearAll,
+    enterCompareMode,
+    exitCompareMode,
+    refreshCompare,
     formatSide,
     formatBoth,
     copyUnifiedDiff,

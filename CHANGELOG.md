@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.8] - 2026-05-29
+
+### 新增（web-tools 桌面端）
+
+- **JS 运行**：临时编写并执行 JavaScript，支持 `console` 输出、`return` 与 top-level `await`（5s 超时）
+- **JS 运行**：统一补全（全局 API 签名、链式属性、代码片段、局部变量）
+- **文本编辑**：Markdown 语法下支持编辑 / 分屏 / 预览三种视图
+- macOS 菜单栏托盘图标：左键唤起搜索，右键快捷开关与设置入口
+- 设置页「开机自动启动」
+
+### 改进（web-tools 桌面端）
+
+- **文本对比**：编辑模式与对比模式分离；对比视图为只读对齐 diff，需点击「开始对比」
+- 文本对比 / JS 运行编辑器选区与顶部留白体验优化
+- 托盘菜单精简：剪贴板策略仅在设置页配置
+
 ## [0.2.7] - 2026-05-29
 
 ### 修复（web-tools 文本对比）

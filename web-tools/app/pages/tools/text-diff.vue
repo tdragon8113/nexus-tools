@@ -4,18 +4,51 @@
       class="relative z-30 mb-2 flex shrink-0 flex-col gap-2 overflow-visible rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
     >
       <div class="flex flex-wrap items-center gap-2">
+        <div class="flex shrink-0 flex-wrap items-center gap-1.5">
+          <button
+            v-if="!compareMode"
+            type="button"
+            class="rounded-md border border-blue-600 bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40"
+            :disabled="!canStartCompare"
+            @click="enterCompareWithSync"
+          >
+            开始对比
+          </button>
+          <template v-else>
+            <button
+              type="button"
+              class="rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+              @click="exitCompareWithSync"
+            >
+              返回编辑
+            </button>
+            <button
+              type="button"
+              class="rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+              :disabled="diffComputing"
+              @click="refreshCompareWithSync"
+            >
+              重新对比
+            </button>
+          </template>
+        </div>
+
+        <span class="hidden h-5 w-px shrink-0 bg-slate-200/90 sm:inline" aria-hidden="true" />
+
         <div class="flex shrink-0 flex-wrap items-center gap-0.5">
           <button
             type="button"
             class="text-diff-tbar-tip"
-            :class="tbarBtn"
+            :class="[tbarBtn, tbarDisabled]"
             data-tip="交换左右"
             aria-label="交换左右"
+            :disabled="compareMode"
             @click="swapTexts"
           >
             <van-icon name="exchange" size="18" />
           </button>
           <button
+            v-if="compareMode"
             type="button"
             class="text-diff-tbar-tip"
             :class="[tbarBtn, tbarDisabled]"
@@ -38,7 +71,7 @@
             </svg>
           </button>
           <button
-            v-if="canFormat"
+            v-if="canFormat && !compareMode"
             type="button"
             class="text-diff-tbar-tip"
             :class="[tbarBtn, tbarDisabled]"
@@ -66,7 +99,7 @@
             data-tip="清空"
             aria-label="清空"
             :disabled="!hasInput"
-            @click="clearAll"
+            @click="clearAllWithSync"
           >
             <van-icon name="delete-o" size="18" />
           </button>
@@ -79,6 +112,7 @@
           <select
             v-model="diffLanguage"
             class="max-w-[7.5rem] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            :disabled="compareMode"
           >
             <option v-for="item in textDiffLanguages" :key="item.id" :value="item.id">
               {{ item.label }}
@@ -92,86 +126,90 @@
           自动换行
         </label>
 
-        <span class="hidden h-5 w-px shrink-0 bg-slate-200/90 sm:inline" aria-hidden="true" />
+        <template v-if="compareMode">
+          <span class="hidden h-5 w-px shrink-0 bg-slate-200/90 sm:inline" aria-hidden="true" />
 
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
-            <input
-              v-model="compareOptions.ignoreTrimWhitespace"
-              type="checkbox"
-              class="rounded border-slate-300 text-blue-600"
-            />
-            忽略行尾空白
-          </label>
-          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
-            <input
-              v-model="compareOptions.ignoreWhitespace"
-              type="checkbox"
-              class="rounded border-slate-300 text-blue-600"
-            />
-            忽略空白
-          </label>
-          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
-            <input
-              v-model="compareOptions.ignoreCase"
-              type="checkbox"
-              class="rounded border-slate-300 text-blue-600"
-            />
-            忽略大小写
-          </label>
-          <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
-            <input
-              v-model="compareOptions.ignoreEmptyLines"
-              type="checkbox"
-              class="rounded border-slate-300 text-blue-600"
-            />
-            忽略空行
-          </label>
-        </div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+              <input
+                v-model="compareOptions.ignoreTrimWhitespace"
+                type="checkbox"
+                class="rounded border-slate-300 text-blue-600"
+              />
+              忽略行尾空白
+            </label>
+            <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+              <input
+                v-model="compareOptions.ignoreWhitespace"
+                type="checkbox"
+                class="rounded border-slate-300 text-blue-600"
+              />
+              忽略空白
+            </label>
+            <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+              <input
+                v-model="compareOptions.ignoreCase"
+                type="checkbox"
+                class="rounded border-slate-300 text-blue-600"
+              />
+              忽略大小写
+            </label>
+            <label class="flex cursor-pointer items-center gap-1 text-xs text-slate-600">
+              <input
+                v-model="compareOptions.ignoreEmptyLines"
+                type="checkbox"
+                class="rounded border-slate-300 text-blue-600"
+              />
+              忽略空行
+            </label>
+          </div>
+        </template>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex items-center gap-0.5">
-          <button
-            type="button"
-            class="text-diff-tbar-tip"
-            :class="[tbarBtn, tbarDisabled]"
-            data-tip="上一处差异"
-            aria-label="上一处差异"
-            :disabled="diffBlocks.length === 0 || activeDiffIndex <= 0 || diffComputing"
-            @click="jumpDiff(-1, scrollToDiffLine)"
-          >
-            <van-icon name="arrow-left" size="18" />
-          </button>
-          <button
-            type="button"
-            class="text-diff-tbar-tip"
-            :class="[tbarBtn, tbarDisabled]"
-            data-tip="下一处差异"
-            aria-label="下一处差异"
-            :disabled="diffBlocks.length === 0 || activeDiffIndex >= diffBlocks.length - 1 || diffComputing"
-            @click="jumpDiff(1, scrollToDiffLine)"
-          >
-            <van-icon name="arrow" size="18" />
-          </button>
-        </div>
+        <template v-if="compareMode">
+          <div class="flex items-center gap-0.5">
+            <button
+              type="button"
+              class="text-diff-tbar-tip"
+              :class="[tbarBtn, tbarDisabled]"
+              data-tip="上一处差异"
+              aria-label="上一处差异"
+              :disabled="diffBlocks.length === 0 || activeDiffIndex <= 0 || diffComputing"
+              @click="jumpDiff(-1, scrollToDiffLine)"
+            >
+              <van-icon name="arrow-left" size="18" />
+            </button>
+            <button
+              type="button"
+              class="text-diff-tbar-tip"
+              :class="[tbarBtn, tbarDisabled]"
+              data-tip="下一处差异"
+              aria-label="下一处差异"
+              :disabled="diffBlocks.length === 0 || activeDiffIndex >= diffBlocks.length - 1 || diffComputing"
+              @click="jumpDiff(1, scrollToDiffLine)"
+            >
+              <van-icon name="arrow" size="18" />
+            </button>
+          </div>
 
-        <span
-          v-if="diffBlocks.length > 0"
-          class="text-xs tabular-nums text-slate-500"
-        >
-          {{ activeDiffIndex + 1 }} / {{ diffBlocks.length }}
-        </span>
+          <span v-if="diffBlocks.length > 0" class="text-xs tabular-nums text-slate-500">
+            {{ activeDiffIndex + 1 }} / {{ diffBlocks.length }}
+          </span>
 
-        <span
-          class="text-xs tabular-nums"
-          :class="hasInput && diffCount === 0 ? 'font-medium text-emerald-700' : 'text-slate-500'"
-        >
-          {{ diffStatusText }}
-        </span>
+          <span
+            class="text-xs tabular-nums"
+            :class="hasInput && diffCount === 0 ? 'font-medium text-emerald-700' : 'text-slate-500'"
+          >
+            {{ diffStatusText }}
+          </span>
+
+          <span v-if="diffComputing" class="text-xs text-slate-400">对比更新中…</span>
+        </template>
+
+        <span v-else class="text-xs text-slate-500">编辑模式 · 输入完成后点击「开始对比」</span>
 
         <span v-if="formatting" class="text-xs text-slate-400">格式化中…</span>
-        <span v-else-if="diffComputing" class="text-xs text-slate-400">对比更新中…</span>
 
         <span class="ml-auto shrink-0 text-xs tabular-nums text-slate-400">
           左 {{ leftLineCount }} 行 · 右 {{ rightLineCount }} 行
@@ -186,11 +224,14 @@
         <div
           class="flex shrink-0 items-center justify-between border-b border-slate-200/90 bg-slate-50/80 px-3 py-1.5"
         >
-          <span class="text-xs font-medium text-slate-500">原始</span>
+          <span class="text-xs font-medium text-slate-500">
+            原始
+            <span v-if="compareMode" class="font-normal text-slate-400">（只读）</span>
+          </span>
           <div class="flex items-center gap-0.5">
             <TextDiffPaneActions
               :has-text="Boolean(leftText)"
-              :can-format="canFormat"
+              :can-format="canFormat && !compareMode"
               :format-tip="formatSideTip('left')"
               :format-disabled="formatting || !leftText.trim()"
               @copy="copyWithToast(leftText)"
@@ -202,14 +243,17 @@
         <div class="text-diff-pane__editor min-h-0 flex-1">
           <ClientOnly>
             <TextDiffCodeMirrorPane
+              :key="compareMode ? 'compare-left' : 'edit-left'"
               ref="leftPaneRef"
-              :model-value="leftDisplayText"
+              :model-value="compareMode ? leftDisplayText : leftText"
               :language="diffLanguage"
+              :variant="compareMode ? 'diff' : 'plain'"
+              :readonly="compareMode"
               :word-wrap="wordWrap"
-              :decorations="leftDecorations"
-              :range-decorations="leftRangeDecorations"
+              :decorations="compareMode ? leftDecorations : []"
+              :range-decorations="compareMode ? leftRangeDecorations : []"
               placeholder="粘贴或输入原始文本…"
-              @update:model-value="setLeftDisplay"
+              @update:model-value="leftText = $event"
               @scroll="syncRightScroll"
             />
           </ClientOnly>
@@ -220,11 +264,14 @@
         <div
           class="flex shrink-0 items-center justify-between border-b border-slate-200/90 bg-slate-50/80 px-3 py-1.5"
         >
-          <span class="text-xs font-medium text-slate-500">对比</span>
+          <span class="text-xs font-medium text-slate-500">
+            对比
+            <span v-if="compareMode" class="font-normal text-slate-400">（只读）</span>
+          </span>
           <div class="flex items-center gap-0.5">
             <TextDiffPaneActions
               :has-text="Boolean(rightText)"
-              :can-format="canFormat"
+              :can-format="canFormat && !compareMode"
               :format-tip="formatSideTip('right')"
               :format-disabled="formatting || !rightText.trim()"
               @copy="copyWithToast(rightText)"
@@ -236,21 +283,23 @@
         <div class="text-diff-pane__editor min-h-0 flex-1">
           <ClientOnly>
             <TextDiffCodeMirrorPane
+              :key="compareMode ? 'compare-right' : 'edit-right'"
               ref="rightPaneRef"
-              :model-value="rightDisplayText"
+              :model-value="compareMode ? rightDisplayText : rightText"
               :language="diffLanguage"
+              :variant="compareMode ? 'diff' : 'plain'"
+              :readonly="compareMode"
               :word-wrap="wordWrap"
-              :decorations="rightDecorations"
-              :range-decorations="rightRangeDecorations"
+              :decorations="compareMode ? rightDecorations : []"
+              :range-decorations="compareMode ? rightRangeDecorations : []"
               placeholder="粘贴或输入对比文本…"
-              @update:model-value="setRightDisplay"
+              @update:model-value="rightText = $event"
               @scroll="syncLeftScroll"
             />
           </ClientOnly>
         </div>
       </section>
     </div>
-
   </div>
 </template>
 
@@ -270,10 +319,9 @@ const {
   rightText,
   leftDisplayText,
   rightDisplayText,
-  setLeftDisplay,
-  setRightDisplay,
   diffLanguage,
   compareOptions,
+  compareMode,
   activeDiffIndex,
   wordWrap,
   formatting,
@@ -282,6 +330,7 @@ const {
   formatBothTip,
   formatSideTip,
   hasInput,
+  canStartCompare,
   diffBlocks,
   diffCount,
   diffStatusText,
@@ -293,6 +342,9 @@ const {
   rightRangeDecorations,
   swapTexts,
   clearAll,
+  enterCompareMode,
+  exitCompareMode,
+  refreshCompare,
   formatSide,
   formatBoth,
   copyUnifiedDiff,
@@ -305,6 +357,15 @@ const rightPaneRef = ref<InstanceType<typeof TextDiffCodeMirrorPane> | null>(nul
 function scrollToDiffLine(alignedLineNo: number) {
   leftPaneRef.value?.scrollToLine(alignedLineNo)
   rightPaneRef.value?.scrollToLine(alignedLineNo)
+}
+
+function syncPanes() {
+  void nextTick(() => {
+    for (const pane of [leftPaneRef.value, rightPaneRef.value]) {
+      pane?.syncDocFromModel?.()
+      requestAnimationFrame(() => pane?.syncDocFromModel?.())
+    }
+  })
 }
 
 function syncPaneAfterFormat(side?: 'left' | 'right') {
@@ -320,6 +381,26 @@ function syncPaneAfterFormat(side?: 'left' | 'right') {
       requestAnimationFrame(() => pane?.syncDocFromModel?.())
     }
   })
+}
+
+function enterCompareWithSync() {
+  enterCompareMode()
+  syncPanes()
+}
+
+function exitCompareWithSync() {
+  exitCompareMode()
+  syncPanes()
+}
+
+function refreshCompareWithSync() {
+  refreshCompare()
+  syncPanes()
+}
+
+function clearAllWithSync() {
+  clearAll()
+  syncPanes()
 }
 
 async function formatSideWithSync(side: 'left' | 'right') {

@@ -79,7 +79,20 @@ export const siteTools: SiteTool[] = [
     bgColor: 'bg-stone-100',
     iconColor: 'text-stone-600',
     path: '/tools/text',
-    keywords: ['文本', '文本编辑', '纯文本', 'plain', 'text', '记事', 'note', '粘贴', '剪贴板']
+    keywords: [
+      '文本',
+      '文本编辑',
+      '纯文本',
+      'plain',
+      'text',
+      '记事',
+      'note',
+      '粘贴',
+      '剪贴板',
+      'markdown',
+      'md',
+      '标记'
+    ]
   },
   {
     id: 'text-diff',
@@ -160,6 +173,16 @@ export const siteTools: SiteTool[] = [
     iconColor: 'text-violet-500',
     path: '/tools/code',
     keywords: ['prettier', '代码格式化', 'eslint', 'format', 'js', 'ts', 'html', 'css']
+  },
+  {
+    id: 'js-playground',
+    name: 'JS 运行',
+    desc: '临时执行代码',
+    icon: 'play-circle-o',
+    bgColor: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    path: '/tools/js-playground',
+    keywords: ['js', 'javascript', '运行', '执行', 'playground', 'repl', '脚本', 'snippet', '代码运行', 'node']
   },
   {
     id: 'more',

@@ -1,7 +1,7 @@
 <template>
   <div
     class="text-diff-cm-wrap h-full min-h-0 min-w-0 overflow-hidden bg-white"
-    :class="{ 'text-diff-cm-wrap--plain': variant === 'plain' }"
+    :class="{ 'text-diff-cm-wrap--plain': variant === 'plain' || variant === 'code' || variant === 'playground' }"
   >
     <div ref="hostRef" class="h-full min-h-0 min-w-0" />
   </div>
@@ -16,7 +16,7 @@ import {
   loadTextDiffLanguageBundle,
   type TextDiffLanguageId
 } from '~/utils/textDiffCodeMirrorLanguage'
-import { plainTextCodeMirrorSetup, textDiffCodeMirrorSetup } from '~/utils/textDiffCodeMirrorSetup'
+import { plainTextCodeMirrorSetup, textDiffCodeMirrorSetup, codeEditorCodeMirrorSetup, jsPlaygroundCodeMirrorSetup } from '~/utils/textDiffCodeMirrorSetup'
 
 export interface TextDiffLineDecoration {
   line: number
@@ -34,12 +34,14 @@ const props = withDefaults(
   defineProps<{
     modelValue: string
     language?: TextDiffLanguageId
-    /** diff：对比用完整能力；plain：纯文本，行号栏紧凑 */
-    variant?: 'diff' | 'plain'
+    /** diff：对比用完整能力；plain：纯文本；code：代码编辑；playground：JS 运行 */
+    variant?: 'diff' | 'plain' | 'code' | 'playground'
     decorations?: TextDiffLineDecoration[]
     rangeDecorations?: TextDiffRangeDecoration[]
     placeholder?: string
     wordWrap?: boolean
+    readonly?: boolean
+    extraExtensions?: Extension[]
   }>(),
   {
     language: 'plain',
@@ -47,7 +49,9 @@ const props = withDefaults(
     decorations: () => [],
     rangeDecorations: () => [],
     placeholder: '',
-    wordWrap: true
+    wordWrap: true,
+    readonly: false,
+    extraExtensions: () => []
   }
 )
 
@@ -62,6 +66,7 @@ const languageComp = new Compartment()
 const lintComp = new Compartment()
 const highlightComp = new Compartment()
 const wrapComp = new Compartment()
+const readOnlyComp = new Compartment()
 let suppressScrollEmit = false
 let languageRequestId = 0
 
@@ -187,9 +192,26 @@ watch(
   }
 )
 
+watch(
+  () => props.readonly,
+  (readonly) => {
+    viewRef.value?.dispatch({
+      effects: readOnlyComp.reconfigure(EditorState.readOnly.of(readonly))
+    })
+  }
+)
+
 function buildExtensions(): Extension[] {
   const isPlain = props.variant === 'plain'
-  const baseSetup = isPlain ? plainTextCodeMirrorSetup : textDiffCodeMirrorSetup
+  const isCode = props.variant === 'code'
+  const isPlayground = props.variant === 'playground'
+  const baseSetup = isPlayground
+    ? jsPlaygroundCodeMirrorSetup
+    : isCode
+      ? codeEditorCodeMirrorSetup
+      : isPlain
+        ? plainTextCodeMirrorSetup
+        : textDiffCodeMirrorSetup
   const lineNoColor = 'rgb(148 163 184)'
 
   return [
@@ -197,7 +219,9 @@ function buildExtensions(): Extension[] {
     languageComp.of([]),
     highlightComp.of([]),
     wrapComp.of(props.wordWrap ? EditorView.lineWrapping : []),
-    ...(isPlain ? [] : [lintComp.of([]), lineDecorationField]),
+    readOnlyComp.of(EditorState.readOnly.of(props.readonly)),
+    ...(isPlain || isCode || isPlayground ? [] : [lintComp.of([]), lineDecorationField]),
+    ...(props.extraExtensions ?? []),
     EditorView.theme({
       '&': {
         height: '100%',
@@ -209,8 +233,9 @@ function buildExtensions(): Extension[] {
         fontFamily: 'var(--font-mono, ui-monospace, monospace)'
       },
       '.cm-content': {
-        padding: '12px 0',
-        minHeight: isPlain ? undefined : '100%'
+        padding: '4px 0 8px',
+        minHeight: isPlain || isCode || isPlayground ? undefined : '100%',
+        cursor: props.readonly ? 'default' : 'text'
       },
       '.cm-gutters': {
         backgroundColor: 'rgb(248 250 252)',
@@ -380,5 +405,40 @@ onUnmounted(() => {
   background-repeat: repeat-x;
   background-position: left bottom;
   padding-bottom: 0.12em;
+}
+
+.text-diff-cm-wrap .cm-tooltip.cm-tooltip-autocomplete {
+  z-index: 80;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 0.12);
+  overflow: hidden;
+}
+
+.text-diff-cm-wrap .cm-tooltip.cm-tooltip-autocomplete > ul {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  max-height: min(18rem, 42vh);
+}
+
+.text-diff-cm-wrap .cm-tooltip.cm-tooltip-autocomplete > ul > li {
+  padding: 4px 8px;
+}
+
+.text-diff-cm-wrap .cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: rgb(236 253 245);
+  color: rgb(6 78 59);
+}
+
+.text-diff-cm-wrap .cm-completionDetail {
+  margin-left: 0.5rem;
+  font-size: 11px;
+  color: rgb(100 116 139);
+  font-style: normal;
+}
+
+.text-diff-cm-wrap .cm-completionIcon {
+  opacity: 0.85;
 }
 </style>

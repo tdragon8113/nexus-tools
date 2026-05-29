@@ -12,12 +12,15 @@ export type DesktopPrefs = {
   autoHideOnBlur?: boolean
   /** 自动检查、下载并安装更新（打包版） */
   autoUpdateEnabled?: boolean
+  /** 登录系统后自动启动应用（默认关闭） */
+  openAtLogin?: boolean
 }
 
 const DEFAULT_PREFS: DesktopPrefs = {
   clipboardPolicy: 'smart',
   autoHideOnBlur: true,
-  autoUpdateEnabled: true
+  autoUpdateEnabled: true,
+  openAtLogin: false
 }
 
 export class DesktopPrefsStore {
