@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/habits")
+@RequestMapping("/habits")
 public class HabitController {
 
     private final HabitApplicationService habitApplicationService;

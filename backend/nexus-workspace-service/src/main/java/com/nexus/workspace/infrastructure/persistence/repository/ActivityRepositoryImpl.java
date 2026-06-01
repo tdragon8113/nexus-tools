@@ -24,7 +24,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
 
     @Override
     public Activity findById(Long id) {
-        return activityMapper.selectById(id);
+        return activityMapper.selectActivityById(id);
     }
 
     @Override
@@ -40,14 +40,14 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     @Override
     public void save(Activity activity) {
         if (activity.getId() == null) {
-            activityMapper.insert(activity);
+            activityMapper.insertActivity(activity);
         } else {
-            activityMapper.updateById(activity);
+            activityMapper.updateActivity(activity);
         }
     }
 
     @Override
     public void delete(Long id) {
-        activityMapper.deleteById(id);
+        activityMapper.deleteActivityById(id);
     }
 }

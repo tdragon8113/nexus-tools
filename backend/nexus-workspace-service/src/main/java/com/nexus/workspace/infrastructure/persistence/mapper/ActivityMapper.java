@@ -13,6 +13,14 @@ import java.util.List;
  */
 @Mapper
 public interface ActivityMapper extends BaseMapper<Activity> {
+    Activity selectActivityById(@Param("id") Long id);
+
+    int insertActivity(Activity activity);
+
+    int updateActivity(Activity activity);
+
+    int deleteActivityById(@Param("id") Long id);
+
     List<Activity> findByUserId(@Param("userId") Long userId);
     List<Activity> findByUserIdAndDateRange(
         @Param("userId") Long userId,

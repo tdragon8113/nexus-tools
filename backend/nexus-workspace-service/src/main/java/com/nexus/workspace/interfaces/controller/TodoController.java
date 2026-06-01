@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/todos")
+@RequestMapping("/todos")
 public class TodoController {
 
     private final TodoApplicationService todoApplicationService;

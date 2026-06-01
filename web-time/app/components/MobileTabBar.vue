@@ -13,11 +13,14 @@
         inactive-color="#64748b"
         class="mobile-tabbar font-sans pointer-events-auto border-t border-slate-200/90 bg-white/95 backdrop-blur-md shadow-[0_-4px_24px_rgba(15,23,42,0.08)]"
       >
-        <van-tabbar-item replace to="/manage/time" icon="wap-home-o">
-          浏览
+        <van-tabbar-item replace to="/manage/time" icon="notes-o">
+          记录
         </van-tabbar-item>
         <van-tabbar-item replace to="/manage/time/stats" icon="bar-chart-o">
           统计
+        </van-tabbar-item>
+        <van-tabbar-item replace to="/manage/time/insights" icon="notes-o">
+          感悟
         </van-tabbar-item>
         <van-tabbar-item replace to="/profile" icon="user-o">
           我的

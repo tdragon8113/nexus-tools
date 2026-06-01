@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/activities")
+@RequestMapping("/activities")
 public class ActivityController {
 
     private final ActivityApplicationService activityApplicationService;

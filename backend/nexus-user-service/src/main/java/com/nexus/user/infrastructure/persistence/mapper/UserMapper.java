@@ -19,4 +19,8 @@ public interface UserMapper extends BaseMapper<User> {
      * {@link BaseMapper#selectById} does not map the DB {@code id} column into {@code UserId}.
      */
     User findUserByPk(@Param("id") Long id);
+
+    int insertUser(User user);
+
+    int updateUser(User user);
 }

@@ -42,9 +42,9 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void save(User user) {
         if (user.getIdValue() == null) {
-            userMapper.insert(user);
+            userMapper.insertUser(user);
         } else {
-            userMapper.updateById(user);
+            userMapper.updateUser(user);
         }
     }
 

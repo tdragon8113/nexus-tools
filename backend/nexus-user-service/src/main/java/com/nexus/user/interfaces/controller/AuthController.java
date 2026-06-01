@@ -7,6 +7,7 @@ import com.nexus.user.application.service.AuthApplicationService;
 import com.nexus.user.interfaces.dto.request.LoginRequest;
 import com.nexus.user.interfaces.dto.request.RefreshTokenRequest;
 import com.nexus.user.interfaces.dto.request.RegisterRequest;
+import com.nexus.user.interfaces.dto.request.UpdateProfileRequest;
 import com.nexus.user.interfaces.dto.response.TokenResponse;
 import com.nexus.user.interfaces.dto.response.UserResponse;
 import jakarta.validation.Valid;
@@ -61,6 +62,13 @@ public class AuthController {
             return ApiResponse.error(401, "未登录");
         }
         return ApiResponse.success(authApplicationService.getCurrentUser(userId));
+    }
+
+    @PatchMapping("/me")
+    public ApiResponse<UserResponse> updateProfile(
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        return ApiResponse.success(authApplicationService.updateProfile(userId, request.getNickname()));
     }
 
     @DeleteMapping("/account")

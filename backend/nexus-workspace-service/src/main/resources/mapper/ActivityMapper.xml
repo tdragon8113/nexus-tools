@@ -14,6 +14,40 @@
         <result column="created_at" property="createdAt"/>
     </resultMap>
 
+    <select id="selectActivityById" resultMap="ActivityResultMap">
+        SELECT * FROM activities WHERE id = #{id}
+    </select>
+
+    <insert id="insertActivity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO activities (
+            user_id, title, category, start_time, end_time, duration_minutes, notes, created_at
+        ) VALUES (
+            #{userId},
+            #{title},
+            #{categoryCode},
+            #{startTime},
+            #{endTime},
+            #{durationMinutes},
+            #{notes},
+            COALESCE(#{createdAt}, NOW())
+        )
+    </insert>
+
+    <update id="updateActivity">
+        UPDATE activities
+        SET title = #{title},
+            category = #{categoryCode},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            duration_minutes = #{durationMinutes},
+            notes = #{notes}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteActivityById">
+        DELETE FROM activities WHERE id = #{id}
+    </delete>
+
     <select id="findByUserId" resultMap="ActivityResultMap">
         SELECT * FROM activities WHERE user_id = #{userId} ORDER BY start_time DESC
     </select>

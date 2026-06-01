@@ -27,7 +27,14 @@
           <van-cell-group :border="false">
             <van-cell title="用户名" :value="user.username" icon="user-o" />
             <van-cell title="邮箱" :value="user.email" icon="envelop-o" />
-            <van-cell title="昵称" :value="user.nickname || '未设置'" icon="user-circle-o" />
+            <van-cell
+              title="昵称"
+              :value="user.nickname || '未设置'"
+              icon="user-circle-o"
+              is-link
+              clickable
+              @click="openNicknameDialog"
+            />
           </van-cell-group>
         </div>
 
@@ -36,11 +43,16 @@
             <h3 class="font-sans text-sm font-semibold text-slate-900">更多</h3>
           </div>
           <van-cell-group :border="false">
+            <van-cell title="生活卡片" icon="apps-o" is-link clickable :to="linkWithBack('/profile/cards')" />
+            <van-cell title="记录标签" icon="label-o" is-link clickable :to="linkWithBack('/profile/tags')" />
             <van-cell title="修改密码" icon="lock" is-link />
             <van-cell title="消息通知" icon="bell" is-link />
             <van-cell title="关于我们" icon="info-o" is-link />
           </van-cell-group>
-          <div class="p-3 border-t border-slate-100">
+          <div class="p-3 border-t border-slate-100 space-y-2">
+            <van-button block plain type="default" @click="handleLogout">
+              退出登录
+            </van-button>
             <van-button block plain type="danger" @click="showDeleteConfirm = true">
               注销账号
             </van-button>
@@ -55,6 +67,22 @@
         show-cancel-button
         @confirm="handleDeleteAccount"
       />
+
+      <van-dialog
+        v-model:show="showNicknameDialog"
+        title="修改昵称"
+        show-cancel-button
+        confirm-button-text="保存"
+        :before-close="beforeNicknameClose"
+      >
+        <van-field
+          v-model="nicknameDraft"
+          maxlength="50"
+          placeholder="请输入昵称"
+          clearable
+          class="!pb-2"
+        />
+      </van-dialog>
     </template>
 
     <div v-else class="px-4 py-12 text-center">
@@ -88,13 +116,18 @@
 </template>
 
 <script setup lang="ts">
+import { showToast } from 'vant'
+
 useHead({
   title: '我的 · Nexus Time'
 })
 
-const { user, deleteAccount, getCurrentUser, getAccessToken } = useAuthApi()
+const { user, deleteAccount, getCurrentUser, getAccessToken, logout, updateProfile } = useAuthApi()
+const { linkWithBack } = useBackNavigation()
 
 const showDeleteConfirm = ref(false)
+const showNicknameDialog = ref(false)
+const nicknameDraft = ref('')
 const loading = ref(true)
 
 onMounted(async () => {
@@ -114,6 +147,28 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+const openNicknameDialog = () => {
+  nicknameDraft.value = user.value?.nickname ?? ''
+  showNicknameDialog.value = true
+}
+
+const beforeNicknameClose = async (action: 'confirm' | 'cancel') => {
+  if (action === 'cancel') return true
+
+  const res = await updateProfile(nicknameDraft.value.trim())
+  if (res.code !== 200) {
+    showToast(res.message || '保存失败')
+    return false
+  }
+  showToast('昵称已更新')
+  return true
+}
+
+const handleLogout = async () => {
+  await logout()
+  await navigateTo('/manage/time')
+}
 
 const handleDeleteAccount = async () => {
   try {

@@ -5,7 +5,10 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': { redirect: { to: '/manage/time', statusCode: 302 } },
-    '/manage': { redirect: { to: '/manage/time', statusCode: 301 } }
+    '/manage': { redirect: { to: '/manage/time', statusCode: 301 } },
+    '/manage/**': { ssr: false },
+    '/profile': { ssr: false },
+    '/profile/**': { ssr: false }
   },
 
   modules: [
@@ -50,11 +53,11 @@ export default defineNuxtConfig({
           name: 'apple-mobile-web-app-status-bar-style',
           content: 'default'
         },
-        { name: 'description', content: 'Nexus Time：账号登录与个人中心' },
-        { name: 'keywords', content: 'Nexus Time,账号' },
+        { name: 'description', content: 'Nexus Time：记录生活片段、感悟与回顾' },
+        { name: 'keywords', content: 'Nexus Time,生活记录,日记,感悟' },
         { name: 'author', content: 'Nexus Tools' },
         { property: 'og:title', content: 'Nexus Time' },
-        { property: 'og:description', content: 'Nexus Time 站点' }
+        { property: 'og:description', content: 'Nexus Time · 记录生活的工具' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
@@ -68,6 +71,11 @@ export default defineNuxtConfig({
       routes: [
         '/manage/time',
         '/manage/time/stats',
+        '/manage/time/insights',
+        '/manage/time/edit',
+        '/manage/time/tags',
+        '/profile/cards',
+        '/profile/tags',
         '/auth/login',
         '/auth/register',
         '/profile'

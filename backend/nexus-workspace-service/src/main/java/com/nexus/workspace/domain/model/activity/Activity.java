@@ -1,6 +1,10 @@
 package com.nexus.workspace.domain.model.activity;
 
-import com.nexus.workspace.domain.model.activity.ActivityCategory;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.nexus.workspace.infrastructure.persistence.handler.ActivityCategoryTypeHandler;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -9,10 +13,13 @@ import java.time.LocalDateTime;
  * Activity 实体（富领域模型）
  */
 @Getter
+@TableName("activities")
 public class Activity {
+    @TableId(type = IdType.AUTO)
     private Long id;
     private Long userId;
     private String title;
+    @TableField(value = "category", typeHandler = ActivityCategoryTypeHandler.class)
     private ActivityCategory category;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

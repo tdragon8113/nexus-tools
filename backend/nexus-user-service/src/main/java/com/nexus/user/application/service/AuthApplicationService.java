@@ -110,6 +110,20 @@ public class AuthApplicationService {
     }
 
     @Transactional
+    public UserResponse updateProfile(Long userId, String nickname) {
+        User user = userRepository.findById(new UserId(userId));
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+
+        String trimmed = nickname != null ? nickname.trim() : null;
+        user.updateProfile(trimmed != null && !trimmed.isEmpty() ? trimmed : null, user.getAvatarUrl());
+        userRepository.save(user);
+        log.info("User profile updated: {}", user.getUsername());
+        return toResponse(user);
+    }
+
+    @Transactional
     public void deleteAccount(Long userId, String refreshToken) {
         User user = userRepository.findById(new UserId(userId));
         if (user == null) {

@@ -8,7 +8,7 @@
         <result column="email" property="email"/>
         <result column="password" property="password"/>
         <result column="nickname" property="nickname"/>
-        <result column="avatar_url" property="avatarUrl"/>
+        <result column="avatar" property="avatarUrl"/>
         <result column="status" property="statusFromCode"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
@@ -25,4 +25,30 @@
     <select id="findUserByPk" resultMap="UserResultMap">
         SELECT * FROM users WHERE id = #{id}
     </select>
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="idValue">
+        INSERT INTO users (username, email, password, nickname, avatar, status, created_at, updated_at)
+        VALUES (
+            #{username},
+            #{email},
+            #{password},
+            #{nickname},
+            #{avatarUrl},
+            #{statusCode},
+            COALESCE(#{createdAt}, NOW()),
+            COALESCE(#{updatedAt}, NOW())
+        )
+    </insert>
+
+    <update id="updateUser">
+        UPDATE users
+        SET username = #{username},
+            email = #{email},
+            password = #{password},
+            nickname = #{nickname},
+            avatar = #{avatarUrl},
+            status = #{statusCode},
+            updated_at = COALESCE(#{updatedAt}, NOW())
+        WHERE id = #{idValue}
+    </update>
 </mapper>
