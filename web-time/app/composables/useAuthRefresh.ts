@@ -1,0 +1,87 @@
+import type { ApiResponse } from './useApiClient'
+
+let refreshInFlight: Promise<boolean> | null = null
+
+function isAuthApiPath (path: string) {
+  return path.includes('/auth/login')
+    || path.includes('/auth/register')
+    || path.includes('/auth/refresh')
+}
+
+export function isUnauthorizedResponse (status: number, body?: ApiResponse<unknown> | null) {
+  return status === 401 || body?.code === 401
+}
+
+/** 401 且无法恢复登录态：清缓存并跳转登录页 */
+export async function forceAuthLogout (redirectPath?: string) {
+  const { clearAuth } = useApiClient()
+  clearAuth()
+  useAuthSession().markLoggedOut()
+
+  if (!import.meta.client) return
+
+  const path = redirectPath ?? useRoute().fullPath
+  if (path.startsWith('/auth/')) return
+
+  await navigateTo(`/auth/login?redirect=${encodeURIComponent(path)}`)
+}
+
+/** 单飞刷新 access token，避免并发 401 重复调用 refresh */
+export async function refreshAccessTokenOnce (): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight
+
+  refreshInFlight = (async () => {
+    const { getRefreshToken, setAccessToken, clearAuth } = useApiClient()
+    const refreshToken = getRefreshToken()
+    if (!refreshToken) return false
+
+    const apiBase = (useRuntimeConfig().public.apiBase as string | undefined) ?? 'http://localhost:8080'
+
+    try {
+      const response = await fetch(`${apiBase}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken })
+      })
+
+      let result: ApiResponse<{ accessToken?: string }>
+      try {
+        result = await response.json()
+      } catch {
+        return false
+      }
+
+      if (response.ok && result.code === 200 && result.data?.accessToken) {
+        setAccessToken(result.data.accessToken)
+        useAuthSession().markLoggedIn()
+        return true
+      }
+    } catch (e) {
+      console.error('[Auth] Refresh token failed:', e)
+    }
+
+    clearAuth()
+    useAuthSession().markLoggedOut()
+    return false
+  })().finally(() => {
+    refreshInFlight = null
+  })
+
+  return refreshInFlight
+}
+
+/** access 失效时尝试 refresh；失败则强制登出 */
+export async function recoverFromUnauthorized (path: string): Promise<boolean> {
+  if (isAuthApiPath(path)) return false
+
+  if (!useApiClient().getRefreshToken()) {
+    await forceAuthLogout()
+    return false
+  }
+
+  const ok = await refreshAccessTokenOnce()
+  if (!ok) {
+    await forceAuthLogout()
+  }
+  return ok
+}

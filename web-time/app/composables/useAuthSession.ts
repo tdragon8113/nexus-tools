@@ -8,7 +8,11 @@ export function useAuthSession () {
     if (import.meta.server) return
     const hasToken = !!getAccessToken()
     authed.value = hasToken
-    if (hasToken) initUser()
+    if (hasToken) {
+      initUser()
+    } else {
+      user.value = null
+    }
   }
 
   function markLoggedIn () {

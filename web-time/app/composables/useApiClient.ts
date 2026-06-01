@@ -1,3 +1,9 @@
+import {
+  forceAuthLogout,
+  isUnauthorizedResponse,
+  recoverFromUnauthorized
+} from './useAuthRefresh'
+
 export interface ApiResponse<T> {
   code: number
   message: string
@@ -68,30 +74,12 @@ export function useApiClient () {
     setStorageItem(STORAGE_KEYS.USER, null)
   }
 
-  const refreshAccessToken = async (): Promise<boolean> => {
-    const refreshToken = getRefreshToken()
-    if (!refreshToken) return false
-
+  const parseJsonResponse = async <T> (response: Response): Promise<ApiResponse<T>> => {
     try {
-      const response = await fetch(`${apiBaseUrl()}/api/v1/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken })
-      })
-
-      const result: ApiResponse<TokenResponse> = await response.json()
-      if (result.code === 200 && result.data?.accessToken) {
-        setAccessToken(result.data.accessToken)
-        return true
-      }
-    } catch (e) {
-      console.error('[Auth] Refresh token failed:', e)
+      return await response.json()
+    } catch {
+      return { code: 500, message: '服务响应异常', data: null as T }
     }
-
-    clearAuth()
-    useAuthSession().markLoggedOut()
-    await navigateTo('/auth/login')
-    return false
   }
 
   const request = async <T> (path: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
@@ -115,31 +103,23 @@ export function useApiClient () {
       return { code: 0, message: '无法连接服务器，请确认后端已启动', data: null as T }
     }
 
-    let body: ApiResponse<T>
-    try {
-      body = await response.json()
-    } catch {
-      return { code: 500, message: '服务响应异常', data: null as T }
-    }
+    let body = await parseJsonResponse<T>(response)
 
-    if (response.status === 401 && getRefreshToken() && !path.includes('/auth/refresh')) {
-      const refreshed = await refreshAccessToken()
-      if (refreshed) {
+    if (isUnauthorizedResponse(response.status, body)) {
+      const recovered = await recoverFromUnauthorized(path)
+      if (recovered) {
         headers.Authorization = `Bearer ${getAccessToken()}`
-        let retryResponse: Response
         try {
-          retryResponse = await fetch(`${apiBaseUrl()}${path}`, { ...options, headers })
+          response = await fetch(`${apiBaseUrl()}${path}`, { ...options, headers })
         } catch {
           return { code: 0, message: '无法连接服务器，请确认后端已启动', data: null as T }
         }
-        try {
-          return await retryResponse.json()
-        } catch {
-          return { code: 500, message: '服务响应异常', data: null as T }
+        body = await parseJsonResponse<T>(response)
+        if (isUnauthorizedResponse(response.status, body)) {
+          await forceAuthLogout()
         }
       }
-      useAuthSession().markLoggedOut()
-      return body.code ? body : { code: 401, message: body.message || '请重新登录', data: null as T }
+      return body
     }
 
     if (!response.ok) {
@@ -152,6 +132,11 @@ export function useApiClient () {
   }
 
   const initUser = () => {
+    if (!getAccessToken()) {
+      user.value = null
+      setStorageItem(STORAGE_KEYS.USER, null)
+      return
+    }
     const storedUser = getStorageItem<User | null>(STORAGE_KEYS.USER, null)
     if (storedUser) {
       user.value = storedUser
@@ -175,7 +160,6 @@ export function useApiClient () {
     setRefreshToken,
     setUserId,
     clearAuth,
-    refreshAccessToken,
     initUser
   }
 }

@@ -4,7 +4,7 @@
       <van-loading size="24px" vertical>加载中...</van-loading>
     </div>
 
-    <template v-else-if="user">
+    <template v-else-if="authed && user">
       <div class="px-4 py-4 space-y-4">
         <div class="doc-surface p-5">
           <div class="flex items-center gap-4">
@@ -117,6 +117,7 @@
 
 <script setup lang="ts">
 import { showToast } from 'vant'
+import { forceAuthLogout } from '~/composables/useAuthRefresh'
 
 useHead({
   title: '我的 · Nexus Time'
@@ -141,10 +142,14 @@ onMounted(async () => {
   try {
     const res = await getCurrentUser()
     if (res.code !== 200 || !res.data) {
-      await navigateTo('/auth/login')
+      if (res.code === 401) {
+        await forceAuthLogout('/profile')
+      } else {
+        await navigateTo('/auth/login?redirect=/profile')
+      }
     }
   } catch {
-    await navigateTo('/auth/login')
+    await forceAuthLogout('/profile')
   } finally {
     loading.value = false
   }
