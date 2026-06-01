@@ -161,7 +161,20 @@ git tag deploy-v1.0.13 && git push origin deploy-v1.0.13
 
 ### 前端显示 nginx 默认页面
 
-确保 `nuxt.config.ts` 为需预渲染的路由配置了 `nitro.prerender.routes`（`web-tools` 为 `/desktop/*` 与各工具页；`web-time` 含认证与 `/manage/time` 子路由）。
+1. 确认 8889 映射的是 **`nexus-frontend-time`**，不是裸 `nginx` 镜像：
+   ```bash
+   docker ps --filter publish=8889
+   docker inspect nexus-frontend-time --format '{{.Config.Image}}'
+   docker exec nexus-frontend-time head -5 /usr/share/nginx/html/index.html
+   ```
+2. 若 `index.html` 含 `Welcome to nginx`，说明镜像未打入 Nuxt 构建产物。在部署目录执行：
+   ```bash
+   export IMAGE_TAG=deploy-v1.0.13   # 与最近一次 deploy-v* tag 一致
+   docker compose pull nexus-frontend-time
+   docker compose up -d --force-recreate nexus-frontend-time
+   ```
+3. 确保 `nuxt.config.ts` 为需预渲染的路由配置了 `nitro.prerender.routes`（见 `web-time/nuxt.config.ts`）。
+4. `web-time/Dockerfile` 会在构建时删除基础镜像默认页并校验 `index.html`。
 
 ### 后端服务启动失败
 
