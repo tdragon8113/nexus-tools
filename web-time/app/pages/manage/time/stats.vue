@@ -1,17 +1,12 @@
 <template>
   <div class="px-4 py-4 space-y-4">
-    <div v-if="!authed" class="doc-surface p-8 text-center">
-      <van-icon name="bar-chart-o" size="40" class="text-slate-300 mx-auto mb-4" />
-      <p class="text-slate-700 font-medium">登录后查看生活回顾</p>
-      <NuxtLink
-        to="/auth/login"
-        class="inline-flex mt-5 items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium doc-cta-gradient"
-      >
-        登录
-      </NuxtLink>
-    </div>
+    <AuthPrompt
+      v-if="mounted && !authed"
+      message="登录后查看生活回顾"
+      redirect="/manage/time/stats"
+    />
 
-    <template v-else>
+    <template v-else-if="mounted && authed">
       <div v-if="loading" class="flex justify-center py-16">
         <van-loading size="24px" vertical>加载中...</van-loading>
       </div>
@@ -80,10 +75,8 @@ import type { Stats } from '~/composables/useWorkspaceApi'
 
 useHead({ title: '回顾 · Nexus Time' })
 
-const { isLoggedIn, getAccessToken } = useAuthApi()
+const { mounted, authed } = useAuthSession()
 const { getStats } = useWorkspaceApi()
-
-const authed = computed(() => isLoggedIn())
 const loading = ref(true)
 const stats = ref<Stats | null>(null)
 
@@ -137,7 +130,7 @@ function formatDailyLabel (isoDate: string) {
 }
 
 onMounted(async () => {
-  if (!getAccessToken()) {
+  if (!authed.value) {
     loading.value = false
     return
   }

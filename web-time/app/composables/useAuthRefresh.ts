@@ -1,15 +1,10 @@
-import type { ApiResponse } from './useApiClient'
+import type { ApiResponse } from '~/types/api'
+import { buildApiUrl, isAuthEndpoint } from '~/utils/api'
 
 let refreshInFlight: Promise<boolean> | null = null
 
-function isAuthApiPath (path: string) {
-  return path.includes('/auth/login')
-    || path.includes('/auth/register')
-    || path.includes('/auth/refresh')
-}
-
-export function isUnauthorizedResponse (status: number, body?: ApiResponse<unknown> | null) {
-  return status === 401 || body?.code === 401
+export function isUnauthorizedResponse (status: number) {
+  return status === 401
 }
 
 /** 401 且无法恢复登录态：清缓存并跳转登录页 */
@@ -17,6 +12,7 @@ export async function forceAuthLogout (redirectPath?: string) {
   const { clearAuth } = useApiClient()
   clearAuth()
   useAuthSession().markLoggedOut()
+  useActivities().invalidate()
 
   if (!import.meta.client) return
 
@@ -35,10 +31,8 @@ export async function refreshAccessTokenOnce (): Promise<boolean> {
     const refreshToken = getRefreshToken()
     if (!refreshToken) return false
 
-    const apiBase = (useRuntimeConfig().public.apiBase as string | undefined) ?? 'http://localhost:8080'
-
     try {
-      const response = await fetch(`${apiBase}/api/v1/auth/refresh`, {
+      const response = await fetch(buildApiUrl('/api/v1/auth/refresh'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken })
@@ -72,7 +66,7 @@ export async function refreshAccessTokenOnce (): Promise<boolean> {
 
 /** access 失效时尝试 refresh；失败则强制登出 */
 export async function recoverFromUnauthorized (path: string): Promise<boolean> {
-  if (isAuthApiPath(path)) return false
+  if (isAuthEndpoint(path)) return false
 
   if (!useApiClient().getRefreshToken()) {
     await forceAuthLogout()

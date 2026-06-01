@@ -15,38 +15,36 @@
         {{ errorMessage }}
       </div>
 
-      <van-form @submit.prevent="handleLogin">
-        <van-cell-group inset class="!mx-0">
-          <van-field
-            v-model="form.username"
-            name="username"
-            placeholder="用户名"
-            left-icon="user-o"
-            :rules="[{ required: true, message: '请输入用户名' }]"
-          />
-          <van-field
-            v-model="form.password"
-            type="password"
-            name="password"
-            placeholder="密码"
-            left-icon="lock"
-            :rules="[{ required: true, message: '请输入密码' }]"
-          />
-        </van-cell-group>
+      <van-cell-group inset class="!mx-0">
+        <van-field
+          v-model="form.username"
+          name="username"
+          placeholder="用户名"
+          left-icon="user-o"
+          autocomplete="username"
+        />
+        <van-field
+          v-model="form.password"
+          type="password"
+          name="password"
+          placeholder="密码"
+          left-icon="lock"
+          autocomplete="current-password"
+        />
+      </van-cell-group>
 
-        <div class="mt-5">
-          <van-button
-            round
-            block
-            type="primary"
-            native-type="submit"
-            :loading="loading"
-            class="!bg-gradient-to-r !from-blue-500 !to-purple-600 !border-0"
-          >
-            登录
-          </van-button>
-        </div>
-      </van-form>
+      <div class="mt-5">
+        <van-button
+          round
+          block
+          type="primary"
+          :loading="loading"
+          class="!bg-gradient-to-r !from-blue-500 !to-purple-600 !border-0"
+          @click="handleLogin"
+        >
+          登录
+        </van-button>
+      </div>
 
       <div class="mt-5 flex flex-col gap-2 text-sm text-center">
         <NuxtLink to="/auth/register" class="text-blue-600 font-medium">
@@ -70,8 +68,8 @@ definePageMeta({
   layout: 'auth'
 })
 
-const { login, getCurrentUser } = useAuthApi()
-const { sync: syncAuth } = useAuthSession()
+const { login, getCurrentUser, clearAuth } = useAuthApi()
+const { sync: syncAuth, markLoggedOut } = useAuthSession()
 const route = useRoute()
 
 const form = reactive({
@@ -83,13 +81,34 @@ const loading = ref(false)
 const errorMessage = ref('')
 
 const handleLogin = async () => {
+  const username = form.username.trim()
+  const password = form.password
+
+  if (!username) {
+    errorMessage.value = '请输入用户名'
+    return
+  }
+  if (!password) {
+    errorMessage.value = '请输入密码'
+    return
+  }
+
   loading.value = true
   errorMessage.value = ''
+
+  // 清掉失效的旧 token，避免带着过期 Authorization 干扰登录
+  clearAuth()
+  markLoggedOut()
+
   try {
-    const response = await login(form.username, form.password)
+    const response = await login(username, password)
     if (response.code === 200) {
       syncAuth()
-      await getCurrentUser()
+      const me = await getCurrentUser()
+      if (me.code !== 200 || !me.data) {
+        errorMessage.value = me.message || '登录成功但获取用户信息失败，请重试'
+        return
+      }
       showToast('登录成功')
       const redirect = typeof route.query.redirect === 'string'
         ? route.query.redirect
@@ -100,7 +119,8 @@ const handleLogin = async () => {
     } else {
       errorMessage.value = response.message || '登录失败'
     }
-  } catch {
+  } catch (e) {
+    console.error('[Auth] Login failed:', e)
     errorMessage.value = '网络错误，请稍后重试'
   } finally {
     loading.value = false

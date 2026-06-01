@@ -1,6 +1,6 @@
 package com.nexus.workspace.application.service;
 
-import com.nexus.common.exception.BusinessException;
+import com.nexus.common.support.ResourceAccessChecker;
 import com.nexus.workspace.application.command.CreateTodoCommand;
 import com.nexus.workspace.application.command.UpdateTodoCommand;
 import com.nexus.workspace.domain.model.todo.Priority;
@@ -59,13 +59,11 @@ public class TodoApplicationService {
 
     @Transactional
     public TodoResponse updateTodo(UpdateTodoCommand command) {
-        Todo todo = todoRepository.findById(command.todoId());
-        if (todo == null) {
-            throw new BusinessException(404, "日程不存在");
-        }
-        if (!todo.belongsTo(command.userId())) {
-            throw new BusinessException(403, "无权访问");
-        }
+        Todo todo = ResourceAccessChecker.requireOwned(
+            todoRepository.findById(command.todoId()),
+            t -> t.belongsTo(command.userId()),
+            "日程"
+        );
 
         todo.update(
             command.title(),
@@ -81,13 +79,11 @@ public class TodoApplicationService {
 
     @Transactional
     public void deleteTodo(Long userId, Long todoId) {
-        Todo todo = todoRepository.findById(todoId);
-        if (todo == null) {
-            throw new BusinessException(404, "日程不存在");
-        }
-        if (!todo.belongsTo(userId)) {
-            throw new BusinessException(403, "无权访问");
-        }
+        ResourceAccessChecker.requireOwned(
+            todoRepository.findById(todoId),
+            t -> t.belongsTo(userId),
+            "日程"
+        );
         todoRepository.delete(todoId);
         log.info("Todo deleted: todoId={}", todoId);
     }

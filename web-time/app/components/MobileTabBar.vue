@@ -19,7 +19,7 @@
         <van-tabbar-item replace to="/manage/time/stats" icon="bar-chart-o">
           统计
         </van-tabbar-item>
-        <van-tabbar-item replace to="/manage/time/insights" icon="notes-o">
+        <van-tabbar-item replace to="/manage/time/insights" icon="comment-o">
           感悟
         </van-tabbar-item>
         <van-tabbar-item replace to="/profile" icon="user-o">

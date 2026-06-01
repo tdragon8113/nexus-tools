@@ -106,6 +106,7 @@ export function useAuthApi () {
     user,
     isLoggedIn,
     getUserId,
-    getAccessToken
+    getAccessToken,
+    clearAuth
   }
 }

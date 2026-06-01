@@ -123,7 +123,7 @@ definePageMeta({
 
 useHead({ title: '写记录 · Nexus Time' })
 
-const { mounted, authed } = useClientAuthed()
+const { mounted, authed } = useAuthSession()
 const { getAccessToken } = useAuthApi()
 const { createActivity, updateActivity, getOngoingActivity } = useWorkspaceApi()
 const { load, getRecordTitle, getCard, getChild } = useLifeCards()

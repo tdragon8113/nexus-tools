@@ -1,28 +1,9 @@
 <template>
   <div class="px-4 py-4 space-y-4">
-    <div
+    <AuthPrompt
       v-if="mounted && !authed"
-      class="doc-surface p-4 flex items-start gap-3"
-    >
-      <van-icon name="info-o" size="20" class="text-indigo-500 shrink-0 mt-0.5" />
-      <div class="min-w-0 flex-1">
-        <p class="text-sm text-slate-700">登录后，你的生活记录会保存在云端并在此回显</p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <NuxtLink
-            to="/auth/login?redirect=/manage/time"
-            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium doc-cta-gradient"
-          >
-            登录
-          </NuxtLink>
-          <NuxtLink
-            to="/auth/register"
-            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium border border-slate-200 bg-white text-slate-800"
-          >
-            注册
-          </NuxtLink>
-        </div>
-      </div>
-    </div>
+      redirect="/manage/time"
+    />
 
     <template v-else-if="mounted && authed">
       <div
@@ -122,18 +103,14 @@
 </template>
 
 <script setup lang="ts">
-import { showToast } from 'vant'
-import type { Activity } from '~/composables/useWorkspaceApi'
-import { LIFE_CARD_COLORS, parseRecordNotes } from '~/composables/useLifeCards'
+import { LIFE_CARD_COLORS } from '~/composables/useLifeCards'
 import { useActiveSession } from '~/composables/useActiveSession'
 import { compareActivityTime, formatDuration, isToday } from '~/utils/time'
 
 useHead({ title: '记录 · Nexus Time' })
 
 const { mounted, authed, user, sync: syncAuth } = useAuthSession()
-const { getUserId } = useAuthApi()
-const { getAccessToken } = useAuthApi()
-const { getActivities, deleteActivity } = useWorkspaceApi()
+const { activities, loading, tagStats, fetchActivities, removeActivity } = useActivities()
 const {
   hasSession,
   load: loadSession,
@@ -142,9 +119,6 @@ const {
   sessionCard,
   elapsedSeconds
 } = useActiveSession()
-
-const activities = ref<Activity[]>([])
-const loading = ref(false)
 
 const elapsedLabel = computed(() => formatDuration(elapsedSeconds.value))
 
@@ -168,77 +142,27 @@ const listTitle = computed(() => {
 })
 
 const listEmptyTitle = computed(() => '还没有记录')
-
-const listEmptyHint = computed(() => {
-  const uid = getUserId()
-  if (uid != null) {
-    return `数据库里若是 user_id=${uid} 才有数据；请确认登录的是同一账号`
-  }
-  return '点右下角 + 开始第一段'
-})
-
-const tagStats = computed(() => {
-  const counts = new Map<string, number>()
-  for (const a of activities.value) {
-    for (const tag of parseRecordNotes(a.notes).tags ?? []) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1)
-    }
-  }
-  return [...counts.entries()]
-    .map(([tag, count]) => ({ tag, count }))
-    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'zh-CN'))
-})
+const listEmptyHint = computed(() => '点右下角 + 开始第一段')
 
 const { navigateWithBack } = useBackNavigation()
-
-async function loadActivities () {
-  if (!getAccessToken()) {
-    activities.value = []
-    loading.value = false
-    return
-  }
-
-  loading.value = true
-  try {
-    const res = await getActivities()
-    if (res.code === 200 && Array.isArray(res.data)) {
-      activities.value = res.data
-    } else {
-      activities.value = []
-      showToast(res.message || '加载记录失败')
-      if (res.code === 401) syncAuth()
-    }
-  } catch {
-    showToast('网络错误，请稍后重试')
-  } finally {
-    loading.value = false
-  }
-}
 
 async function refreshPageData () {
   syncAuth()
   loadSession()
   if (authed.value) {
     await syncFromServer()
-    await loadActivities()
+    await fetchActivities()
   }
 }
 
 async function handleDelete (id: number) {
-  const res = await deleteActivity(id)
-  if (res.code === 200) {
-    activities.value = activities.value.filter(a => a.id !== id)
-    showToast('已删除')
-  } else {
-    showToast(res.message || '删除失败')
-  }
+  await removeActivity(id)
 }
 
 onMounted(refreshPageData)
 
 watch(authed, (loggedIn) => {
-  if (loggedIn) void loadActivities()
-  else activities.value = []
+  if (loggedIn) void fetchActivities()
 })
 
 const route = useRoute()

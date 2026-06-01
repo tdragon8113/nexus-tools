@@ -1,14 +1,12 @@
+import type { ApiResponse } from '~/types/api'
+import { buildApiUrl, isAuthEndpoint } from '~/utils/api'
 import {
   forceAuthLogout,
   isUnauthorizedResponse,
   recoverFromUnauthorized
 } from './useAuthRefresh'
 
-export interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T
-}
+export type { ApiResponse } from '~/types/api'
 
 export interface User {
   id: number
@@ -30,10 +28,6 @@ export const STORAGE_KEYS = {
   USER_ID: 'nexus_user_id',
   USER: 'nexus_user'
 } as const
-
-function apiBaseUrl () {
-  return (useRuntimeConfig().public.apiBase as string | undefined) ?? 'http://localhost:8080'
-}
 
 function getStorageItem<T> (key: string, defaultValue: T): T {
   if (typeof window === 'undefined') return defaultValue
@@ -89,13 +83,13 @@ export function useApiClient () {
     }
 
     const accessToken = getAccessToken()
-    if (accessToken) {
+    if (accessToken && !isAuthEndpoint(path)) {
       headers.Authorization = `Bearer ${accessToken}`
     }
 
     let response: Response
     try {
-      response = await fetch(`${apiBaseUrl()}${path}`, {
+      response = await fetch(buildApiUrl(path), {
         ...options,
         headers
       })
@@ -105,17 +99,17 @@ export function useApiClient () {
 
     let body = await parseJsonResponse<T>(response)
 
-    if (isUnauthorizedResponse(response.status, body)) {
+    if (isUnauthorizedResponse(response.status)) {
       const recovered = await recoverFromUnauthorized(path)
       if (recovered) {
         headers.Authorization = `Bearer ${getAccessToken()}`
         try {
-          response = await fetch(`${apiBaseUrl()}${path}`, { ...options, headers })
+          response = await fetch(buildApiUrl(path), { ...options, headers })
         } catch {
           return { code: 0, message: '无法连接服务器，请确认后端已启动', data: null as T }
         }
         body = await parseJsonResponse<T>(response)
-        if (isUnauthorizedResponse(response.status, body)) {
+        if (isUnauthorizedResponse(response.status)) {
           await forceAuthLogout()
         }
       }

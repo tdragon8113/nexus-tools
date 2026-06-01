@@ -15,62 +15,47 @@
         {{ errorMessage }}
       </div>
 
-      <van-form @submit.prevent="handleRegister">
-        <van-cell-group inset class="!mx-0">
-          <van-field
-            v-model="form.username"
-            name="username"
-            placeholder="用户名"
-            left-icon="user-o"
-            :rules="[{ required: true, message: '请输入用户名' }]"
-          />
-          <van-field
-            v-model="form.email"
-            name="email"
-            placeholder="邮箱"
-            left-icon="envelop-o"
-            :rules="[
-              { required: true, message: '请输入邮箱' },
-              { pattern: emailPattern, message: '邮箱格式不正确' }
-            ]"
-          />
-          <van-field
-            v-model="form.password"
-            type="password"
-            name="password"
-            placeholder="密码（至少 6 位）"
-            left-icon="lock"
-            :rules="[
-              { required: true, message: '请输入密码' },
-              { pattern: /^.{6,}$/, message: '密码至少6位' }
-            ]"
-          />
-          <van-field
-            v-model="form.confirmPassword"
-            type="password"
-            name="confirmPassword"
-            placeholder="再次输入密码"
-            left-icon="lock"
-            :rules="[
-              { required: true, message: '请确认密码' },
-              { validator: validateConfirmPassword, message: '两次密码不一致' }
-            ]"
-          />
-        </van-cell-group>
+      <van-cell-group inset class="!mx-0">
+        <van-field
+          v-model="form.username"
+          name="username"
+          placeholder="用户名"
+          left-icon="user-o"
+        />
+        <van-field
+          v-model="form.email"
+          name="email"
+          placeholder="邮箱"
+          left-icon="envelop-o"
+        />
+        <van-field
+          v-model="form.password"
+          type="password"
+          name="password"
+          placeholder="密码（至少 6 位）"
+          left-icon="lock"
+        />
+        <van-field
+          v-model="form.confirmPassword"
+          type="password"
+          name="confirmPassword"
+          placeholder="再次输入密码"
+          left-icon="lock"
+        />
+      </van-cell-group>
 
-        <div class="mt-5">
-          <van-button
-            round
-            block
-            type="primary"
-            native-type="submit"
-            :loading="loading"
-            class="!bg-gradient-to-r !from-blue-500 !to-purple-600 !border-0"
-          >
-            注册
-          </van-button>
-        </div>
-      </van-form>
+      <div class="mt-5">
+        <van-button
+          round
+          block
+          type="primary"
+          :loading="loading"
+          class="!bg-gradient-to-r !from-blue-500 !to-purple-600 !border-0"
+          @click="handleRegister"
+        >
+          注册
+        </van-button>
+      </div>
 
       <div class="mt-5 text-center text-sm">
         <NuxtLink to="/auth/login" class="text-blue-600 font-medium">
@@ -109,15 +94,38 @@ const errorMessage = ref('')
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const validateConfirmPassword = (val: string) => val === form.password
-
 const handleRegister = async () => {
+  const username = form.username.trim()
+  const email = form.email.trim()
+  const password = form.password
+
+  if (!username) {
+    errorMessage.value = '请输入用户名'
+    return
+  }
+  if (!email) {
+    errorMessage.value = '请输入邮箱'
+    return
+  }
+  if (!emailPattern.test(email)) {
+    errorMessage.value = '邮箱格式不正确'
+    return
+  }
+  if (!password || password.length < 6) {
+    errorMessage.value = '密码至少 6 位'
+    return
+  }
+  if (password !== form.confirmPassword) {
+    errorMessage.value = '两次密码不一致'
+    return
+  }
+
   loading.value = true
   errorMessage.value = ''
   try {
-    const response = await register(form.username, form.email, form.password)
+    const response = await register(username, email, password)
     if (response.code === 200) {
-      const loginRes = await login(form.username, form.password)
+      const loginRes = await login(username, password)
       if (loginRes.code === 200) {
         syncAuth()
         await getCurrentUser()
@@ -132,7 +140,8 @@ const handleRegister = async () => {
     } else {
       errorMessage.value = response.message || '注册失败'
     }
-  } catch {
+  } catch (e) {
+    console.error('[Auth] Register failed:', e)
     errorMessage.value = '网络错误，请稍后重试'
   } finally {
     loading.value = false

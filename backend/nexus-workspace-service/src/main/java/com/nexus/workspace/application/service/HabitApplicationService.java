@@ -1,6 +1,6 @@
 package com.nexus.workspace.application.service;
 
-import com.nexus.common.exception.BusinessException;
+import com.nexus.common.support.ResourceAccessChecker;
 import com.nexus.workspace.application.command.CheckinCommand;
 import com.nexus.workspace.application.command.CreateHabitCommand;
 import com.nexus.workspace.application.command.UpdateHabitCommand;
@@ -10,7 +10,6 @@ import com.nexus.workspace.domain.model.habit.HabitCheckin;
 import com.nexus.workspace.domain.model.habit.HabitId;
 import com.nexus.workspace.domain.model.habit.TargetType;
 import com.nexus.workspace.domain.repository.HabitRepository;
-import com.nexus.workspace.domain.service.StreakCalculator;
 import com.nexus.workspace.interfaces.dto.response.CheckinResponse;
 import com.nexus.workspace.interfaces.dto.response.HabitResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +27,9 @@ import java.util.List;
 public class HabitApplicationService {
 
     private final HabitRepository habitRepository;
-    private final StreakCalculator streakCalculator;
 
-    public HabitApplicationService(HabitRepository habitRepository, StreakCalculator streakCalculator) {
+    public HabitApplicationService(HabitRepository habitRepository) {
         this.habitRepository = habitRepository;
-        this.streakCalculator = streakCalculator;
     }
 
     @Transactional
@@ -56,25 +53,13 @@ public class HabitApplicationService {
     }
 
     public HabitResponse getHabit(Long userId, Long habitId) {
-        Habit habit = habitRepository.findById(new HabitId(habitId));
-        if (habit == null) {
-            throw new BusinessException(404, "习惯不存在");
-        }
-        if (!habit.belongsTo(userId)) {
-            throw new BusinessException(403, "无权访问");
-        }
+        Habit habit = requireHabit(habitId, userId);
         return toResponse(habit);
     }
 
     @Transactional
     public HabitResponse updateHabit(UpdateHabitCommand command) {
-        Habit habit = habitRepository.findById(new HabitId(command.habitId()));
-        if (habit == null) {
-            throw new BusinessException(404, "习惯不存在");
-        }
-        if (!habit.belongsTo(command.userId())) {
-            throw new BusinessException(403, "无权访问");
-        }
+        Habit habit = requireHabit(command.habitId(), command.userId());
 
         TargetType target = TargetType.fromString(command.target());
         habit.update(command.name(), command.icon(), target, command.customDays());
@@ -85,13 +70,7 @@ public class HabitApplicationService {
 
     @Transactional
     public void deleteHabit(Long userId, Long habitId) {
-        Habit habit = habitRepository.findById(new HabitId(habitId));
-        if (habit == null) {
-            throw new BusinessException(404, "习惯不存在");
-        }
-        if (!habit.belongsTo(userId)) {
-            throw new BusinessException(403, "无权访问");
-        }
+        requireHabit(habitId, userId);
         habitRepository.delete(new HabitId(habitId));
         log.info("Habit deleted: habitId={}", habitId);
     }
@@ -99,13 +78,7 @@ public class HabitApplicationService {
     @Transactional
     public CheckinResponse checkin(CheckinCommand command) {
         HabitId habitId = new HabitId(command.habitId());
-        Habit habit = habitRepository.findById(habitId);
-        if (habit == null) {
-            throw new BusinessException(404, "习惯不存在");
-        }
-        if (!habit.belongsTo(command.userId())) {
-            throw new BusinessException(403, "无权访问");
-        }
+        Habit habit = requireHabit(command.habitId(), command.userId());
 
         HabitCheckin checkin = habit.checkin(command.date());
         habitRepository.saveCheckin(checkin);
@@ -123,13 +96,7 @@ public class HabitApplicationService {
     }
 
     public List<CheckinResponse> getCheckins(Long userId, Long habitId, LocalDate startDate, LocalDate endDate) {
-        Habit habit = habitRepository.findById(new HabitId(habitId));
-        if (habit == null) {
-            throw new BusinessException(404, "习惯不存在");
-        }
-        if (!habit.belongsTo(userId)) {
-            throw new BusinessException(403, "无权访问");
-        }
+        requireHabit(habitId, userId);
 
         if (startDate == null) startDate = LocalDate.now().minusDays(30);
         if (endDate == null) endDate = LocalDate.now();
@@ -145,6 +112,14 @@ public class HabitApplicationService {
             r.setChecked(true);
             return r;
         }).toList();
+    }
+
+    private Habit requireHabit(Long habitId, Long userId) {
+        return ResourceAccessChecker.requireOwned(
+            habitRepository.findById(new HabitId(habitId)),
+            h -> h.belongsTo(userId),
+            "习惯"
+        );
     }
 
     private HabitResponse toResponse(Habit habit) {

@@ -57,10 +57,6 @@ public class AuthController {
 
     @GetMapping("/me")
     public ApiResponse<UserResponse> getCurrentUser(@RequestHeader("X-User-Id") Long userId) {
-        if (userId == null) {
-            log.warn("getCurrentUser called without userId");
-            return ApiResponse.error(401, "未登录");
-        }
         return ApiResponse.success(authApplicationService.getCurrentUser(userId));
     }
 

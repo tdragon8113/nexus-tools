@@ -23,12 +23,17 @@ export function useAuthSession () {
   function markLoggedOut () {
     clearAuth()
     authed.value = false
+    if (import.meta.client) {
+      useActivities().invalidate()
+    }
   }
 
-  onMounted(() => {
-    sync()
-    mounted.value = true
-  })
+  if (import.meta.client && getCurrentInstance()) {
+    onMounted(() => {
+      sync()
+      mounted.value = true
+    })
+  }
 
   return {
     mounted,

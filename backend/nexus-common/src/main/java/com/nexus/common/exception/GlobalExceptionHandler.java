@@ -1,12 +1,13 @@
 package com.nexus.common.exception;
 
+import com.nexus.common.constants.ResultCode;
 import com.nexus.common.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
@@ -16,26 +17,38 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse<?> handleBusiness(BusinessException e) {
+    public ResponseEntity<ApiResponse<?>> handleBusiness(BusinessException e) {
         log.warn("Business exception: code={}, message={}", e.getCode(), e.getMessage());
-        return ApiResponse.error(e.getCode(), e.getMessage());
+        HttpStatus status = mapBusinessCodeToHttpStatus(e.getCode());
+        return ResponseEntity.status(status).body(ApiResponse.error(e.getCode(), e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse<?> handleValidation(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponse<?>> handleValidation(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors()
                 .stream()
-                .map(f -> f.getField() + ": " + f.getDefaultMessage())
+                .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
-        return ApiResponse.error(400, message);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ResultCode.BAD_REQUEST, message));
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiResponse<?> handleUnknown(Exception e) {
+    public ResponseEntity<ApiResponse<?>> handleUnknown(Exception e) {
         log.error("Unexpected error", e);
-        return ApiResponse.error(500, "系统异常");
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(ResultCode.INTERNAL_ERROR, "系统异常"));
+    }
+
+    private static HttpStatus mapBusinessCodeToHttpStatus(int code) {
+        return switch (code) {
+            case ResultCode.UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
+            case ResultCode.FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case ResultCode.NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case 409 -> HttpStatus.CONFLICT;
+            default -> HttpStatus.BAD_REQUEST;
+        };
     }
 }

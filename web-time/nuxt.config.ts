@@ -8,7 +8,8 @@ export default defineNuxtConfig({
     '/manage': { redirect: { to: '/manage/time', statusCode: 301 } },
     '/manage/**': { ssr: false },
     '/profile': { ssr: false },
-    '/profile/**': { ssr: false }
+    '/profile/**': { ssr: false },
+    '/auth/**': { ssr: false }
   },
 
   modules: [

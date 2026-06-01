@@ -45,9 +45,6 @@
           <van-cell-group :border="false">
             <van-cell title="生活卡片" icon="apps-o" is-link clickable :to="linkWithBack('/profile/cards')" />
             <van-cell title="记录标签" icon="label-o" is-link clickable :to="linkWithBack('/profile/tags')" />
-            <van-cell title="修改密码" icon="lock" is-link />
-            <van-cell title="消息通知" icon="bell" is-link />
-            <van-cell title="关于我们" icon="info-o" is-link />
           </van-cell-group>
           <div class="p-3 border-t border-slate-100 space-y-2">
             <van-button block plain type="default" @click="handleLogout">
@@ -84,34 +81,6 @@
         />
       </van-dialog>
     </template>
-
-    <div v-else class="px-4 py-12 text-center">
-      <div
-        class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-4"
-      >
-        <van-icon name="user-o" size="28" class="text-slate-500" />
-      </div>
-      <h1 class="font-sans text-lg font-semibold text-slate-900 leading-normal">
-        我的
-      </h1>
-      <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-        登录后可查看并管理账号信息。
-      </p>
-      <div class="mt-8 flex flex-col gap-3 max-w-xs mx-auto">
-        <NuxtLink
-          to="/auth/login"
-          class="inline-flex justify-center items-center rounded-full px-6 py-3 text-sm font-medium doc-cta-gradient"
-        >
-          登录
-        </NuxtLink>
-        <NuxtLink
-          to="/auth/register"
-          class="inline-flex justify-center items-center rounded-full px-6 py-3 text-sm font-medium border border-slate-200 bg-white text-slate-800 active:bg-slate-50 transition-colors"
-        >
-          注册
-        </NuxtLink>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -121,6 +90,10 @@ import { forceAuthLogout } from '~/composables/useAuthRefresh'
 
 useHead({
   title: '我的 · Nexus Time'
+})
+
+definePageMeta({
+  middleware: 'require-auth'
 })
 
 const { user, deleteAccount, getCurrentUser, getAccessToken, logout, updateProfile } = useAuthApi()

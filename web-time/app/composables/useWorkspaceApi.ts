@@ -1,4 +1,4 @@
-import type { ApiResponse } from './useApiClient'
+import type { ApiResponse } from '~/types/api'
 import { normalizeDateTime } from '~/utils/time'
 
 export type ActivityCategory = 'pomodoro-work' | 'pomodoro-break' | 'meeting' | 'other'

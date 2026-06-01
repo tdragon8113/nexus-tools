@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +19,8 @@ public class RefreshTokenService {
     private final StringRedisTemplate redis;
     private final long refreshTokenExpiration;
 
-    private static final String KEY_PREFIX = "refresh:tokens:";
+    private static final String TOKEN_KEY_PREFIX = "refresh:tokens:";
+    private static final String USER_INDEX_PREFIX = "refresh:user:";
 
     public RefreshTokenService(
             StringRedisTemplate redis,
@@ -32,8 +34,12 @@ public class RefreshTokenService {
      */
     public String generateRefreshToken(UserId userId) {
         String token = "rt-" + UUID.randomUUID().toString().replace("-", "");
-        String key = KEY_PREFIX + token;
-        redis.opsForValue().set(key, userId.value().toString(), refreshTokenExpiration, TimeUnit.SECONDS);
+        String tokenKey = tokenKey(token);
+        String userIndexKey = userIndexKey(userId);
+
+        redis.opsForValue().set(tokenKey, userId.value().toString(), refreshTokenExpiration, TimeUnit.SECONDS);
+        redis.opsForSet().add(userIndexKey, token);
+        redis.expire(userIndexKey, refreshTokenExpiration, TimeUnit.SECONDS);
         return token;
     }
 
@@ -44,8 +50,7 @@ public class RefreshTokenService {
         if (token == null || !token.startsWith("rt-")) {
             return Optional.empty();
         }
-        String key = KEY_PREFIX + token;
-        String userIdStr = redis.opsForValue().get(key);
+        String userIdStr = redis.opsForValue().get(tokenKey(token));
         if (userIdStr == null) {
             return Optional.empty();
         }
@@ -56,9 +61,14 @@ public class RefreshTokenService {
      * 撤销 Refresh Token（强制登出）
      */
     public void revokeRefreshToken(String token) {
-        if (token != null && token.startsWith("rt-")) {
-            String key = KEY_PREFIX + token;
-            redis.delete(key);
+        if (token == null || !token.startsWith("rt-")) {
+            return;
+        }
+        String tokenKey = tokenKey(token);
+        String userIdStr = redis.opsForValue().get(tokenKey);
+        redis.delete(tokenKey);
+        if (userIdStr != null) {
+            redis.opsForSet().remove(userIndexKey(new UserId(Long.parseLong(userIdStr))), token);
         }
     }
 
@@ -66,12 +76,21 @@ public class RefreshTokenService {
      * 删除用户所有 Refresh Token（账号删除时调用）
      */
     public void revokeAllUserTokens(UserId userId) {
-        // 扫描并删除所有属于该用户的 refresh token
-        redis.keys(KEY_PREFIX + "*").forEach(key -> {
-            String value = redis.opsForValue().get(key);
-            if (value != null && value.equals(userId.value().toString())) {
-                redis.delete(key);
+        String userIndexKey = userIndexKey(userId);
+        Set<String> tokens = redis.opsForSet().members(userIndexKey);
+        if (tokens != null) {
+            for (String token : tokens) {
+                redis.delete(tokenKey(token));
             }
-        });
+        }
+        redis.delete(userIndexKey);
+    }
+
+    private static String tokenKey(String token) {
+        return TOKEN_KEY_PREFIX + token;
+    }
+
+    private static String userIndexKey(UserId userId) {
+        return USER_INDEX_PREFIX + userId.value();
     }
 }

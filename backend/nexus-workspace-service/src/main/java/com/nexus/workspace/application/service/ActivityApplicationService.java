@@ -1,6 +1,7 @@
 package com.nexus.workspace.application.service;
 
 import com.nexus.common.exception.BusinessException;
+import com.nexus.common.support.ResourceAccessChecker;
 import com.nexus.workspace.application.command.CreateActivityCommand;
 import com.nexus.workspace.application.command.UpdateActivityCommand;
 import com.nexus.workspace.domain.model.activity.Activity;
@@ -55,13 +56,11 @@ public class ActivityApplicationService {
 
     @Transactional
     public ActivityResponse updateActivity(UpdateActivityCommand command) {
-        Activity activity = activityRepository.findById(command.activityId());
-        if (activity == null) {
-            throw new BusinessException(404, "记录不存在");
-        }
-        if (!activity.belongsTo(command.userId())) {
-            throw new BusinessException(403, "无权访问");
-        }
+        Activity activity = ResourceAccessChecker.requireOwned(
+            activityRepository.findById(command.activityId()),
+            a -> a.belongsTo(command.userId()),
+            "记录"
+        );
 
         if (command.title() != null && !command.title().isBlank()) {
             activity.setTitle(command.title());
@@ -138,13 +137,11 @@ public class ActivityApplicationService {
 
     @Transactional
     public void deleteActivity(Long userId, Long activityId) {
-        Activity activity = activityRepository.findById(activityId);
-        if (activity == null) {
-            throw new BusinessException(404, "记录不存在");
-        }
-        if (!activity.belongsTo(userId)) {
-            throw new BusinessException(403, "无权访问");
-        }
+        ResourceAccessChecker.requireOwned(
+            activityRepository.findById(activityId),
+            a -> a.belongsTo(userId),
+            "记录"
+        );
         activityRepository.delete(activityId);
         log.info("Activity deleted: activityId={}", activityId);
     }
