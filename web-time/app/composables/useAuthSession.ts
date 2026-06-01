@@ -6,6 +6,7 @@ export function useAuthSession () {
 
   function sync () {
     if (import.meta.server) return
+    mounted.value = true
     const hasToken = !!getAccessToken()
     authed.value = hasToken
     if (hasToken) {
@@ -29,10 +30,7 @@ export function useAuthSession () {
   }
 
   if (import.meta.client && getCurrentInstance()) {
-    onMounted(() => {
-      sync()
-      mounted.value = true
-    })
+    onMounted(sync)
   }
 
   return {
