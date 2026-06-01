@@ -36,14 +36,14 @@
     <div class="relative">
       <p
         v-if="isEmpty"
-        class="pointer-events-none absolute left-3 top-2.5 text-sm text-slate-400"
+        class="pointer-events-none absolute left-3 top-2.5 text-base text-slate-400"
       >
         这段做了什么、有什么收获
       </p>
       <div
         ref="editorRef"
         contenteditable
-        class="summary-editor rich-text min-h-[120px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm leading-relaxed focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+        class="summary-editor rich-text min-h-[120px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base leading-relaxed focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
         @input="onEditorInput"
         @paste="onPaste"
         @keyup="updateActiveFormats"
@@ -210,7 +210,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .summary-editor :deep(.rich-p) {
   margin: 0 0 0.35rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1.55;
   color: rgb(51 65 85);
 }
@@ -228,7 +228,7 @@ onBeforeUnmount(() => {
 .summary-editor :deep(.rich-heading),
 .summary-editor :deep(h2) {
   margin: 0 0 0.35rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: rgb(15 23 42);
 }
@@ -252,7 +252,7 @@ onBeforeUnmount(() => {
   padding-left: 0.625rem;
   border-left: 2px solid rgb(199 210 254);
   color: rgb(100 116 139);
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .summary-editor :deep(.rich-hr),

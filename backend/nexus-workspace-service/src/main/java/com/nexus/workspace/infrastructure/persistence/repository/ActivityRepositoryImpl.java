@@ -33,6 +33,11 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     }
 
     @Override
+    public Activity findOngoingByUserId(Long userId) {
+        return activityMapper.findOngoingByUserId(userId);
+    }
+
+    @Override
     public List<Activity> findByUserIdAndDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime) {
         return activityMapper.findByUserIdAndDateRange(userId, startTime, endTime);
     }

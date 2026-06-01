@@ -220,7 +220,7 @@ function onBlur () {
 
 <style scoped>
 .life-pick-input {
-  @apply rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 disabled:bg-slate-50 disabled:text-slate-400;
+  @apply rounded-lg border border-slate-200 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 disabled:bg-slate-50 disabled:text-slate-400;
 }
 
 .life-pick-dropdown {

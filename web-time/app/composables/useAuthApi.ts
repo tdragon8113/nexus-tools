@@ -35,6 +35,7 @@ export function useAuthApi () {
         setUserId(u.id)
         setStorageItem(STORAGE_KEYS.USER, u)
       }
+      useAuthSession().markLoggedIn()
     }
     return response
   }
@@ -55,6 +56,7 @@ export function useAuthApi () {
       })
     }
     clearAuth()
+    useAuthSession().markLoggedOut()
   }
 
   const getCurrentUser = async () => {
@@ -63,6 +65,7 @@ export function useAuthApi () {
       user.value = response.data
       setUserId(response.data.id)
       setStorageItem(STORAGE_KEYS.USER, response.data)
+      useAuthSession().markLoggedIn()
     }
     return response
   }
@@ -88,6 +91,7 @@ export function useAuthApi () {
       })
     }
     clearAuth()
+    useAuthSession().markLoggedOut()
   }
 
   const isLoggedIn = () => !!getAccessToken()

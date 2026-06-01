@@ -15,7 +15,7 @@
         {{ errorMessage }}
       </div>
 
-      <van-form @submit="handleRegister">
+      <van-form @submit.prevent="handleRegister">
         <van-cell-group inset class="!mx-0">
           <van-field
             v-model="form.username"
@@ -88,11 +88,14 @@
 </template>
 
 <script setup lang="ts">
+import { showToast } from 'vant'
+
 definePageMeta({
   layout: 'auth'
 })
 
-const { register } = useAuthApi()
+const { register, login, getCurrentUser } = useAuthApi()
+const { sync: syncAuth } = useAuthSession()
 
 const form = reactive({
   username: '',
@@ -114,7 +117,18 @@ const handleRegister = async () => {
   try {
     const response = await register(form.username, form.email, form.password)
     if (response.code === 200) {
+      const loginRes = await login(form.username, form.password)
+      if (loginRes.code === 200) {
+        syncAuth()
+        await getCurrentUser()
+        showToast('注册并登录成功')
+        await navigateTo('/manage/time')
+        return
+      }
+      showToast('注册成功，请登录')
       await navigateTo('/auth/login')
+    } else if (response.code === 0) {
+      errorMessage.value = '无法连接服务器，请确认后端与 /api 代理正常'
     } else {
       errorMessage.value = response.message || '注册失败'
     }

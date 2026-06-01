@@ -22,6 +22,9 @@ public interface ActivityMapper extends BaseMapper<Activity> {
     int deleteActivityById(@Param("id") Long id);
 
     List<Activity> findByUserId(@Param("userId") Long userId);
+
+    Activity findOngoingByUserId(@Param("userId") Long userId);
+
     List<Activity> findByUserIdAndDateRange(
         @Param("userId") Long userId,
         @Param("startTime") LocalDateTime startTime,

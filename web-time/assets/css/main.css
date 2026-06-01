@@ -34,6 +34,17 @@
   :focus:not(:focus-visible) {
     outline: none;
   }
+
+  /* iOS Safari：可编辑控件字号 < 16px 时聚焦会自动放大整页 */
+  @media screen and (max-width: 768px) {
+    input,
+    textarea,
+    select,
+    [contenteditable='true'],
+    .van-field__control {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @layer components {

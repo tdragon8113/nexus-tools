@@ -52,6 +52,13 @@
         SELECT * FROM activities WHERE user_id = #{userId} ORDER BY start_time DESC
     </select>
 
+    <select id="findOngoingByUserId" resultMap="ActivityResultMap">
+        SELECT * FROM activities
+        WHERE user_id = #{userId} AND end_time IS NULL
+        ORDER BY start_time DESC
+        LIMIT 1
+    </select>
+
     <select id="findByUserIdAndDateRange" resultMap="ActivityResultMap">
         SELECT * FROM activities WHERE user_id = #{userId}
         AND start_time BETWEEN #{startTime} AND #{endTime}

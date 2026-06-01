@@ -1,6 +1,9 @@
-import { toLocalIso } from '~/utils/time'
+import { decodeCardMarker } from '~/composables/useLifeCards'
+import type { Activity } from '~/composables/useWorkspaceApi'
+import { normalizeDateTime, toLocalIso } from '~/utils/time'
 
 export interface ActiveSession {
+  activityId: number
   parentId: string
   childId?: string
   startedAt: string
@@ -13,8 +16,9 @@ function sessionStorageKey (userId?: number | null) {
 }
 
 export function useActiveSession () {
-  const { getUserId } = useApiClient()
+  const { getUserId, getAccessToken } = useApiClient()
   const { getRecordTitle, getCard } = useLifeCards()
+  const { getOngoingActivity } = useWorkspaceApi()
   const session = useState<ActiveSession | null>('activeSession', () => null)
   const elapsedSeconds = ref(0)
 
@@ -40,21 +44,6 @@ export function useActiveSession () {
     timer = null
   }
 
-  const load = () => {
-    if (typeof window === 'undefined') return
-    const raw = localStorage.getItem(sessionStorageKey(getUserId()))
-    if (!raw) {
-      session.value = null
-      return
-    }
-    try {
-      session.value = JSON.parse(raw) as ActiveSession
-    } catch {
-      session.value = null
-    }
-    tick()
-  }
-
   const persist = (next: ActiveSession | null) => {
     session.value = next
     if (typeof window === 'undefined') return
@@ -67,11 +56,65 @@ export function useActiveSession () {
     tick()
   }
 
-  const startSession = (parentId: string, childId?: string) => {
+  function hydrateFromActivity (activity: Activity) {
+    const marker = decodeCardMarker(activity.notes)
+    if (!marker) return false
     persist({
+      activityId: activity.id,
+      parentId: marker.parentId,
+      childId: marker.childId,
+      startedAt: normalizeDateTime(activity.startTime)
+    })
+    return true
+  }
+
+  const load = () => {
+    if (typeof window === 'undefined') return
+    const raw = localStorage.getItem(sessionStorageKey(getUserId()))
+    if (!raw) {
+      session.value = null
+      return
+    }
+    try {
+      const parsed = JSON.parse(raw) as ActiveSession
+      if (parsed?.parentId && parsed.activityId) {
+        session.value = parsed
+      } else {
+        session.value = null
+        localStorage.removeItem(sessionStorageKey(getUserId()))
+      }
+    } catch {
+      session.value = null
+    }
+    tick()
+  }
+
+  /** 与云端进行中记录对齐（刷新后恢复） */
+  async function syncFromServer () {
+    if (!getAccessToken()) {
+      persist(null)
+      return null
+    }
+    const res = await getOngoingActivity()
+    if (res.code === 200 && res.data) {
+      hydrateFromActivity(res.data)
+      return res.data
+    }
+    persist(null)
+    return null
+  }
+
+  const startSession = (
+    activityId: number,
+    parentId: string,
+    childId: string | undefined,
+    startedAt: string
+  ) => {
+    persist({
+      activityId,
       parentId,
       childId,
-      startedAt: toLocalIso(new Date())
+      startedAt: normalizeDateTime(startedAt) || toLocalIso(new Date())
     })
   }
 
@@ -102,6 +145,8 @@ export function useActiveSession () {
     session,
     hasSession,
     load,
+    syncFromServer,
+    hydrateFromActivity,
     startSession,
     clearSession,
     sessionTitle,

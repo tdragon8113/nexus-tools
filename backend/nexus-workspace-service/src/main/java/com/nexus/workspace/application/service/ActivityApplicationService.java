@@ -2,6 +2,7 @@ package com.nexus.workspace.application.service;
 
 import com.nexus.common.exception.BusinessException;
 import com.nexus.workspace.application.command.CreateActivityCommand;
+import com.nexus.workspace.application.command.UpdateActivityCommand;
 import com.nexus.workspace.domain.model.activity.Activity;
 import com.nexus.workspace.domain.model.activity.ActivityCategory;
 import com.nexus.workspace.domain.repository.ActivityRepository;
@@ -32,6 +33,11 @@ public class ActivityApplicationService {
 
     @Transactional
     public ActivityResponse createActivity(CreateActivityCommand command) {
+        Activity ongoing = activityRepository.findOngoingByUserId(command.userId());
+        if (ongoing != null) {
+            throw new BusinessException(409, "已有进行中的记录，请先结束后再开始新的");
+        }
+
         Activity activity = Activity.create(
             command.userId(),
             command.title(),
@@ -42,9 +48,44 @@ public class ActivityApplicationService {
             command.notes()
         );
         activityRepository.save(activity);
-        log.info("Activity created: userId={}, duration={}min",
-            command.userId(), activity.getDurationMinutes());
+        log.info("Activity created: userId={}, id={}, ongoing={}",
+            command.userId(), activity.getId(), command.endTime() == null);
         return toResponse(activity);
+    }
+
+    @Transactional
+    public ActivityResponse updateActivity(UpdateActivityCommand command) {
+        Activity activity = activityRepository.findById(command.activityId());
+        if (activity == null) {
+            throw new BusinessException(404, "记录不存在");
+        }
+        if (!activity.belongsTo(command.userId())) {
+            throw new BusinessException(403, "无权访问");
+        }
+
+        if (command.title() != null && !command.title().isBlank()) {
+            activity.setTitle(command.title());
+        }
+        if (command.endTime() != null) {
+            activity.setEndTime(command.endTime());
+        }
+        if (command.durationMinutes() != null) {
+            activity.setDurationMinutes(command.durationMinutes());
+        } else if (activity.getEndTime() != null && activity.getStartTime() != null) {
+            activity.setDurationMinutes(activity.calculateDuration());
+        }
+        if (command.notes() != null) {
+            activity.setNotes(command.notes());
+        }
+
+        activityRepository.save(activity);
+        log.info("Activity updated: id={}, userId={}", activity.getId(), command.userId());
+        return toResponse(activity);
+    }
+
+    public ActivityResponse getOngoingActivity(Long userId) {
+        Activity activity = activityRepository.findOngoingByUserId(userId);
+        return activity != null ? toResponse(activity) : null;
     }
 
     public List<ActivityResponse> getActivities(Long userId) {

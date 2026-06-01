@@ -60,7 +60,12 @@
                 {{ formatMinutes(item.durationMinutes) }}
               </span>
               <p class="text-[11px] text-slate-400 tabular-nums mt-0.5">
-                {{ formatTimeOfDay(item.startTime) }}–{{ formatTimeOfDay(item.endTime ?? item.startTime) }}
+                <template v-if="!item.endTime">
+                  {{ formatTimeOfDay(item.startTime) }} 起 · 进行中
+                </template>
+                <template v-else>
+                  {{ formatTimeOfDay(item.startTime) }}–{{ formatTimeOfDay(item.endTime) }}
+                </template>
               </p>
             </div>
           </template>

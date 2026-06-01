@@ -123,6 +123,7 @@ useHead({
 })
 
 const { user, deleteAccount, getCurrentUser, getAccessToken, logout, updateProfile } = useAuthApi()
+const { sync: syncAuth, authed } = useAuthSession()
 const { linkWithBack } = useBackNavigation()
 
 const showDeleteConfirm = ref(false)
@@ -132,7 +133,8 @@ const loading = ref(true)
 
 onMounted(async () => {
   await nextTick()
-  if (!getAccessToken()) {
+  syncAuth()
+  if (!getAccessToken() || !authed.value) {
     loading.value = false
     return
   }

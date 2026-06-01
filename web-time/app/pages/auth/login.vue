@@ -15,7 +15,7 @@
         {{ errorMessage }}
       </div>
 
-      <van-form @submit="handleLogin">
+      <van-form @submit.prevent="handleLogin">
         <van-cell-group inset class="!mx-0">
           <van-field
             v-model="form.username"
@@ -64,11 +64,15 @@
 </template>
 
 <script setup lang="ts">
+import { showToast } from 'vant'
+
 definePageMeta({
   layout: 'auth'
 })
 
 const { login, getCurrentUser } = useAuthApi()
+const { sync: syncAuth } = useAuthSession()
+const route = useRoute()
 
 const form = reactive({
   username: '',
@@ -84,8 +88,15 @@ const handleLogin = async () => {
   try {
     const response = await login(form.username, form.password)
     if (response.code === 200) {
+      syncAuth()
       await getCurrentUser()
-      await navigateTo('/profile')
+      showToast('登录成功')
+      const redirect = typeof route.query.redirect === 'string'
+        ? route.query.redirect
+        : '/manage/time'
+      await navigateTo(redirect)
+    } else if (response.code === 0) {
+      errorMessage.value = '无法连接服务器，请确认后端与 /api 代理正常'
     } else {
       errorMessage.value = response.message || '登录失败'
     }

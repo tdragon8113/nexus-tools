@@ -30,7 +30,7 @@
           <input
             v-model="draft"
             type="text"
-            class="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400"
+            class="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-base text-slate-800 placeholder:text-slate-400"
             placeholder="新建标签，如：特殊记忆"
             maxlength="12"
             @keydown.enter.prevent="addDraft"

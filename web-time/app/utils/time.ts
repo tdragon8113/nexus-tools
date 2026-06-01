@@ -2,6 +2,21 @@ export function pad2 (n: number) {
   return String(n).padStart(2, '0')
 }
 
+/** 兼容后端 LocalDateTime 字符串或 Jackson 数组 [y,m,d,h,mi,s] */
+export function normalizeDateTime (value: unknown): string {
+  if (value == null || value === '') return ''
+  if (typeof value === 'string') return value
+  if (Array.isArray(value) && value.length >= 3) {
+    const [y, m, d, h = 0, min = 0, s = 0] = value as number[]
+    return `${y}-${pad2(m)}-${pad2(d)}T${pad2(h)}:${pad2(min)}:${pad2(s)}`
+  }
+  return String(value)
+}
+
+export function compareActivityTime (a: string, b: string) {
+  return parseLocalIso(b).getTime() - parseLocalIso(a).getTime()
+}
+
 export function formatDuration (totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60)
   const s = totalSeconds % 60
@@ -22,7 +37,7 @@ export function toLocalIso (date: Date) {
 }
 
 export function isToday (iso: string) {
-  const d = new Date(iso)
+  const d = parseLocalIso(iso)
   const now = new Date()
   return (
     d.getFullYear() === now.getFullYear()

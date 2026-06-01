@@ -11,6 +11,7 @@ import java.util.List;
 public interface ActivityRepository {
     Activity findById(Long id);
     List<Activity> findByUserId(Long userId);
+    Activity findOngoingByUserId(Long userId);
     List<Activity> findByUserIdAndDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime);
     void save(Activity activity);
     void delete(Long id);

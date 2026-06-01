@@ -8,7 +8,7 @@
       <p class="text-sm text-slate-700">登录后才能保存记录，可先体验选卡片</p>
     </div>
 
-    <!-- 首次：选第一张卡片开始计时 -->
+    <!-- 无进行中：选卡片并开始（立即写入云端） -->
     <template v-if="!hasSession">
       <div class="doc-surface px-4 py-3">
         <LifeCardPicker v-model="nextPick" mode="start" :saving="saving" />
@@ -26,7 +26,7 @@
       </van-button>
     </template>
 
-    <!-- 切换：回顾上一段 + 选下一张 -->
+    <!-- 有进行中：补充总结后结束或切换下一段 -->
     <template v-else>
       <div class="doc-surface p-4 space-y-3">
         <div class="flex items-start gap-3">
@@ -42,15 +42,12 @@
             />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs text-slate-500">上一段</p>
+            <p class="text-xs text-indigo-600 font-medium">进行中</p>
             <p class="text-base font-semibold text-slate-900">{{ sessionTitle }}</p>
             <p class="text-xs text-slate-500 mt-0.5">
-              {{ formatTimeOfDay(session!.startedAt) }} 起 · 已持续
+              {{ formatTimeOfDay(session!.startedAt) }} 起 · 已持续 {{ elapsedLabel }}
             </p>
           </div>
-          <p class="text-xl font-semibold text-indigo-600 tabular-nums shrink-0">
-            {{ elapsedLabel }}
-          </p>
         </div>
       </div>
 
@@ -80,7 +77,7 @@
         :disabled="!nextPick.parentId"
         @click="confirmSwitch"
       >
-        保存并继续
+        结束本条并开始下一段
       </van-button>
 
       <van-button
@@ -91,7 +88,7 @@
         :loading="saving"
         @click="handleEndOnly"
       >
-        保存并结束（不继续下一段）
+        结束记录
       </van-button>
     </template>
 
@@ -111,7 +108,9 @@
 import { showToast } from 'vant'
 import {
   buildRecordNotes,
+  encodeCardMarker,
   LIFE_CARD_COLORS,
+  parseRecordNotes,
   type LifeCard,
   useLifeCards
 } from '~/composables/useLifeCards'
@@ -126,12 +125,13 @@ useHead({ title: '写记录 · Nexus Time' })
 
 const { mounted, authed } = useClientAuthed()
 const { getAccessToken } = useAuthApi()
-const { createActivity } = useWorkspaceApi()
+const { createActivity, updateActivity, getOngoingActivity } = useWorkspaceApi()
 const { load, getRecordTitle, getCard, getChild } = useLifeCards()
 const {
   session,
   hasSession,
   load: loadSession,
+  syncFromServer,
   startSession,
   clearSession,
   sessionTitle,
@@ -149,9 +149,18 @@ const saving = ref(false)
 
 const elapsedLabel = computed(() => formatDuration(elapsedSeconds.value))
 
-onMounted(() => {
+onMounted(async () => {
   load()
   loadSession()
+  if (getAccessToken()) {
+    const ongoing = await syncFromServer()
+    if (ongoing?.notes) {
+      const parsed = parseRecordNotes(ongoing.notes)
+      if (parsed.summary) summary.value = parsed.summary
+      if (parsed.feelingRating) feelingRating.value = parsed.feelingRating
+      if (parsed.tags?.length) selectedTags.value = parsed.tags
+    }
+  }
 })
 
 function handleCancel () {
@@ -167,7 +176,7 @@ function resetForm () {
 async function requireAuth () {
   if (getAccessToken()) return true
   showToast('请先登录')
-  await navigateTo('/auth/login')
+  await navigateTo('/auth/login?redirect=/manage/time/edit')
   return false
 }
 
@@ -180,24 +189,55 @@ function resolvePick () {
   return { parent, child }
 }
 
-async function handleStart (payload: { parent: LifeCard; child?: { id: string; label: string } }) {
-  if (!(await requireAuth())) return
-  if (saving.value) return
-
-  const { parent, child } = payload
-  startSession(parent.id, child?.id)
-  const title = getRecordTitle(parent.id, child?.id)
-  showToast(`已开始 · ${title}`)
-  await navigateTo('/manage/time')
+async function assertNoOngoing (): Promise<boolean> {
+  const res = await getOngoingActivity()
+  if (res.code === 200 && res.data) {
+    await syncFromServer()
+    showToast('已有进行中的记录，请先结束后再开新的')
+    return false
+  }
+  return true
 }
 
-async function saveCurrentSegment (endSession: boolean) {
+async function createOngoingSegment (parent: LifeCard, child?: { id: string, label: string }) {
+  const startedAt = toLocalIso(new Date())
+  const title = getRecordTitle(parent.id, child?.id)
+  const notes = encodeCardMarker(parent.id, child?.id)
+
+  const res = await createActivity({
+    title,
+    category: parent.category,
+    startTime: startedAt,
+    endTime: null,
+    durationMinutes: 0,
+    notes
+  })
+
+  if (res.code === 200 && res.data) {
+    startSession(res.data.id, parent.id, child?.id, res.data.startTime)
+    showToast(`已开始 · ${title}`)
+    return true
+  }
+  if (res.code === 409) {
+    await syncFromServer()
+    showToast(res.message || '已有进行中的记录')
+    return false
+  }
+  if (res.code === 0) {
+    showToast('无法连接服务器，请确认后端已启动')
+  } else {
+    showToast(res.message || '开始失败')
+  }
+  return false
+}
+
+async function finishCurrentSegment () {
   if (!session.value) return false
   if (!(await requireAuth())) return false
   if (saving.value) return false
 
   saving.value = true
-  const current = session.value
+  const current = { ...session.value }
   const now = new Date()
   const { minutes } = calcDurationFromStart(current.startedAt, now)
   const title = getRecordTitle(current.parentId, current.childId)
@@ -210,18 +250,16 @@ async function saveCurrentSegment (endSession: boolean) {
   )
 
   try {
-    const res = await createActivity({
+    const res = await updateActivity(current.activityId, {
       title,
-      category: sessionCard.value?.category ?? 'other',
-      startTime: current.startedAt,
       endTime: toLocalIso(now),
       durationMinutes: minutes,
       notes
     })
 
     if (res.code === 200) {
-      if (endSession) clearSession()
-      showToast(`已记录 · ${title} · ${formatMinutes(minutes)}`)
+      clearSession()
+      showToast(`已结束 · ${title} · ${formatMinutes(minutes)}`)
       resetForm()
       return true
     }
@@ -239,6 +277,24 @@ async function saveCurrentSegment (endSession: boolean) {
   }
 }
 
+async function handleStart (payload: { parent: LifeCard, child?: { id: string, label: string } }) {
+  if (!(await requireAuth())) return
+  if (saving.value) return
+  if (hasSession.value) {
+    showToast('请先结束当前进行中的记录')
+    return
+  }
+  if (!(await assertNoOngoing())) return
+
+  saving.value = true
+  try {
+    const ok = await createOngoingSegment(payload.parent, payload.child)
+    if (ok) await navigateTo('/manage/time')
+  } finally {
+    saving.value = false
+  }
+}
+
 async function confirmStart () {
   const payload = resolvePick()
   if (!payload) return
@@ -248,22 +304,22 @@ async function confirmStart () {
 async function confirmSwitch () {
   const payload = resolvePick()
   if (!payload) return
-  await handleSwitch(payload)
-}
 
-async function handleSwitch (payload: { parent: LifeCard; child?: { id: string; label: string } }) {
-  const ok = await saveCurrentSegment(false)
+  const ok = await finishCurrentSegment()
   if (!ok) return
 
-  const { parent, child } = payload
-  startSession(parent.id, child?.id)
-  const nextTitle = getRecordTitle(parent.id, child?.id)
-  showToast(`下一段 · ${nextTitle}`)
-  await navigateTo('/manage/time')
+  saving.value = true
+  try {
+    if (!(await assertNoOngoing())) return
+    const started = await createOngoingSegment(payload.parent, payload.child)
+    if (started) await navigateTo('/manage/time')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function handleEndOnly () {
-  const ok = await saveCurrentSegment(true)
+  const ok = await finishCurrentSegment()
   if (ok) await navigateTo('/manage/time')
 }
 </script>

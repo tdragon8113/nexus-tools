@@ -89,6 +89,7 @@ export function useApiClient () {
     }
 
     clearAuth()
+    useAuthSession().markLoggedOut()
     await navigateTo('/auth/login')
     return false
   }
@@ -114,12 +115,11 @@ export function useApiClient () {
       return { code: 0, message: '无法连接服务器，请确认后端已启动', data: null as T }
     }
 
-    if (!response.ok && response.status !== 401) {
-      return {
-        code: response.status,
-        message: `请求失败 (${response.status})`,
-        data: null as T
-      }
+    let body: ApiResponse<T>
+    try {
+      body = await response.json()
+    } catch {
+      return { code: 500, message: '服务响应异常', data: null as T }
     }
 
     if (response.status === 401 && getRefreshToken() && !path.includes('/auth/refresh')) {
@@ -138,14 +138,17 @@ export function useApiClient () {
           return { code: 500, message: '服务响应异常', data: null as T }
         }
       }
-      return { code: 401, message: 'Token expired', data: null as T }
+      useAuthSession().markLoggedOut()
+      return body.code ? body : { code: 401, message: body.message || '请重新登录', data: null as T }
     }
 
-    try {
-      return await response.json()
-    } catch {
-      return { code: 500, message: '服务响应异常', data: null as T }
+    if (!response.ok) {
+      return body.code
+        ? body
+        : { code: response.status, message: `请求失败 (${response.status})`, data: null as T }
     }
+
+    return body
   }
 
   const initUser = () => {
