@@ -69,6 +69,7 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: true,
       routes: [
+        '/',
         '/manage/time',
         '/manage/time/stats',
         '/manage/time/insights',

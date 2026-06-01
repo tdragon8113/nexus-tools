@@ -6,9 +6,9 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY .output/public /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 构建期校验：静态资源必须已打入镜像
-RUN test -f /usr/share/nginx/html/index.html \
-  && ! grep -q 'Welcome to nginx' /usr/share/nginx/html/index.html
+# 构建期校验：主页面静态资源必须已打入镜像
+RUN test -f /usr/share/nginx/html/manage/time/index.html \
+  && grep -q 'Nexus Time' /usr/share/nginx/html/manage/time/index.html
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
