@@ -78,7 +78,7 @@ public class AuthApplicationService {
     }
 
     public TokenResponse refreshToken(String refreshToken) {
-        UserId userId = refreshTokenService.validateRefreshToken(refreshToken)
+        UserId userId = refreshTokenService.consumeRefreshToken(refreshToken)
                 .orElseThrow(() -> new BusinessException(401, "无效的 Refresh Token"));
 
         User user = userRepository.findById(userId);
@@ -87,9 +87,10 @@ public class AuthApplicationService {
         }
 
         String accessToken = jwtUtils.generateToken(userId.value(), user.getUsername());
+        String newRefreshToken = refreshTokenService.generateRefreshToken(userId);
         log.info("Token refreshed for user: {}", user.getUsername());
 
-        return TokenResponse.forRefresh(accessToken);
+        return TokenResponse.forRefresh(accessToken, newRefreshToken);
     }
 
     public void logout(String refreshToken) {

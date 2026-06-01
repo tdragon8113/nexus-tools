@@ -27,7 +27,7 @@ export async function refreshAccessTokenOnce (): Promise<boolean> {
   if (refreshInFlight) return refreshInFlight
 
   refreshInFlight = (async () => {
-    const { getRefreshToken, setAccessToken, clearAuth } = useApiClient()
+    const { getRefreshToken, setAccessToken, setRefreshToken, clearAuth } = useApiClient()
     const refreshToken = getRefreshToken()
     if (!refreshToken) return false
 
@@ -38,7 +38,7 @@ export async function refreshAccessTokenOnce (): Promise<boolean> {
         body: JSON.stringify({ refreshToken })
       })
 
-      let result: ApiResponse<{ accessToken?: string }>
+      let result: ApiResponse<{ accessToken?: string; refreshToken?: string }>
       try {
         result = await response.json()
       } catch {
@@ -47,6 +47,9 @@ export async function refreshAccessTokenOnce (): Promise<boolean> {
 
       if (response.ok && result.code === 200 && result.data?.accessToken) {
         setAccessToken(result.data.accessToken)
+        if (result.data.refreshToken) {
+          setRefreshToken(result.data.refreshToken)
+        }
         useAuthSession().markLoggedIn()
         return true
       }

@@ -20,11 +20,12 @@ public class TokenResponse {
     }
 
     /**
-     * 刷新 Token 时使用（只返回 accessToken）
+     * 刷新 Token 时使用（轮换 access + refresh，不含 user）
      */
-    public static TokenResponse forRefresh(String accessToken) {
+    public static TokenResponse forRefresh(String accessToken, String refreshToken) {
         TokenResponse response = new TokenResponse();
         response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
         return response;
     }
 }

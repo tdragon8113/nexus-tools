@@ -44,7 +44,7 @@ public class RefreshTokenService {
     }
 
     /**
-     * 验证 Refresh Token，返回 userId
+     * 验证 Refresh Token，返回 userId（只读，不消费）
      */
     public Optional<UserId> validateRefreshToken(String token) {
         if (token == null || !token.startsWith("rt-")) {
@@ -55,6 +55,22 @@ public class RefreshTokenService {
             return Optional.empty();
         }
         return Optional.of(new UserId(Long.parseLong(userIdStr)));
+    }
+
+    /**
+     * 验证并消费 Refresh Token（轮换：旧 token 立即失效，防止并发重复使用）
+     */
+    public Optional<UserId> consumeRefreshToken(String token) {
+        if (token == null || !token.startsWith("rt-")) {
+            return Optional.empty();
+        }
+        String userIdStr = redis.opsForValue().getAndDelete(tokenKey(token));
+        if (userIdStr == null) {
+            return Optional.empty();
+        }
+        UserId userId = new UserId(Long.parseLong(userIdStr));
+        redis.opsForSet().remove(userIndexKey(userId), token);
+        return Optional.of(userId);
     }
 
     /**
