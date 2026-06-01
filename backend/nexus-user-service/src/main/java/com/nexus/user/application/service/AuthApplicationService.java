@@ -4,8 +4,6 @@ import com.nexus.common.exception.BusinessException;
 import com.nexus.common.security.JwtUtils;
 import com.nexus.user.application.command.LoginCommand;
 import com.nexus.user.application.command.RegisterCommand;
-import com.nexus.user.domain.event.UserLoggedInEvent;
-import com.nexus.user.domain.event.UserRegisteredEvent;
 import com.nexus.user.domain.model.User;
 import com.nexus.user.domain.model.UserId;
 import com.nexus.user.domain.repository.UserRepository;
@@ -54,7 +52,6 @@ public class AuthApplicationService {
         User user = User.create(command.username(), command.email(), encodedPassword);
         userRepository.save(user);
 
-        UserRegisteredEvent event = new UserRegisteredEvent(user.getId(), user.getUsername(), user.getEmail());
         log.info("User registered: {}", user.getUsername());
 
         return toResponse(user);
@@ -75,7 +72,6 @@ public class AuthApplicationService {
         String accessToken = jwtUtils.generateToken(user.getIdValue(), user.getUsername());
         String refreshToken = refreshTokenService.generateRefreshToken(user.getId());
 
-        UserLoggedInEvent event = new UserLoggedInEvent(user.getId(), user.getUsername());
         log.info("User logged in: {}", user.getUsername());
 
         return new TokenResponse(accessToken, refreshToken, toResponse(user));

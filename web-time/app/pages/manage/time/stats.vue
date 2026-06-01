@@ -66,6 +66,12 @@
           </van-cell-group>
         </section>
       </template>
+
+      <template v-else>
+        <div class="doc-surface p-8 text-center">
+          <p class="text-sm text-slate-500">暂时无法加载统计数据</p>
+        </div>
+      </template>
     </template>
   </div>
 </template>
@@ -75,10 +81,25 @@ import type { Stats } from '~/composables/useWorkspaceApi'
 
 useHead({ title: '回顾 · Nexus Time' })
 
-const { mounted, authed } = useAuthSession()
+const { mounted, authed, sync: syncAuth } = useAuthSession()
 const { getStats } = useWorkspaceApi()
 const loading = ref(true)
 const stats = ref<Stats | null>(null)
+
+async function loadStats () {
+  if (!authed.value) {
+    loading.value = false
+    stats.value = null
+    return
+  }
+  loading.value = true
+  try {
+    const res = await getStats()
+    stats.value = res.code === 200 && res.data ? res.data : null
+  } finally {
+    loading.value = false
+  }
+}
 
 const summaryCards = computed(() => {
   if (!stats.value) return []
@@ -130,17 +151,12 @@ function formatDailyLabel (isoDate: string) {
 }
 
 onMounted(async () => {
-  if (!authed.value) {
-    loading.value = false
-    return
-  }
-  try {
-    const res = await getStats()
-    if (res.code === 200 && res.data) {
-      stats.value = res.data
-    }
-  } finally {
-    loading.value = false
-  }
+  syncAuth()
+  await loadStats()
+})
+
+watch(authed, (loggedIn) => {
+  if (loggedIn) void loadStats()
+  else stats.value = null
 })
 </script>

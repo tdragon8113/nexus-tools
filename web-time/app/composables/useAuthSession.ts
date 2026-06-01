@@ -17,6 +17,7 @@ export function useAuthSession () {
   }
 
   function markLoggedIn () {
+    mounted.value = true
     authed.value = true
     initUser()
   }

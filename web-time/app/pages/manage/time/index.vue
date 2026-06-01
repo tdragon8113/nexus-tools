@@ -162,7 +162,10 @@ async function handleDelete (id: number) {
 onMounted(refreshPageData)
 
 watch(authed, (loggedIn) => {
-  if (loggedIn) void fetchActivities()
+  if (loggedIn) {
+    void syncFromServer()
+    void fetchActivities()
+  }
 })
 
 const route = useRoute()

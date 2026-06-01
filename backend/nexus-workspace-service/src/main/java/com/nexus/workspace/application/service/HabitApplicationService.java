@@ -4,7 +4,6 @@ import com.nexus.common.support.ResourceAccessChecker;
 import com.nexus.workspace.application.command.CheckinCommand;
 import com.nexus.workspace.application.command.CreateHabitCommand;
 import com.nexus.workspace.application.command.UpdateHabitCommand;
-import com.nexus.workspace.domain.event.HabitCheckedInEvent;
 import com.nexus.workspace.domain.model.habit.Habit;
 import com.nexus.workspace.domain.model.habit.HabitCheckin;
 import com.nexus.workspace.domain.model.habit.HabitId;
@@ -77,14 +76,10 @@ public class HabitApplicationService {
 
     @Transactional
     public CheckinResponse checkin(CheckinCommand command) {
-        HabitId habitId = new HabitId(command.habitId());
         Habit habit = requireHabit(command.habitId(), command.userId());
 
         HabitCheckin checkin = habit.checkin(command.date());
         habitRepository.saveCheckin(checkin);
-
-        // 发布领域事件（可用于后续扩展）
-        HabitCheckedInEvent event = new HabitCheckedInEvent(habitId, command.userId(), command.date());
         log.info("Habit checked in: habitId={}, date={}", command.habitId(), command.date());
 
         CheckinResponse response = new CheckinResponse();

@@ -60,7 +60,7 @@ useHead({ title: '标签 · Nexus Time' })
 const route = useRoute()
 const router = useRouter()
 const { preserveBackQuery } = useBackNavigation()
-const { mounted, authed } = useAuthSession()
+const { mounted, authed, sync: syncAuth } = useAuthSession()
 const { activities, loading, tagStats, fetchActivities, removeActivity } = useActivities()
 
 const activeTag = computed(() => {
@@ -87,5 +87,12 @@ async function handleDelete (id: number) {
   await removeActivity(id)
 }
 
-onMounted(fetchActivities)
+onMounted(async () => {
+  syncAuth()
+  if (authed.value) await fetchActivities()
+})
+
+watch(authed, (loggedIn) => {
+  if (loggedIn) void fetchActivities()
+})
 </script>

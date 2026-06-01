@@ -5,7 +5,11 @@ export type {
   ParsedRecordNotes
 } from './life-cards/notes'
 
-import { parseRecordNotes } from './life-cards/notes'
+import {
+  parseRecordNotes,
+  decodeCardMarker,
+  encodeCardMarker
+} from './life-cards/notes'
 
 export {
   FEELING_LEVELS,
