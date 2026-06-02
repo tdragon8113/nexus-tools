@@ -56,6 +56,10 @@ mybatis-plus:
 logging:
   level:
     com.nexus.user: INFO
+    com.nexus.user.infrastructure.persistence.mapper: DEBUG
+    com.zaxxer.hikari: DEBUG
+    io.lettuce.core.protocol: DEBUG
+    org.springframework.data.redis.core: DEBUG
 
 jwt:
   secret-key: ${JWT_SECRET_KEY:7LPLHy7D99svwAmalkRgAbl2dhYstwRlRTiUyEyOYsU=}

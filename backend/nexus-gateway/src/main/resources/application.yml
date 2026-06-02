@@ -69,6 +69,8 @@ spring:
 logging:
   level:
     com.nexus.gateway: INFO
+    io.lettuce.core.protocol: DEBUG
+    org.springframework.data.redis: DEBUG
 
 jwt:
   secret-key: ${JWT_SECRET_KEY:7LPLHy7D99svwAmalkRgAbl2dhYstwRlRTiUyEyOYsU=}

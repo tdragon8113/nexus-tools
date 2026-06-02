@@ -56,3 +56,7 @@ mybatis-plus:
 logging:
   level:
     com.nexus.workspace: INFO
+    com.nexus.workspace.infrastructure.persistence.mapper: DEBUG
+    com.zaxxer.hikari: DEBUG
+    io.lettuce.core.protocol: DEBUG
+    org.springframework.data.redis.core: DEBUG
