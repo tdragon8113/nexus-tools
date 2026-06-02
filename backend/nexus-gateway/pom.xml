@@ -49,11 +49,6 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- SkyWalking WebFlux Toolkit -->
-        <dependency>
-            <groupId>org.apache.skywalking</groupId>
-            <artifactId>apm-toolkit-webflux</artifactId>
-        </dependency>
         <!-- macOS DNS resolver (native) -->
         <dependency>
             <groupId>io.netty</groupId>

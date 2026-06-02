@@ -59,7 +59,7 @@ public class Activity {
 
     // 是否属于指定用户
     public boolean belongsTo(Long userId) {
-        return this.userId.equals(userId);
+        return userId != null && userId.equals(this.userId);
     }
 
     // 是否为番茄专注

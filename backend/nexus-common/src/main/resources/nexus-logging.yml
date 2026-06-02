@@ -1,0 +1,27 @@
+# 各服务 spring.config.import 引入
+# 规范：访问日志（HTTP 层）与业务日志（Application 层）分离；traceId 由 Brave 写入 MDC
+
+spring:
+  reactor:
+    context-propagation: auto
+
+logging:
+  file:
+    name: logs/${spring.application.name}.log
+  pattern:
+    # 用标准 Logback MDC，勿用 %correlation（自定义 pattern 时 Logback 无法识别会报 PARSER_ERROR）
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:- } --- [%15.15t] [${spring.application.name:},%X{traceId:-},%X{spanId:-}] %logger{24} : %m%n%wEx"
+    file: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:- } --- [%t] [${spring.application.name:},%X{traceId:-},%X{spanId:-}] %logger{24} : %m%n%wEx"
+  level:
+    root: INFO
+    com.nexus: INFO
+    http.access: INFO
+    org.springframework: WARN
+    org.springframework.web: WARN
+    org.springframework.cloud: WARN
+    org.springframework.cloud.gateway: INFO
+    org.apache.ibatis: WARN
+    com.alibaba.nacos: WARN
+    io.lettuce: WARN
+    io.netty: WARN
+    reactor.netty: WARN

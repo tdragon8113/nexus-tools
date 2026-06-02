@@ -53,7 +53,7 @@ public class HabitController {
     @GetMapping("/{id}")
     public ApiResponse<HabitResponse> getHabit(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id
+        @PathVariable("id") Long id
     ) {
         return ApiResponse.success(habitApplicationService.getHabit(userId, id));
     }
@@ -61,7 +61,7 @@ public class HabitController {
     @PutMapping("/{id}")
     public ApiResponse<HabitResponse> updateHabit(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id,
+        @PathVariable("id") Long id,
         @Valid @RequestBody UpdateHabitRequest request
     ) {
         UpdateHabitCommand command = new UpdateHabitCommand(
@@ -78,7 +78,7 @@ public class HabitController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteHabit(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id
+        @PathVariable("id") Long id
     ) {
         habitApplicationService.deleteHabit(userId, id);
         return ApiResponse.success();
@@ -87,7 +87,7 @@ public class HabitController {
     @PostMapping("/{id}/checkin")
     public ApiResponse<CheckinResponse> checkin(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id
+        @PathVariable("id") Long id
     ) {
         CheckinCommand command = new CheckinCommand(userId, id);
         return ApiResponse.success(habitApplicationService.checkin(command));
@@ -96,9 +96,9 @@ public class HabitController {
     @GetMapping("/{id}/checkins")
     public ApiResponse<List<CheckinResponse>> getCheckins(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id,
-        @RequestParam(required = false) LocalDate startDate,
-        @RequestParam(required = false) LocalDate endDate
+        @PathVariable("id") Long id,
+        @RequestParam(value = "startDate", required = false) LocalDate startDate,
+        @RequestParam(value = "endDate", required = false) LocalDate endDate
     ) {
         return ApiResponse.success(habitApplicationService.getCheckins(userId, id, startDate, endDate));
     }

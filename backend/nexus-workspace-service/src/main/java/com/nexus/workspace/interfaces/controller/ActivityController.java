@@ -60,7 +60,7 @@ public class ActivityController {
     @PatchMapping("/{id}")
     public ApiResponse<ActivityResponse> updateActivity(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id,
+        @PathVariable("id") Long id,
         @Valid @RequestBody UpdateActivityRequest request
     ) {
         UpdateActivityCommand command = new UpdateActivityCommand(
@@ -82,7 +82,7 @@ public class ActivityController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteActivity(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id
+        @PathVariable("id") Long id
     ) {
         activityApplicationService.deleteActivity(userId, id);
         return ApiResponse.success();

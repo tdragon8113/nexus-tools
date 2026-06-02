@@ -100,7 +100,9 @@ export function useActiveSession () {
       hydrateFromActivity(res.data)
       return res.data
     }
-    persist(null)
+    if (res.code === 200) {
+      persist(null)
+    }
     return null
   }
 

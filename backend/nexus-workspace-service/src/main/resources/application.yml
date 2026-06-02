@@ -1,13 +1,24 @@
 server:
   port: 8082
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  tracing:
+    sampling:
+      probability: 1.0
+
 spring:
   application:
     name: nexus-workspace-service
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:prod}
   config:
-    import: optional:nacos:nexus-workspace-service-${spring.profiles.active:prod}.yml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+    import:
+      - optional:classpath:nexus-logging.yml
+      - optional:nacos:nexus-workspace-service-${spring.profiles.active:prod}.yml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
   cloud:
     nacos:
       server-addr: ${NACOS_SERVER_ADDR:localhost:8848}

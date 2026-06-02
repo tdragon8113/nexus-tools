@@ -53,7 +53,7 @@ public class TodoController {
     @GetMapping("/date/{date}")
     public ApiResponse<List<TodoResponse>> getTodosByDate(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable LocalDateTime date
+        @PathVariable("date") LocalDateTime date
     ) {
         return ApiResponse.success(todoApplicationService.getTodosByDate(userId, date));
     }
@@ -61,8 +61,8 @@ public class TodoController {
     @GetMapping("/range")
     public ApiResponse<List<TodoResponse>> getTodosByDateRange(
         @RequestHeader("X-User-Id") Long userId,
-        @RequestParam LocalDateTime start,
-        @RequestParam LocalDateTime end
+        @RequestParam("start") LocalDateTime start,
+        @RequestParam("end") LocalDateTime end
     ) {
         return ApiResponse.success(todoApplicationService.getTodosByDateRange(userId, start, end));
     }
@@ -70,7 +70,7 @@ public class TodoController {
     @PutMapping("/{id}")
     public ApiResponse<TodoResponse> updateTodo(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id,
+        @PathVariable("id") Long id,
         @Valid @RequestBody UpdateTodoRequest request
     ) {
         UpdateTodoCommand command = new UpdateTodoCommand(
@@ -88,7 +88,7 @@ public class TodoController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteTodo(
         @RequestHeader("X-User-Id") Long userId,
-        @PathVariable Long id
+        @PathVariable("id") Long id
     ) {
         todoApplicationService.deleteTodo(userId, id);
         return ApiResponse.success();

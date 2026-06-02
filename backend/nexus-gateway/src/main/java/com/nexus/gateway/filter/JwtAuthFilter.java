@@ -2,6 +2,7 @@ package com.nexus.gateway.filter;
 
 import com.nexus.common.security.JwtUtils;
 import io.jsonwebtoken.JwtException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -20,6 +21,7 @@ import java.util.List;
  * JWT 认证过滤器
  */
 @Component
+@RequiredArgsConstructor
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private final JwtUtils jwtUtils;
@@ -32,10 +34,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private static final byte[] UNAUTHORIZED_BODY =
         "{\"code\":401,\"message\":\"未授权\",\"data\":null}".getBytes(StandardCharsets.UTF_8);
-
-    public JwtAuthFilter(JwtUtils jwtUtils) {
-        this.jwtUtils = jwtUtils;
-    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {

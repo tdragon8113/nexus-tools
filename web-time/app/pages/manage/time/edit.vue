@@ -259,6 +259,7 @@ async function finishCurrentSegment () {
 
     if (res.code === 200) {
       clearSession()
+      useActivities().fetchActivities()
       showToast(`已结束 · ${title} · ${formatMinutes(minutes)}`)
       resetForm()
       return true
@@ -310,7 +311,6 @@ async function confirmSwitch () {
 
   saving.value = true
   try {
-    if (!(await assertNoOngoing())) return
     const started = await createOngoingSegment(payload.parent, payload.child)
     if (started) await navigateTo('/manage/time')
   } finally {
