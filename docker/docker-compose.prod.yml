@@ -20,6 +20,10 @@ services:
       - NACOS_USERNAME=${NACOS_USERNAME}
       - NACOS_PASSWORD=${NACOS_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      # 与 logback-spring.xml 中 log.path 对应；日志落盘到下方 volume 挂载目录
+      - LOG_PATH=/app/logs/
+    volumes:
+      - ${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/gateway:/app/logs
     networks:
       - nexus-network
     depends_on:
@@ -37,6 +41,9 @@ services:
       - NACOS_USERNAME=${NACOS_USERNAME}
       - NACOS_PASSWORD=${NACOS_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - LOG_PATH=/app/logs/
+    volumes:
+      - ${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/user-service:/app/logs
     networks:
       - nexus-network
     restart: unless-stopped
@@ -51,6 +58,9 @@ services:
       - NACOS_USERNAME=${NACOS_USERNAME}
       - NACOS_PASSWORD=${NACOS_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - LOG_PATH=/app/logs/
+    volumes:
+      - ${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/workspace-service:/app/logs
     networks:
       - nexus-network
     restart: unless-stopped

@@ -242,7 +242,8 @@ jobs:
 
       - name: Deploy all services
         run: |
-          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p \${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/gateway \${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/user-service \${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/workspace-service && \
+            cd ${{ secrets.DEPLOY_PATH }} && \
             export ALIYUN_REGISTRY=${{ secrets.ALIYUN_REGISTRY }} && \
             export ALIYUN_NAMESPACE=${{ secrets.ALIYUN_NAMESPACE }} && \
             export IMAGE_TAG=${{ steps.get_tag.outputs.tag }} && \
