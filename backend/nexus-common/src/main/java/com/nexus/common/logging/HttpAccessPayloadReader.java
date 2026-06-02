@@ -12,26 +12,26 @@ public final class HttpAccessPayloadReader {
     private HttpAccessPayloadReader() {
     }
 
-    public static String readRequest(ContentCachingRequestWrapper request, HttpAccessLogProperties properties) {
-        if (!properties.isLogPayload()) {
+    public static String readRequest(ContentCachingRequestWrapper request) {
+        if (!HttpAccessLogProperties.isLogPayload()) {
             return "-";
         }
         byte[] content = request.getContentAsByteArray();
         if (content.length == 0) {
             return "-";
         }
-        return HttpAccessPayloadSanitizer.sanitize(decode(content, request.getCharacterEncoding()), properties);
+        return HttpAccessPayloadSanitizer.sanitize(decode(content, request.getCharacterEncoding()));
     }
 
-    public static String readResponse(ContentCachingResponseWrapper response, HttpAccessLogProperties properties) {
-        if (!properties.isLogPayload()) {
+    public static String readResponse(ContentCachingResponseWrapper response) {
+        if (!HttpAccessLogProperties.isLogPayload()) {
             return "-";
         }
         byte[] content = response.getContentAsByteArray();
         if (content.length == 0) {
             return "-";
         }
-        return HttpAccessPayloadSanitizer.sanitize(decode(content, response.getCharacterEncoding()), properties);
+        return HttpAccessPayloadSanitizer.sanitize(decode(content, response.getCharacterEncoding()));
     }
 
     private static String decode(byte[] content, String encoding) {

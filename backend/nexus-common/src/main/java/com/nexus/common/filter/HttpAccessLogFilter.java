@@ -1,24 +1,19 @@
 package com.nexus.common.filter;
 
-import com.nexus.common.logging.HttpAccessLogProperties;
 import com.nexus.common.logging.HttpAccessLogSupport;
 import com.nexus.common.logging.HttpAccessPayloadReader;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 
-/** Servlet HTTP 访问日志（含脱敏后的 req/res 参数）。 */
-@RequiredArgsConstructor
+/** Servlet HTTP 访问日志（含 req/res body，单行截断）。 */
 public class HttpAccessLogFilter extends OncePerRequestFilter {
-
-    private final HttpAccessLogProperties properties;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -40,8 +35,8 @@ public class HttpAccessLogFilter extends OncePerRequestFilter {
                     HttpAccessLogSupport.buildUri(request.getRequestURI(), request.getQueryString()),
                     wrappedResponse.getStatus(),
                     durationMs,
-                    HttpAccessPayloadReader.readRequest(wrappedRequest, properties),
-                    HttpAccessPayloadReader.readResponse(wrappedResponse, properties));
+                    HttpAccessPayloadReader.readRequest(wrappedRequest),
+                    HttpAccessPayloadReader.readResponse(wrappedResponse));
             wrappedResponse.copyBodyToResponse();
         }
     }

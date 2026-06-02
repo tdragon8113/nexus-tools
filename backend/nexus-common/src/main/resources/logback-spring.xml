@@ -3,6 +3,7 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="application"/>
+    <springProperty scope="context" name="LOG_PATH" source="log.path" defaultValue="./logs/"/>
 
     <!-- %line 需 includeCallerData，略影响性能 -->
     <property name="LOG_PATTERN"
@@ -10,40 +11,43 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <includeCallerData>true</includeCallerData>
-        <encoder>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <includeCallerData>true</includeCallerData>
-        <file>logs/${APP_NAME}.log</file>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
+        <file>${LOG_PATH}${APP_NAME}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <fileNamePattern>${LOG_PATH}%d{yyyy-MM-dd,aux}/${APP_NAME}-%d{yyyy-MM-dd.HH}.%i.log</fileNamePattern>
+            <maxHistory>720</maxHistory>
             <maxFileSize>100MB</maxFileSize>
         </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
     </appender>
 
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <includeCallerData>true</includeCallerData>
-        <file>logs/${APP_NAME}-error.log</file>
+        <file>${LOG_PATH}${APP_NAME}-error.log</file>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxHistory>90</maxHistory>
+            <fileNamePattern>${LOG_PATH}%d{yyyy-MM-dd,aux}/${APP_NAME}-error-%d{yyyy-MM-dd.HH}.%i.log</fileNamePattern>
+            <maxHistory>2160</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
     </appender>
 
     <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
@@ -56,16 +60,6 @@
         <queueSize>256</queueSize>
         <appender-ref ref="ERROR_FILE"/>
     </appender>
-
-    <logger name="com.nexus" level="INFO"/>
-    <logger name="org.springframework" level="WARN"/>
-    <logger name="org.springframework.web" level="INFO"/>
-    <logger name="org.springframework.cloud" level="WARN"/>
-    <logger name="org.springframework.cloud.gateway" level="INFO"/>
-    <logger name="org.apache.ibatis" level="WARN"/>
-    <logger name="com.alibaba.nacos" level="WARN"/>
-    <logger name="io.lettuce" level="WARN"/>
-    <logger name="io.netty" level="WARN"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

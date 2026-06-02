@@ -1,30 +1,19 @@
 package com.nexus.common.logging;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+/** HTTP 访问日志固定配置（payload 默认记录，单段最长 2048 字符）。 */
+public final class HttpAccessLogProperties {
 
-import java.util.List;
+    private static final boolean LOG_PAYLOAD = true;
+    private static final int MAX_PAYLOAD_LENGTH = 2048;
 
-@Data
-@ConfigurationProperties(prefix = "nexus.http-access-log")
-public class HttpAccessLogProperties {
+    private HttpAccessLogProperties() {
+    }
 
-    /** 是否记录请求/响应参数（body）；query 始终合并在 uri 中 */
-    private boolean logPayload = true;
+    public static boolean isLogPayload() {
+        return LOG_PAYLOAD;
+    }
 
-    /** 单段 payload 最大字符数，超出截断 */
-    private int maxPayloadLength = 2048;
-
-    /** JSON 字段名（忽略大小写）命中则脱敏 */
-    private List<String> sensitiveKeys = List.of(
-            "password",
-            "passwd",
-            "secret",
-            "token",
-            "accessToken",
-            "refreshToken",
-            "authorization",
-            "apiKey",
-            "api_key"
-    );
+    public static int getMaxPayloadLength() {
+        return MAX_PAYLOAD_LENGTH;
+    }
 }

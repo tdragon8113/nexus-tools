@@ -1,7 +1,7 @@
 package com.nexus.gateway.filter;
 
-import com.nexus.common.logging.HttpAccessLogProperties;
 import com.nexus.common.logging.HttpAccessLogSupport;
+import com.nexus.common.logging.HttpAccessLogProperties;
 import com.nexus.common.logging.HttpAccessPayloadSanitizer;
 import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Gateway HTTP 访问日志（含脱敏后的 req/res 参数）。 */
+/** Gateway HTTP 访问日志（含 req/res body，单行截断）。 */
 @Component
 @RequiredArgsConstructor
 public class GatewayHttpAccessLogFilter implements GlobalFilter, Ordered {
@@ -31,7 +31,6 @@ public class GatewayHttpAccessLogFilter implements GlobalFilter, Ordered {
     private static final String REQ_BODY_ATTR = "access.reqBodyBytes";
 
     private final Tracer tracer;
-    private final HttpAccessLogProperties properties;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -39,7 +38,7 @@ public class GatewayHttpAccessLogFilter implements GlobalFilter, Ordered {
         HttpAccessLogSupport.stashTraceId(tracer, exchange.getAttributes());
         long startTime = System.nanoTime();
 
-        if (!properties.isLogPayload()) {
+        if (!HttpAccessLogProperties.isLogPayload()) {
             return chain.filter(exchange)
                     .doFinally(signal -> logAccess(exchange, request, startTime, "-", "-"));
         }
@@ -121,7 +120,7 @@ public class GatewayHttpAccessLogFilter implements GlobalFilter, Ordered {
             return "-";
         }
         String raw = new String(bytes, StandardCharsets.UTF_8);
-        return HttpAccessPayloadSanitizer.sanitize(raw, properties);
+        return HttpAccessPayloadSanitizer.sanitize(raw);
     }
 
     private static byte[] toByteArray(DataBuffer buffer) {
