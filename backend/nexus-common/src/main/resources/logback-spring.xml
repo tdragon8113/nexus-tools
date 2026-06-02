@@ -7,7 +7,7 @@
 
     <!-- %line 需 includeCallerData，略影响性能 -->
     <property name="LOG_PATTERN"
-              value="%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:- } --- [%15.15t] [${APP_NAME},%X{traceId:-},%X{spanId:-}] %logger{36}:%line : %m%n%wEx"/>
+              value="%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX, Asia/Shanghai} %5p ${PID:- } --- [%15.15t] [${APP_NAME},%X{traceId:-},%X{spanId:-}] %logger{36}:%line : %m%n%wEx"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <includeCallerData>true</includeCallerData>
