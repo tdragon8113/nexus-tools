@@ -5,17 +5,18 @@ spring:
   reactor:
     context-propagation: auto
 
+# 访问日志 req/res 参数（脱敏 + 截断），见 HttpAccessLogProperties
+nexus:
+  http-access-log:
+    log-payload: true
+    max-payload-length: 2048
+
 logging:
   file:
     name: logs/${spring.application.name}.log
-  pattern:
-    # 用标准 Logback MDC，勿用 %correlation（自定义 pattern 时 Logback 无法识别会报 PARSER_ERROR）
-    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:- } --- [%15.15t] [${spring.application.name:},%X{traceId:-},%X{spanId:-}] %logger{24} : %m%n%wEx"
-    file: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:- } --- [%t] [${spring.application.name:},%X{traceId:-},%X{spanId:-}] %logger{24} : %m%n%wEx"
   level:
     root: INFO
     com.nexus: INFO
-    http.access: INFO
     org.springframework: WARN
     org.springframework.web: WARN
     org.springframework.cloud: WARN

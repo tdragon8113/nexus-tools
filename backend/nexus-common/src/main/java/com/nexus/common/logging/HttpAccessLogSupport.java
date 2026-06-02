@@ -2,33 +2,21 @@ package com.nexus.common.logging;
 
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
 import java.util.Map;
 
-/**
- * HTTP 访问日志（logfmt）共用逻辑：字段、级别、排除路径、clientIp / traceId 解析。
- */
+/** HTTP 访问日志：路径/IP/trace 解析与 logfmt 输出。 */
+@Slf4j
 public final class HttpAccessLogSupport {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger("http.access");
-    public static final String TRACE_ID_ATTR = "http.access.traceId";
+    public static final String TRACE_ID_ATTR = "access.traceId";
 
     private static final String LOG_TEMPLATE =
-            "event=http.access traceId={} clientIp={} method={} uri={} status={} durationMs={}";
-    private static final String[] EXCLUDED_PATHS = {"/actuator", "/health", "/favicon"};
+            "clientIp={} method={} uri={} status={} durationMs={} req={} res={}";
 
     private HttpAccessLogSupport() {
-    }
-
-    public static boolean isExcludedPath(String path) {
-        for (String excluded : EXCLUDED_PATHS) {
-            if (path.contains(excluded)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static String buildUri(String path, String query) {
@@ -69,14 +57,37 @@ public final class HttpAccessLogSupport {
         return traceId(tracer);
     }
 
-    public static void write(String traceId, String clientIp, String method, String uri,
-                             int status, long durationMs) {
+    public static void logAccess(String clientIp, String method, String uri, int status,
+                                 long durationMs, String reqPayload, String resPayload) {
         if (status >= 500) {
-            LOGGER.error(LOG_TEMPLATE, traceId, clientIp, method, uri, status, durationMs);
+            log.error(LOG_TEMPLATE, clientIp, method, uri, status, durationMs, reqPayload, resPayload);
         } else if (status >= 400) {
-            LOGGER.warn(LOG_TEMPLATE, traceId, clientIp, method, uri, status, durationMs);
+            log.warn(LOG_TEMPLATE, clientIp, method, uri, status, durationMs, reqPayload, resPayload);
         } else {
-            LOGGER.info(LOG_TEMPLATE, traceId, clientIp, method, uri, status, durationMs);
+            log.info(LOG_TEMPLATE, clientIp, method, uri, status, durationMs, reqPayload, resPayload);
+        }
+    }
+
+    /** Gateway doFinally 时 MDC 可能无 traceId，先从 exchange 恢复再写日志。 */
+    public static void logAccess(Tracer tracer, Map<String, Object> attributes,
+                                 String xForwardedFor, String xRealIp, String remoteAddr,
+                                 String method, String path, String query, int status,
+                                 long durationMs, String reqPayload, String resPayload) {
+        String traceId = resolveTraceId(tracer, attributes);
+        if (!"-".equals(traceId)) {
+            MDC.put("traceId", traceId);
+        }
+        try {
+            logAccess(
+                    resolveClientIp(xForwardedFor, xRealIp, remoteAddr),
+                    method,
+                    buildUri(path, query),
+                    status,
+                    durationMs,
+                    reqPayload,
+                    resPayload);
+        } finally {
+            MDC.remove("traceId");
         }
     }
 }

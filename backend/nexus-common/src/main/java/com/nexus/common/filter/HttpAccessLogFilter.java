@@ -1,46 +1,48 @@
 package com.nexus.common.filter;
 
+import com.nexus.common.logging.HttpAccessLogProperties;
 import com.nexus.common.logging.HttpAccessLogSupport;
-import io.micrometer.tracing.Tracer;
+import com.nexus.common.logging.HttpAccessPayloadReader;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 
-/** Servlet HTTP 访问日志，格式见 {@link HttpAccessLogSupport}。 */
+/** Servlet HTTP 访问日志（含脱敏后的 req/res 参数）。 */
 @RequiredArgsConstructor
 public class HttpAccessLogFilter extends OncePerRequestFilter {
 
-    private final Tracer tracer;
+    private final HttpAccessLogProperties properties;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
-        if (HttpAccessLogSupport.isExcludedPath(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
+        ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
+        ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper(response);
         long startTime = System.nanoTime();
+
         try {
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(wrappedRequest, wrappedResponse);
         } finally {
             long durationMs = (System.nanoTime() - startTime) / 1_000_000;
-            HttpAccessLogSupport.write(
-                    HttpAccessLogSupport.traceId(tracer),
+            HttpAccessLogSupport.logAccess(
                     HttpAccessLogSupport.resolveClientIp(
                             request.getHeader("X-Forwarded-For"),
                             request.getHeader("X-Real-IP"),
                             request.getRemoteAddr()),
                     request.getMethod(),
                     HttpAccessLogSupport.buildUri(request.getRequestURI(), request.getQueryString()),
-                    response.getStatus(),
-                    durationMs);
+                    wrappedResponse.getStatus(),
+                    durationMs,
+                    HttpAccessPayloadReader.readRequest(wrappedRequest, properties),
+                    HttpAccessPayloadReader.readResponse(wrappedResponse, properties));
+            wrappedResponse.copyBodyToResponse();
         }
     }
 }
