@@ -20,8 +20,6 @@ services:
       - NACOS_USERNAME=${NACOS_USERNAME}
       - NACOS_PASSWORD=${NACOS_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
-      - TZ=Asia/Shanghai
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Shanghai
       # 与 logback-spring.xml 中 log.path 对应；日志落盘到下方 volume 挂载目录
       - LOG_PATH=/app/logs/
     volumes:
@@ -43,8 +41,6 @@ services:
       - NACOS_USERNAME=${NACOS_USERNAME}
       - NACOS_PASSWORD=${NACOS_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
-      - TZ=Asia/Shanghai
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Shanghai
       - LOG_PATH=/app/logs/
     volumes:
       - ${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/user-service:/app/logs
@@ -62,8 +58,6 @@ services:
       - NACOS_USERNAME=${NACOS_USERNAME}
       - NACOS_PASSWORD=${NACOS_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
-      - TZ=Asia/Shanghai
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Shanghai
       - LOG_PATH=/app/logs/
     volumes:
       - ${NEXUS_LOG_DIR:-/opt/nexus-tools/logs}/workspace-service:/app/logs
