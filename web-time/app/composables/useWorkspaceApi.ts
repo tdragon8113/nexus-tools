@@ -1,5 +1,9 @@
 import type { ApiResponse } from '~/types/api'
 import { normalizeDateTime } from '~/utils/time'
+import {
+  parseApiLifeCards,
+  type ApiLifeCard
+} from '~/composables/life-cards/api-types'
 
 export type ActivityCategory = 'pomodoro-work' | 'pomodoro-break' | 'meeting' | 'other'
 
@@ -25,8 +29,8 @@ export interface CreateActivityPayload {
 
 export interface UpdateActivityPayload {
   title?: string
-  endTime: string
-  durationMinutes: number
+  endTime?: string | null
+  durationMinutes?: number
   notes?: string
 }
 
@@ -38,6 +42,8 @@ export interface Stats {
   hourlyDistribution: Record<string, number>
   dailyDistribution: Record<string, number>
 }
+
+export type { ApiLifeCard, ApiLifeCardChild } from '~/composables/life-cards/api-types'
 
 export const ACTIVITY_CATEGORY_LABELS: Record<ActivityCategory, string> = {
   'pomodoro-work': '专注',
@@ -78,7 +84,7 @@ export function useWorkspaceApi () {
   const { request } = useApiClient()
 
   const getActivities = async () => {
-    const res = await request<Activity[]>('/api/v1/activities')
+    const res = await request<Activity[]>('/api/activities')
     if (res.code === 200 && Array.isArray(res.data)) {
       return {
         ...res,
@@ -89,7 +95,7 @@ export function useWorkspaceApi () {
   }
 
   const createActivity = async (payload: CreateActivityPayload) => {
-    const res = await request<Activity>('/api/v1/activities', {
+    const res = await request<Activity>('/api/activities', {
       method: 'POST',
       body: JSON.stringify({
         ...payload,
@@ -107,7 +113,7 @@ export function useWorkspaceApi () {
   }
 
   const getOngoingActivity = async () => {
-    const res = await request<Activity | null>('/api/v1/activities/ongoing')
+    const res = await request<Activity | null>('/api/activities/ongoing')
     if (res.code === 200 && res.data) {
       return {
         ...res,
@@ -118,7 +124,7 @@ export function useWorkspaceApi () {
   }
 
   const updateActivity = async (id: number, payload: UpdateActivityPayload) => {
-    const res = await request<Activity>(`/api/v1/activities/${id}`, {
+    const res = await request<Activity>(`/api/activities/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(payload)
     })
@@ -132,10 +138,39 @@ export function useWorkspaceApi () {
   }
 
   const deleteActivity = (id: number) =>
-    request<void>(`/api/v1/activities/${id}`, { method: 'DELETE' })
+    request<void>(`/api/activities/${id}`, { method: 'DELETE' })
 
   const getStats = () =>
-    request<Stats>('/api/v1/activities/stats')
+    request<Stats>('/api/activities/stats')
+
+  const getLifeCards = async () => {
+    const res = await request<ApiLifeCard[]>('/api/life-cards')
+    if (res.code === 200 && Array.isArray(res.data)) {
+      return { ...res, data: parseApiLifeCards(res.data) }
+    }
+    return res
+  }
+
+  const saveLifeCards = async (cards: ApiLifeCard[]) => {
+    const res = await request<ApiLifeCard[]>('/api/life-cards', {
+      method: 'PUT',
+      body: JSON.stringify({ cards })
+    })
+    if (res.code === 200 && Array.isArray(res.data)) {
+      return { ...res, data: parseApiLifeCards(res.data) }
+    }
+    return res
+  }
+
+  const resetLifeCards = async () => {
+    const res = await request<ApiLifeCard[]>('/api/life-cards/reset-defaults', {
+      method: 'POST'
+    })
+    if (res.code === 200 && Array.isArray(res.data)) {
+      return { ...res, data: parseApiLifeCards(res.data) }
+    }
+    return res
+  }
 
   return {
     getActivities,
@@ -143,6 +178,9 @@ export function useWorkspaceApi () {
     createActivity,
     updateActivity,
     deleteActivity,
-    getStats
+    getStats,
+    getLifeCards,
+    saveLifeCards,
+    resetLifeCards
   }
 }

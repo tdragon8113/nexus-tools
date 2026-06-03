@@ -123,9 +123,31 @@ CREATE TABLE IF NOT EXISTS sync_metadata (
     last_sync_at DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='同步元数据';
 
+-- 生活卡片（仅存名称；展示属性由前端处理）
+CREATE TABLE IF NOT EXISTS life_cards (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(32) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='生活卡片分类';
+
+CREATE TABLE IF NOT EXISTS life_card_children (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    life_card_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(32) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    INDEX idx_life_card_id (life_card_id),
+    INDEX idx_user_id (user_id),
+    CONSTRAINT fk_life_card_children_card
+        FOREIGN KEY (life_card_id) REFERENCES life_cards(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='生活卡片子项';
+
 -- 初始化同步元数据
 INSERT INTO sync_metadata (entity_type, last_sync_version, last_sync_at) VALUES
 ('todos', 0, NULL),
 ('time_tracks', 0, NULL),
-('activities', 0, NULL)
+('activities', 0, NULL),
+('life_cards', 0, NULL)
 ON DUPLICATE KEY UPDATE entity_type = entity_type;

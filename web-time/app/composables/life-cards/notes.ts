@@ -62,6 +62,11 @@ export function activityHasTag (notes: string | null, tag: string) {
   return parseRecordNotes(notes).tags?.includes(tag) ?? false
 }
 
+/** 已结束记录是否尚未填写总结（快切后可补写） */
+export function recordNeedsSummary (notes: string | null) {
+  return !parseRecordNotes(notes).summary?.trim()
+}
+
 export function parseRecordNotes (notes: string | null): ParsedRecordNotes {
   if (!notes) return {}
   const body = notes.replace(/^\[[^\]]+\]\n?/, '')
@@ -73,56 +78,43 @@ export function parseRecordNotes (notes: string | null): ParsedRecordNotes {
   const tags: string[] = []
 
   const isFieldLine = (line: string) =>
-    line.startsWith('感受：')
-    || line.startsWith('标签：')
-    || line.startsWith('特殊记忆：')
+    line.startsWith('总结：') || line.startsWith('感受：') || line.startsWith('标签：')
 
   const lines = body.split('\n')
-  let i = 0
-  while (i < lines.length) {
-    const line = lines[i]
+  const summaryLines: string[] = []
 
+  for (const line of lines) {
     if (line.startsWith('总结：')) {
-      const chunks: string[] = []
-      const first = line.slice(3)
-      if (first) chunks.push(first)
-      i += 1
-      while (i < lines.length && !isFieldLine(lines[i])) {
-        chunks.push(lines[i])
-        i += 1
-      }
-      const joined = chunks.join('\n').trim()
-      if (joined) summary = joined
+      summary = line.slice(3).trim()
       continue
     }
-
     if (line.startsWith('感受：')) {
-      const val = line.slice(3).trim()
-      const num = Number.parseInt(val, 10)
+      const raw = line.slice(3).trim()
+      const num = Number(raw)
       if (num >= 1 && num <= 5) {
         feelingRating = num as FeelingRating
-      } else if (val) {
-        feelingText = val
+      } else {
+        feelingText = raw
       }
+      continue
     }
-
     if (line.startsWith('标签：')) {
       tags.push(...parseTagsLine(line.slice(3)))
+      continue
     }
-
-    if (line.startsWith('特殊记忆：')) {
-      const val = line.slice(5).trim()
-      if (val === '1' || val === 'true') tags.push('特殊记忆')
+    if (!isFieldLine(line)) {
+      summaryLines.push(line)
     }
-
-    i += 1
   }
 
-  const uniqueTags = [...new Set(tags)]
+  if (!summary && summaryLines.length > 0) {
+    summary = summaryLines.join('\n').trim()
+  }
+
   return {
-    summary,
+    summary: summary || undefined,
     feelingRating,
     feelingText,
-    tags: uniqueTags.length > 0 ? uniqueTags : undefined
+    tags: tags.length > 0 ? tags : undefined
   }
 }

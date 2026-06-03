@@ -17,10 +17,19 @@
 
     <van-cell-group v-else :border="false">
       <van-swipe-cell v-for="item in activities" :key="item.id">
-        <van-cell>
+        <van-cell
+          :clickable="canEdit(item)"
+          @click="onItemClick(item)"
+        >
           <template #title>
             <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
               <span class="truncate">{{ item.title }}</span>
+              <span
+                v-if="showNeedsSummary(item)"
+                class="shrink-0 inline-flex rounded-full bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 text-[10px] font-medium text-amber-700"
+              >
+                未填写
+              </span>
               <span
                 v-for="tag in parsedNotes(item).tags ?? []"
                 :key="tag"
@@ -89,7 +98,7 @@ import {
   type Activity,
   type ActivityCategory
 } from '~/composables/useWorkspaceApi'
-import { formatFeelingDisplay, parseRecordNotes } from '~/composables/useLifeCards'
+import { formatFeelingDisplay, parseRecordNotes, recordNeedsSummary } from '~/composables/useLifeCards'
 import { formatMinutes, formatTimeOfDay } from '~/utils/time'
 
 withDefaults(defineProps<{
@@ -106,8 +115,9 @@ withDefaults(defineProps<{
   emptyIcon: 'notes-o'
 })
 
-defineEmits<{
+const emit = defineEmits<{
   delete: [id: number]
+  edit: [id: number]
 }>()
 
 function parsedNotes (item: Activity) {
@@ -121,6 +131,19 @@ function feelingLabel (item: Activity) {
 function hasLabel (item: Activity) {
   const parsed = parsedNotes(item)
   return Boolean(parsed.summary || feelingLabel(item))
+}
+
+function showNeedsSummary (item: Activity) {
+  return Boolean(item.endTime) && recordNeedsSummary(item.notes)
+}
+
+function canEdit (item: Activity) {
+  return Boolean(item.endTime)
+}
+
+function onItemClick (item: Activity) {
+  if (!canEdit(item)) return
+  emit('edit', item.id)
 }
 
 function categoryStyle (category: ActivityCategory) {

@@ -87,7 +87,7 @@ open NexusTools.xcodeproj
 
 | 服务 | 端口 | 路径 |
 |------|------|------|
-| Gateway | 8080 | `/api/v1/*` |
+| Gateway | 8080 | `/api/*` |
 | User Service | 8081 | 内部调用 |
 | Workspace Service | 8082 | 内部调用 |
 

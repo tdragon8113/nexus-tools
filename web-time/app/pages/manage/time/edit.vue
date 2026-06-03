@@ -8,25 +8,67 @@
       <p class="text-sm text-slate-700">登录后才能保存记录，可先体验选卡片</p>
     </div>
 
-    <!-- 无进行中：选卡片并开始（立即写入云端） -->
-    <template v-if="!hasSession">
-      <div class="doc-surface px-4 py-3">
-        <LifeCardPicker v-model="nextPick" mode="start" :saving="saving" />
+    <!-- 补写已结束记录 -->
+    <template v-else-if="editActivityId != null && !editActivity && loadingActivities">
+      <div class="doc-surface py-12 flex justify-center">
+        <van-loading size="24px" />
       </div>
+    </template>
+
+    <template v-else-if="editActivityId != null && !editActivity">
+      <div class="doc-surface p-6 text-center space-y-3">
+        <p class="text-sm text-slate-600">找不到这条记录</p>
+        <van-button round block plain @click="handleCancel">返回</van-button>
+      </div>
+    </template>
+
+    <template v-else-if="editActivity">
+      <div class="doc-surface p-4 space-y-1">
+        <p class="text-xs text-slate-500">补写总结</p>
+        <p class="text-base font-semibold text-slate-900">{{ editActivity.title }}</p>
+        <p class="text-xs text-slate-500 tabular-nums">
+          {{ formatTimeOfDay(editActivity.startTime) }}–{{ formatTimeOfDay(editActivity.endTime!) }}
+          · {{ formatMinutes(editActivity.durationMinutes) }}
+        </p>
+      </div>
+
+      <div class="doc-surface overflow-hidden divide-y divide-slate-100">
+        <div class="px-3 py-3">
+          <SummaryEditor v-model="summary" />
+        </div>
+        <div class="flex items-center gap-3 px-4 py-3">
+          <span class="w-10 shrink-0 text-sm text-slate-600">感受</span>
+          <FeelingStars v-model="feelingRating" class="min-w-0 flex-1" />
+        </div>
+        <div class="flex items-start gap-3 px-4 py-3">
+          <span class="w-10 shrink-0 pt-1.5 text-sm text-slate-600">标签</span>
+          <RecordTagPicker v-model="selectedTags" class="min-w-0 flex-1" />
+        </div>
+      </div>
+
       <van-button
         round
         block
         type="primary"
         class="!border-0 !bg-indigo-600"
         :loading="saving"
-        :disabled="!nextPick.parentId"
-        @click="confirmStart"
+        @click="saveEditedActivity"
       >
-        开始记录
+        保存
       </van-button>
     </template>
 
-    <!-- 有进行中：补充总结后结束或切换下一段 -->
+    <!-- 无进行中且无编辑目标：回首页用 Sheet 开始 -->
+    <template v-else-if="!hasSession">
+      <div class="doc-surface p-6 text-center space-y-3">
+        <p class="text-sm text-slate-600">开始记录请返回首页，点右下角 + 选择卡片</p>
+        <van-button round block type="primary" class="!border-0 !bg-indigo-600" @click="goStartFromHome">
+          去开始记录
+        </van-button>
+      </div>
+    </template>
+
+    <!-- 有进行中：补写总结（切换请用首页 Sheet） -->
     <template v-else>
       <div class="doc-surface p-4 space-y-3">
         <div class="flex items-start gap-3">
@@ -49,6 +91,9 @@
             </p>
           </div>
         </div>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          切换下一段请返回首页点「切换」或右下角 ⇄；这里仅补写当前段的总结与感受。
+        </p>
       </div>
 
       <div class="doc-surface overflow-hidden divide-y divide-slate-100">
@@ -63,9 +108,6 @@
           <span class="w-10 shrink-0 pt-1.5 text-sm text-slate-600">标签</span>
           <RecordTagPicker v-model="selectedTags" class="min-w-0 flex-1" />
         </div>
-        <div class="px-4 py-3">
-          <LifeCardPicker v-model="nextPick" mode="switch" :saving="saving" />
-        </div>
       </div>
 
       <van-button
@@ -74,10 +116,9 @@
         type="primary"
         class="!border-0 !bg-indigo-600"
         :loading="saving"
-        :disabled="!nextPick.parentId"
-        @click="confirmSwitch"
+        @click="saveOngoingNotes"
       >
-        结束本条并开始下一段
+        保存总结
       </van-button>
 
       <van-button
@@ -108,69 +149,96 @@
 import { showToast } from 'vant'
 import {
   buildRecordNotes,
-  encodeCardMarker,
+  decodeCardMarker,
   LIFE_CARD_COLORS,
   parseRecordNotes,
-  type LifeCard,
   useLifeCards
 } from '~/composables/useLifeCards'
 import { useActiveSession } from '~/composables/useActiveSession'
-import { calcDurationFromStart, formatDuration, formatMinutes, formatTimeOfDay, toLocalIso } from '~/utils/time'
+import { useSegmentActions } from '~/composables/useSegmentActions'
+import type { Activity } from '~/composables/useWorkspaceApi'
+import { formatDuration, formatMinutes, formatTimeOfDay } from '~/utils/time'
 
 definePageMeta({
   layout: 'default'
 })
 
-useHead({ title: '写记录 · Nexus Time' })
-
+const route = useRoute()
 const { mounted, authed } = useAuthSession()
 const { getAccessToken } = useAuthApi()
-const { createActivity, updateActivity, getOngoingActivity } = useWorkspaceApi()
-const { load, getRecordTitle, getCard, getChild } = useLifeCards()
+const { updateActivity } = useWorkspaceApi()
+const { load } = useLifeCards()
 const {
   session,
   hasSession,
   load: loadSession,
   syncFromServer,
-  startSession,
-  clearSession,
   sessionTitle,
   sessionCard,
   elapsedSeconds
 } = useActiveSession()
+const { saving, endCurrentOnly } = useSegmentActions()
+const { activities, fetchActivities, loading: loadingActivities } = useActivities()
 
 const { linkWithBack, resolveBack } = useBackNavigation()
 
 const summary = ref('')
 const feelingRating = ref(3)
 const selectedTags = ref<string[]>([])
-const nextPick = ref<{ parentId: string, childId?: string }>({ parentId: '' })
-const saving = ref(false)
+
+const editActivityId = computed(() => {
+  const raw = route.query.id
+  if (typeof raw !== 'string' || !raw) return null
+  const id = Number.parseInt(raw, 10)
+  return Number.isFinite(id) ? id : null
+})
+
+const editActivity = computed<Activity | null>(() => {
+  if (editActivityId.value == null) return null
+  return activities.value.find(item => item.id === editActivityId.value) ?? null
+})
 
 const elapsedLabel = computed(() => formatDuration(elapsedSeconds.value))
+
+const pageTitle = computed(() => {
+  if (editActivity.value) return '补写总结 · Nexus Time'
+  if (hasSession.value) return '写总结 · Nexus Time'
+  return '写记录 · Nexus Time'
+})
+
+useHead(() => ({ title: pageTitle.value }))
+
+function applyParsedNotes (notes: string | null) {
+  const parsed = parseRecordNotes(notes)
+  summary.value = parsed.summary ?? ''
+  feelingRating.value = parsed.feelingRating ?? 3
+  selectedTags.value = parsed.tags ?? []
+}
 
 onMounted(async () => {
   load()
   loadSession()
   if (getAccessToken()) {
+    await fetchActivities()
     const ongoing = await syncFromServer()
-    if (ongoing?.notes) {
-      const parsed = parseRecordNotes(ongoing.notes)
-      if (parsed.summary) summary.value = parsed.summary
-      if (parsed.feelingRating) feelingRating.value = parsed.feelingRating
-      if (parsed.tags?.length) selectedTags.value = parsed.tags
+    if (editActivity.value) {
+      applyParsedNotes(editActivity.value.notes)
+    } else if (ongoing?.notes) {
+      applyParsedNotes(ongoing.notes)
     }
   }
+})
+
+watch(editActivity, (activity) => {
+  if (activity) applyParsedNotes(activity.notes)
 })
 
 function handleCancel () {
   void navigateTo(resolveBack('/manage/time'))
 }
 
-function resetForm () {
-  summary.value = ''
-  feelingRating.value = 3
-  selectedTags.value = []
+function goStartFromHome () {
+  void navigateTo('/manage/time?start=1')
 }
 
 async function requireAuth () {
@@ -180,146 +248,76 @@ async function requireAuth () {
   return false
 }
 
-function resolvePick () {
-  const parent = getCard(nextPick.value.parentId)
-  if (!parent) return null
-  const child = nextPick.value.childId
-    ? getChild(nextPick.value.parentId, nextPick.value.childId)
-    : undefined
-  return { parent, child }
-}
-
-async function assertNoOngoing (): Promise<boolean> {
-  const res = await getOngoingActivity()
-  if (res.code === 200 && res.data) {
-    await syncFromServer()
-    showToast('已有进行中的记录，请先结束后再开新的')
-    return false
-  }
-  return true
-}
-
-async function createOngoingSegment (parent: LifeCard, child?: { id: string, label: string }) {
-  const startedAt = toLocalIso(new Date())
-  const title = getRecordTitle(parent.id, child?.id)
-  const notes = encodeCardMarker(parent.id, child?.id)
-
-  const res = await createActivity({
-    title,
-    category: parent.category,
-    startTime: startedAt,
-    endTime: null,
-    durationMinutes: 0,
-    notes
-  })
-
-  if (res.code === 200 && res.data) {
-    startSession(res.data.id, parent.id, child?.id, res.data.startTime)
-    showToast(`已开始 · ${title}`)
-    return true
-  }
-  if (res.code === 409) {
-    await syncFromServer()
-    showToast(res.message || '已有进行中的记录')
-    return false
-  }
-  if (res.code === 0) {
-    showToast('无法连接服务器，请确认后端已启动')
-  } else {
-    showToast(res.message || '开始失败')
-  }
-  return false
-}
-
-async function finishCurrentSegment () {
-  if (!session.value) return false
-  if (!(await requireAuth())) return false
-  if (saving.value) return false
-
-  saving.value = true
-  const current = { ...session.value }
-  const now = new Date()
-  const { minutes } = calcDurationFromStart(current.startedAt, now)
-  const title = getRecordTitle(current.parentId, current.childId)
-  const notes = buildRecordNotes(
-    current.parentId,
-    current.childId,
+function buildNotesFromForm (parentId: string, childId?: string) {
+  return buildRecordNotes(
+    parentId,
+    childId,
     summary.value,
     feelingRating.value,
     selectedTags.value
   )
-
-  try {
-    const res = await updateActivity(current.activityId, {
-      title,
-      endTime: toLocalIso(now),
-      durationMinutes: minutes,
-      notes
-    })
-
-    if (res.code === 200) {
-      clearSession()
-      useActivities().fetchActivities()
-      showToast(`已结束 · ${title} · ${formatMinutes(minutes)}`)
-      resetForm()
-      return true
-    }
-    if (res.code === 0) {
-      showToast('无法连接服务器，请确认后端已启动')
-    } else {
-      showToast(res.message || '保存失败')
-    }
-    return false
-  } catch {
-    showToast('网络错误，请稍后重试')
-    return false
-  } finally {
-    saving.value = false
-  }
 }
 
-async function handleStart (payload: { parent: LifeCard, child?: { id: string, label: string } }) {
+async function saveOngoingNotes () {
+  if (!session.value) return
   if (!(await requireAuth())) return
   if (saving.value) return
-  if (hasSession.value) {
-    showToast('请先结束当前进行中的记录')
-    return
-  }
-  if (!(await assertNoOngoing())) return
 
   saving.value = true
   try {
-    const ok = await createOngoingSegment(payload.parent, payload.child)
-    if (ok) await navigateTo('/manage/time')
+    const res = await updateActivity(session.value.activityId, {
+      notes: buildNotesFromForm(session.value.parentId, session.value.childId)
+    })
+    if (res.code === 200) {
+      showToast('已保存')
+      await fetchActivities()
+      return
+    }
+    showToast(res.message || '保存失败')
+  } catch {
+    showToast('网络错误，请稍后重试')
   } finally {
     saving.value = false
   }
 }
 
-async function confirmStart () {
-  const payload = resolvePick()
-  if (!payload) return
-  await handleStart(payload)
-}
+async function saveEditedActivity () {
+  const activity = editActivity.value
+  if (!activity) return
+  if (!(await requireAuth())) return
+  if (saving.value) return
 
-async function confirmSwitch () {
-  const payload = resolvePick()
-  if (!payload) return
-
-  const ok = await finishCurrentSegment()
-  if (!ok) return
+  const marker = decodeCardMarker(activity.notes)
+  if (!marker) {
+    showToast('无法解析记录')
+    return
+  }
 
   saving.value = true
   try {
-    const started = await createOngoingSegment(payload.parent, payload.child)
-    if (started) await navigateTo('/manage/time')
+    const res = await updateActivity(activity.id, {
+      notes: buildNotesFromForm(marker.parentId, marker.childId)
+    })
+    if (res.code === 200) {
+      showToast('已保存')
+      await fetchActivities()
+      await navigateTo(resolveBack('/manage/time'))
+      return
+    }
+    showToast(res.message || '保存失败')
+  } catch {
+    showToast('网络错误，请稍后重试')
   } finally {
     saving.value = false
   }
 }
 
 async function handleEndOnly () {
-  const ok = await finishCurrentSegment()
+  const ok = await endCurrentOnly({
+    summary: summary.value,
+    feelingRating: feelingRating.value,
+    tags: selectedTags.value
+  })
   if (ok) await navigateTo('/manage/time')
 }
 </script>

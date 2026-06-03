@@ -41,7 +41,7 @@
           type="primary"
           round
           class="!border-0 !bg-indigo-600 shrink-0"
-          @click="navigateWithBack('/manage/time/edit')"
+          @click="openSheet"
         >
           切换
         </van-button>
@@ -95,6 +95,7 @@
         :empty-title="listEmptyTitle"
         :empty-hint="listEmptyHint"
         @delete="handleDelete"
+        @edit="handleEditActivity"
       />
     </template>
 
@@ -119,6 +120,7 @@ const {
   sessionCard,
   elapsedSeconds
 } = useActiveSession()
+const { load: loadLifeCards } = useLifeCards()
 
 const elapsedLabel = computed(() => formatDuration(elapsedSeconds.value))
 
@@ -142,21 +144,38 @@ const listTitle = computed(() => {
 })
 
 const listEmptyTitle = computed(() => '还没有记录')
-const listEmptyHint = computed(() => '点右下角 + 开始第一段')
+const listEmptyHint = computed(() => '点右下角 + 选择卡片开始')
+
+const route = useRoute()
+const router = useRouter()
+const { openSheet } = useQuickSwitch()
+const { preserveBackQuery } = useBackNavigation()
 
 const { navigateWithBack } = useBackNavigation()
+
+function openStartSheetFromQuery () {
+  if (route.query.start !== '1' || !authed.value) return
+  openSheet('start')
+  const query = preserveBackQuery()
+  void router.replace({ path: '/manage/time', query })
+}
 
 async function refreshPageData () {
   syncAuth()
   loadSession()
   if (authed.value) {
     await syncFromServer()
-    await fetchActivities()
+    await Promise.all([fetchActivities(), loadLifeCards()])
   }
+  openStartSheetFromQuery()
 }
 
 async function handleDelete (id: number) {
   await removeActivity(id)
+}
+
+function handleEditActivity (id: number) {
+  void navigateWithBack('/manage/time/edit', { id: String(id) })
 }
 
 onMounted(refreshPageData)
@@ -165,6 +184,7 @@ watch(authed, (loggedIn) => {
   if (loggedIn) {
     void syncFromServer()
     void fetchActivities()
+    void loadLifeCards()
   }
 })
 
@@ -172,7 +192,11 @@ const route = useRoute()
 watch(
   () => route.fullPath,
   () => {
-    if (route.path === '/manage/time') refreshPageData()
+    if (route.path === '/manage/time') {
+      refreshPageData()
+    } else if (route.query.start === '1') {
+      openStartSheetFromQuery()
+    }
   }
 )
 </script>

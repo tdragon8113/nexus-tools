@@ -42,15 +42,15 @@ spring:
         - id: user-service
           uri: lb://nexus-user-service
           predicates:
-            - Path=/api/v1/auth/**
+            - Path=/api/auth/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: workspace-service
           uri: lb://nexus-workspace-service
           predicates:
-            - Path=/api/v1/todos/**,/api/v1/habits/**,/api/v1/activities/**
+            - Path=/api/todos/**,/api/habits/**,/api/activities/**,/api/life-cards/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
       globalcors:
         cors-configurations:
           '[/**]':

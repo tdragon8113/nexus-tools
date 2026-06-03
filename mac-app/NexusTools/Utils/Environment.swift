@@ -19,11 +19,11 @@ enum AppEnvironment {
     var apiBaseURL: String {
         switch self {
         case .development:
-            return "http://localhost:8080/api/v1"
+            return "http://localhost:8080/api"
         case .staging:
-            return "https://staging-api.nexus-tools.com/api/v1"
+            return "https://staging-api.nexus-tools.com/api"
         case .production:
-            return "https://api.nexus-tools.com/api/v1"
+            return "https://api.nexus-tools.com/api"
         }
     }
 

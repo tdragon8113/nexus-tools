@@ -27,6 +27,7 @@ export function useAuthSession () {
     authed.value = false
     if (import.meta.client) {
       useActivities().invalidate()
+      useLifeCards().invalidate()
     }
   }
 

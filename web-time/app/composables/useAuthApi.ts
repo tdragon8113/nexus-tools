@@ -20,7 +20,7 @@ export function useAuthApi () {
   } = useApiClient()
 
   const login = async (username: string, password: string) => {
-    const response = await request<TokenResponse>('/api/v1/auth/login', {
+    const response = await request<TokenResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password })
     })
@@ -41,7 +41,7 @@ export function useAuthApi () {
   }
 
   const register = async (username: string, email: string, password: string) => {
-    return request<User>('/api/v1/auth/register', {
+    return request<User>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password })
     })
@@ -50,7 +50,7 @@ export function useAuthApi () {
   const logout = async () => {
     const refreshToken = getRefreshToken()
     if (refreshToken) {
-      await request<void>('/api/v1/auth/logout', {
+      await request<void>('/api/auth/logout', {
         method: 'POST',
         body: JSON.stringify({ refreshToken })
       })
@@ -60,7 +60,7 @@ export function useAuthApi () {
   }
 
   const getCurrentUser = async () => {
-    const response = await request<User>('/api/v1/auth/me')
+    const response = await request<User>('/api/auth/me')
     if (response.code === 200 && response.data) {
       user.value = response.data
       setUserId(response.data.id)
@@ -71,7 +71,7 @@ export function useAuthApi () {
   }
 
   const updateProfile = async (nickname: string) => {
-    const response = await request<User>('/api/v1/auth/me', {
+    const response = await request<User>('/api/auth/me', {
       method: 'PATCH',
       body: JSON.stringify({ nickname })
     })
@@ -85,7 +85,7 @@ export function useAuthApi () {
   const deleteAccount = async () => {
     const refreshToken = getRefreshToken()
     if (refreshToken) {
-      await request<void>('/api/v1/auth/account', {
+      await request<void>('/api/auth/account', {
         method: 'DELETE',
         body: JSON.stringify({ refreshToken })
       })

@@ -25,5 +25,6 @@ const mainPadding = computed(() =>
       <slot />
     </main>
     <MobileTabBar v-if="!hideTabBar" />
+    <QuickSwitchSheet />
   </div>
 </template>

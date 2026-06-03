@@ -1,10 +1,15 @@
 <template>
   <div class="px-4 py-4 space-y-4">
     <p class="text-sm text-slate-600 leading-relaxed">
-      配置生活分类与子项。写记录时先选分类，再选具体事项；无子项的分类可直接记录。
+      配置生活分类与子项名称。图标与颜色由前端按名称自动匹配，无需在后端保存。
     </p>
 
     <div class="doc-surface overflow-hidden">
+      <div v-if="loading" class="py-12 flex justify-center">
+        <van-loading size="24px" />
+      </div>
+
+      <template v-else>
       <van-collapse v-model="expanded" :border="false">
         <van-collapse-item
           v-for="card in cards"
@@ -34,7 +39,7 @@
           <div class="space-y-2 pb-1">
             <div class="flex flex-wrap gap-2">
               <van-button size="small" plain type="primary" @click="openEdit(card)">
-                编辑分类
+                编辑名称
               </van-button>
               <van-button size="small" plain @click="openAddChild(card)">
                 添加子项
@@ -44,7 +49,7 @@
               </van-button>
             </div>
 
-            <van-cell-group v-if="(card.children?.length ?? 0) > 0" :border="false" class="rounded-xl overflow-hidden border border-slate-100">
+            <van-cell-group v-if="card.children.length > 0" :border="false" class="rounded-xl overflow-hidden border border-slate-100">
               <van-swipe-cell v-for="child in card.children" :key="child.id">
                 <van-cell
                   :title="child.label"
@@ -76,6 +81,7 @@
           恢复默认
         </van-button>
       </div>
+      </template>
     </div>
 
     <van-popup v-model:show="editorOpen" round position="bottom" safe-area-inset-bottom>
@@ -83,42 +89,7 @@
         <h3 class="text-base font-semibold text-slate-900 mb-4">
           {{ editingId ? '编辑分类' : '添加分类' }}
         </h3>
-        <van-field v-model="draft.label" label="名称" placeholder="如：日常、运动" maxlength="8" />
-        <van-field label="图标">
-          <template #input>
-            <div class="flex flex-wrap gap-2 py-1">
-              <button
-                v-for="icon in LIFE_CARD_ICON_OPTIONS"
-                :key="icon"
-                type="button"
-                class="flex h-9 w-9 items-center justify-center rounded-lg border transition-colors"
-                :class="draft.icon === icon
-                  ? 'border-indigo-400 bg-indigo-50 text-indigo-600'
-                  : 'border-slate-200 text-slate-500'"
-                @click="draft.icon = icon"
-              >
-                <van-icon :name="icon" size="18" />
-              </button>
-            </div>
-          </template>
-        </van-field>
-        <van-field label="颜色">
-          <template #input>
-            <div class="flex flex-wrap gap-2 py-1">
-              <button
-                v-for="(style, color) in LIFE_CARD_COLORS"
-                :key="color"
-                type="button"
-                class="h-8 w-8 rounded-full ring-offset-2 transition-all"
-                :class="[
-                  style.bg,
-                  draft.color === color ? `ring-2 ${style.ring}` : ''
-                ]"
-                @click="draft.color = color"
-              />
-            </div>
-          </template>
-        </van-field>
+        <van-field v-model="draftLabel" label="名称" placeholder="如：日常、运动" maxlength="8" />
         <div class="mt-4 flex gap-3">
           <van-button round block plain @click="editorOpen = false">取消</van-button>
           <van-button round block type="primary" class="!border-0 !bg-indigo-600" @click="saveDraft">
@@ -155,10 +126,8 @@
 import { showConfirmDialog, showToast } from 'vant'
 import {
   LIFE_CARD_COLORS,
-  LIFE_CARD_ICON_OPTIONS,
   type LifeCard,
   type LifeCardChild,
-  type LifeCardColor,
   useLifeCards
 } from '~/composables/useLifeCards'
 
@@ -166,6 +135,7 @@ useHead({ title: '生活卡片 · Nexus Time' })
 
 const {
   cards,
+  loading,
   load,
   addCard,
   updateCard,
@@ -179,43 +149,34 @@ const {
 const expanded = ref<string[]>([])
 const editorOpen = ref(false)
 const editingId = ref<string | null>(null)
+const draftLabel = ref('')
 
 const childEditorOpen = ref(false)
 const childParent = ref<LifeCard | null>(null)
 const childEditingId = ref<string | null>(null)
 const childDraftLabel = ref('')
 
-const draft = reactive({
-  label: '',
-  icon: 'flower-o' as string,
-  color: 'slate' as LifeCardColor
-})
-
-onMounted(() => {
-  load()
+onMounted(async () => {
+  await load()
   if (cards.value.length > 0) {
     expanded.value = [cards.value[0].id]
   }
 })
 
 function childSummary (card: LifeCard) {
-  const n = card.children?.length ?? 0
+  const n = card.children.length
   return n > 0 ? `${n} 个子项` : '无子项'
 }
 
 function openCreate () {
   editingId.value = null
-  draft.label = ''
-  draft.icon = 'flower-o'
-  draft.color = 'slate'
+  draftLabel.value = ''
   editorOpen.value = true
 }
 
 function openEdit (card: LifeCard) {
   editingId.value = card.id
-  draft.label = card.label
-  draft.icon = card.icon
-  draft.color = card.color
+  draftLabel.value = card.label
   editorOpen.value = true
 }
 
@@ -233,34 +194,24 @@ function openEditChild (card: LifeCard, child: LifeCardChild) {
   childEditorOpen.value = true
 }
 
-function saveDraft () {
-  const label = draft.label.trim()
+async function saveDraft () {
+  const label = draftLabel.value.trim()
   if (!label) {
     showToast('请填写名称')
     return
   }
 
-  if (editingId.value) {
-    updateCard(editingId.value, {
-      label,
-      icon: draft.icon,
-      color: draft.color
-    })
-  } else {
-    addCard({
-      label,
-      icon: draft.icon,
-      color: draft.color,
-      category: 'other',
-      children: []
-    })
-  }
+  const ok = editingId.value
+    ? await updateCard(editingId.value, label)
+    : Boolean(await addCard(label))
+
+  if (!ok) return
 
   editorOpen.value = false
   showToast('已保存')
 }
 
-function saveChildDraft () {
+async function saveChildDraft () {
   if (!childParent.value) return
   const label = childDraftLabel.value.trim()
   if (!label) {
@@ -269,13 +220,10 @@ function saveChildDraft () {
   }
 
   const ok = childEditingId.value
-    ? updateChild(childParent.value.id, childEditingId.value, label)
-    : addChild(childParent.value.id, label)
+    ? await updateChild(childParent.value.id, childEditingId.value, label)
+    : Boolean(await addChild(childParent.value.id, label))
 
-  if (!ok) {
-    showToast('请填写名称')
-    return
-  }
+  if (!ok) return
 
   childEditorOpen.value = false
   if (!expanded.value.includes(childParent.value.id)) {
@@ -294,18 +242,18 @@ function confirmRemove (card: LifeCard) {
     .catch(() => {})
 }
 
-function handleRemove (id: string) {
-  if (!removeCard(id)) {
+async function handleRemove (id: string) {
+  if (!(await removeCard(id))) {
     showToast('至少保留一个分类')
   }
 }
 
-function handleRemoveChild (parentId: string, childId: string) {
-  removeChild(parentId, childId)
+async function handleRemoveChild (parentId: string, childId: string) {
+  await removeChild(parentId, childId)
 }
 
-function handleReset () {
-  resetDefaults()
+async function handleReset () {
+  if (!(await resetDefaults())) return
   expanded.value = cards.value.length > 0 ? [cards.value[0].id] : []
   showToast('已恢复默认')
 }

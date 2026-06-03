@@ -47,6 +47,7 @@
         empty-hint="切换记录时添加标签，或换一个标签看看"
         empty-icon="label-o"
         @delete="handleDelete"
+        @edit="handleEditActivity"
       />
     </template>
   </div>
@@ -59,7 +60,7 @@ useHead({ title: '标签 · Nexus Time' })
 
 const route = useRoute()
 const router = useRouter()
-const { preserveBackQuery } = useBackNavigation()
+const { preserveBackQuery, navigateWithBack } = useBackNavigation()
 const { mounted, authed, sync: syncAuth } = useAuthSession()
 const { activities, loading, tagStats, fetchActivities, removeActivity } = useActivities()
 
@@ -85,6 +86,10 @@ function selectTag (tag: string | null) {
 
 async function handleDelete (id: number) {
   await removeActivity(id)
+}
+
+function handleEditActivity (id: number) {
+  void navigateWithBack('/manage/time/edit', { id: String(id) })
 }
 
 onMounted(async () => {

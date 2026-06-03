@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.workspace.infrastructure.persistence.mapper.LifeCardMapper">
+
+    <resultMap id="LifeCardResultMap" type="com.nexus.workspace.domain.model.lifecard.LifeCard">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="name" property="name"/>
+        <result column="sort_order" property="sortOrder"/>
+    </resultMap>
+
+    <resultMap id="LifeCardChildResultMap" type="com.nexus.workspace.domain.model.lifecard.LifeCardChild">
+        <id column="id" property="id"/>
+        <result column="life_card_id" property="lifeCardId"/>
+        <result column="user_id" property="userId"/>
+        <result column="name" property="name"/>
+        <result column="sort_order" property="sortOrder"/>
+    </resultMap>
+
+    <select id="findCardsByUserId" resultMap="LifeCardResultMap">
+        SELECT id, user_id, name, sort_order
+        FROM life_cards
+        WHERE user_id = #{userId}
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="findChildrenByUserId" resultMap="LifeCardChildResultMap">
+        SELECT id, life_card_id, user_id, name, sort_order
+        FROM life_card_children
+        WHERE user_id = #{userId}
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="findChildrenByLifeCardId" resultMap="LifeCardChildResultMap">
+        SELECT id, life_card_id, user_id, name, sort_order
+        FROM life_card_children
+        WHERE life_card_id = #{lifeCardId}
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <delete id="deleteChildrenByUserId">
+        DELETE FROM life_card_children WHERE user_id = #{userId}
+    </delete>
+
+    <delete id="deleteCardsByUserId">
+        DELETE FROM life_cards WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="insertCard" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO life_cards (user_id, name, sort_order)
+        VALUES (#{userId}, #{name}, #{sortOrder})
+    </insert>
+
+    <update id="updateCard">
+        UPDATE life_cards
+        SET name = #{name},
+            sort_order = #{sortOrder}
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <insert id="insertChild" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO life_card_children (life_card_id, user_id, name, sort_order)
+        VALUES (#{lifeCardId}, #{userId}, #{name}, #{sortOrder})
+    </insert>
+
+    <update id="updateChild">
+        UPDATE life_card_children
+        SET name = #{name},
+            sort_order = #{sortOrder}
+        WHERE id = #{id} AND life_card_id = #{lifeCardId} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteChildrenByLifeCardId">
+        DELETE FROM life_card_children WHERE life_card_id = #{lifeCardId}
+    </delete>
+
+    <delete id="deleteChildrenByLifeCardIdExcept">
+        DELETE FROM life_card_children
+        WHERE life_card_id = #{lifeCardId}
+        <if test="keepIds != null and keepIds.size() > 0">
+            AND id NOT IN
+            <foreach collection="keepIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keepIds == null or keepIds.size() == 0">
+            AND 1 = 1
+        </if>
+    </delete>
+
+    <delete id="deleteCardsByUserIdExcept">
+        DELETE FROM life_cards
+        WHERE user_id = #{userId}
+        <if test="keepIds != null and keepIds.size() > 0">
+            AND id NOT IN
+            <foreach collection="keepIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keepIds == null or keepIds.size() == 0">
+            AND 1 = 1
+        </if>
+    </delete>
+</mapper>

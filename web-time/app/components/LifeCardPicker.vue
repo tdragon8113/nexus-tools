@@ -54,7 +54,6 @@
 
 <script setup lang="ts">
 import {
-  getDefaultLifePick,
   writeLastLifePick,
   type LifeCardPick,
   type LifePickSearchItem
@@ -87,7 +86,7 @@ const applying = ref(false)
 const panelStyle = ref<Record<string, string>>({})
 
 const modeLabel = computed(() => (props.mode === 'switch' ? '下一段' : '开始'))
-const placeholder = computed(() => '日常/做饭')
+const placeholder = computed(() => '输入分类/子项')
 
 const suggestions = computed(() =>
   searchLifePickItems(cards.value, query.value, 8)
@@ -103,16 +102,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updatePanelPosition)
   window.removeEventListener('scroll', updatePanelPosition, true)
 })
-
-watch(
-  cards,
-  (list) => {
-    if (list.length === 0 || modelValue.value.parentId) return
-    const defaults = getDefaultLifePick(list)
-    if (defaults) applyPick(defaults, false)
-  },
-  { immediate: true }
-)
 
 watch(
   () => modelValue.value,
@@ -188,6 +177,10 @@ function confirmHighlighted () {
 }
 
 function commitInput () {
+  void commitInputAsync()
+}
+
+async function commitInputAsync () {
   const raw = query.value.trim()
   if (!raw) {
     modelValue.value = { parentId: '' }
@@ -201,7 +194,7 @@ function commitInput () {
     return
   }
 
-  const pick = ensurePickFromInput(raw)
+  const pick = await ensurePickFromInput(raw)
   if (pick) {
     applyPick(pick)
     closeDropdown()

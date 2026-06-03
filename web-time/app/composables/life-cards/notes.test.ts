@@ -3,7 +3,8 @@ import {
   buildRecordNotes,
   decodeCardMarker,
   encodeCardMarker,
-  parseRecordNotes
+  parseRecordNotes,
+  recordNeedsSummary
 } from './notes'
 
 describe('life-cards notes', () => {
@@ -25,5 +26,10 @@ describe('life-cards notes', () => {
 
   it('encodeCardMarker supports parent only', () => {
     expect(encodeCardMarker('sport')).toBe('[sport]')
+  })
+
+  it('recordNeedsSummary detects missing summary on ended records', () => {
+    expect(recordNeedsSummary('[daily/daily_cook]')).toBe(true)
+    expect(recordNeedsSummary(buildRecordNotes('daily', 'daily_cook', '做了饭', 0, []))).toBe(false)
   })
 })

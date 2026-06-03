@@ -27,9 +27,9 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private final JwtUtils jwtUtils;
 
     private static final List<String> WHITE_LIST = List.of(
-            "/api/v1/auth/login",
-            "/api/v1/auth/register",
-            "/api/v1/auth/refresh"
+            "/api/auth/login",
+            "/api/auth/register",
+            "/api/auth/refresh"
     );
 
     private static final byte[] UNAUTHORIZED_BODY =
