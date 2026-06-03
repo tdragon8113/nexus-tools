@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { showToast } from 'vant'
 import { toolMatchesQuery } from '~/core/search'
-import { siteTools, type SiteTool } from '~/core/tools'
+import { type SiteTool } from '~/core/tools'
 
 const props = withDefaults(
   defineProps<{
@@ -10,25 +10,33 @@ const props = withDefaults(
     /**
      * default — 网站工具集大卡片
      * compact — 横向小卡片网格
-     * list — 桌面工具集列表（uTools 风格）
      * icons — 桌面工具集图标网格（仅图标+名称）
      */
-    variant?: 'default' | 'compact' | 'list' | 'icons'
-    /** list 模式下键盘高亮行 */
+    variant?: 'default' | 'compact' | 'icons'
+    /** icons 模式下键盘高亮项 */
     activeIndex?: number
+    /** 开启后仅可拖动排序，点击不会打开工具 */
+    reorderMode?: boolean
     onPick?: (tool: SiteTool) => void | Promise<void>
   }>(),
-  { filter: '', columns: '3', variant: 'default', activeIndex: -1 }
+  { filter: '', columns: '3', variant: 'default', activeIndex: -1, reorderMode: false }
 )
 
 const emit = defineEmits<{ pick: [tool: SiteTool] }>()
 
-const tools = computed(() => siteTools.filter((t) => t.id !== 'more'))
+const { orderedTools, setOrder } = useToolOrder()
 
 const filtered = computed(() => {
-  if (!props.filter.trim()) return tools.value
-  return tools.value.filter((t) => toolMatchesQuery(t, props.filter))
+  const list = orderedTools.value
+  if (!props.filter.trim()) return list
+  return list.filter((t) => toolMatchesQuery(t, props.filter))
 })
+
+const reorderEnabled = computed(
+  () => props.reorderMode && !props.filter.trim() && props.variant === 'icons'
+)
+
+const dragImmediate = computed(() => reorderEnabled.value)
 
 const iconGridClass = computed(() => {
   if (props.columns === '2') return 'grid-cols-3 sm:grid-cols-4'
@@ -53,24 +61,45 @@ const gapClass = computed(() =>
 )
 
 const listRef = ref<HTMLElement | null>(null)
+const dragLayout = ref<'list' | 'grid'>('grid')
+
+const {
+  isDragging,
+  dragItemId,
+  dragItem,
+  ghostBox,
+  displayItems,
+  onItemPointerDown,
+  shouldIgnoreClick
+} = useDragSortList({
+  enabled: reorderEnabled,
+  immediate: dragImmediate,
+  items: filtered,
+  containerRef: listRef,
+  layout: dragLayout,
+  canDrag: (tool) => Boolean(tool.path),
+  onCommitOrder: setOrder
+})
+
+const renderItems = computed(() => {
+  const items = reorderEnabled.value ? displayItems.value : filtered.value
+  return items ?? []
+})
 
 watch(
   () => [props.activeIndex, props.variant, filtered.value.length] as const,
   () => {
-    if (
-      (props.variant !== 'list' && props.variant !== 'icons') ||
-      props.activeIndex == null ||
-      props.activeIndex < 0
-    )
+    if (props.variant !== 'icons' || props.activeIndex == null || props.activeIndex < 0)
       return
     void nextTick(() => {
-      const el = listRef.value?.querySelector(`[data-tool-idx="${props.activeIndex}"]`)
+      const el = listRef.value?.querySelector(`[data-sort-idx="${props.activeIndex}"]`)
       el?.scrollIntoView({ block: 'nearest' })
     })
   }
 )
 
 async function pick(tool: SiteTool) {
+  if (props.reorderMode || shouldIgnoreClick()) return
   if (!tool.path) {
     showToast('即将上线')
     return
@@ -81,74 +110,56 @@ async function pick(tool: SiteTool) {
   }
   emit('pick', tool)
 }
+
+function itemButtonClass(tool: SiteTool, i: number) {
+  const draggingSelf = isDragging.value && dragItemId.value === tool.id
+  const isActive = props.activeIndex === i
+  return [
+    'nexus-desktop-tile',
+    reorderEnabled ? 'nexus-desktop-tile--sortable' : '',
+    isActive && !isDragging.value
+      ? 'border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-500/10'
+      : 'border-slate-200/80 bg-white hover:border-indigo-200 hover:bg-indigo-50/40',
+    !tool.path ? 'opacity-60' : '',
+    draggingSelf ? 'pointer-events-none opacity-35 scale-[0.98]' : ''
+  ]
+}
 </script>
 
 <template>
-  <!-- 桌面：紧凑列表 -->
-  <ul
-    v-if="variant === 'list'"
-    ref="listRef"
-    class="overflow-hidden rounded-md border border-slate-200/80 bg-white shadow-sm"
-    role="listbox"
-  >
-    <li
-      v-for="(tool, i) in filtered"
-      :key="tool.id"
-      role="option"
-      :data-tool-idx="i"
-      :aria-selected="activeIndex === i"
-      :class="i > 0 ? 'border-t border-slate-100' : ''"
-    >
-      <button
-        type="button"
-        :title="`${tool.name} — ${tool.desc}`"
-        class="flex w-full items-center gap-2 px-2 py-1.5 text-left transition-colors"
-        :class="[
-          activeIndex === i ? 'bg-blue-50' : 'hover:bg-slate-50 active:bg-slate-100/90',
-          !tool.path ? 'cursor-default opacity-60' : ''
-        ]"
-        @click="pick(tool)"
-      >
-        <div
-          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
-          :class="tool.bgColor"
-        >
-          <van-icon :name="tool.icon" size="14" :class="tool.iconColor" />
-        </div>
-        <span class="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-800">
-          {{ tool.name }}
-        </span>
-      </button>
-    </li>
-    <li v-if="!filtered.length" class="px-3 py-8 text-center text-xs text-slate-500">
-      没有匹配的工具
-    </li>
-  </ul>
-
-  <!-- 桌面：图标网格 -->
+  <!-- 桌面：图标网格（可拖动排序） -->
   <div
-    v-else-if="variant === 'icons'"
+    v-if="variant === 'icons'"
     ref="listRef"
-    role="listbox"
-    class="grid gap-2"
-    :class="iconGridClass"
+    :data-reorder="reorderEnabled ? 'on' : 'off'"
+    :class="reorderEnabled ? 'rounded-2xl ring-2 ring-indigo-200/80 ring-offset-2 ring-offset-slate-50' : ''"
   >
-    <button
-      v-for="(tool, i) in filtered"
-      :key="tool.id"
-      type="button"
-      role="option"
-      :data-tool-idx="i"
-      :aria-selected="activeIndex === i"
-      :title="tool.desc"
-      class="flex flex-col items-center gap-1.5 rounded-xl border px-1.5 py-2.5 transition-colors"
+    <TransitionGroup
+      tag="div"
+      name="tool-grid"
+      role="listbox"
+      class="grid gap-2"
       :class="[
-        activeIndex === i
-          ? 'border-blue-400 bg-blue-50 shadow-sm shadow-blue-500/10'
-          : 'border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50',
-        !tool.path ? 'cursor-default opacity-60' : ''
+        iconGridClass,
+        reorderEnabled ? 'tool-grid--sortable' : '',
+        isDragging ? 'tool-grid--dragging' : ''
       ]"
+    >
+    <div
+      v-for="(tool, i) in renderItems"
+      :key="tool.id"
+      role="option"
+      :data-sort-id="tool.id"
+      :data-sort-idx="i"
+      :aria-selected="activeIndex === i"
+      :tabindex="tool.path ? 0 : -1"
+      :title="reorderEnabled ? `${tool.name} — 长按拖动排序` : tool.desc"
+      class="tool-grid-item flex flex-col items-center gap-1.5 rounded-2xl border px-1.5 py-2.5 transition-[transform,opacity,box-shadow,border-color,background-color] outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
+      :class="itemButtonClass(tool, i)"
+      @pointerdown="onItemPointerDown($event, i, tool)"
       @click="pick(tool)"
+      @keydown.enter.prevent="pick(tool)"
+      @keydown.space.prevent="pick(tool)"
     >
       <div
         class="flex h-10 w-10 items-center justify-center rounded-xl"
@@ -159,13 +170,15 @@ async function pick(tool: SiteTool) {
       <span class="w-full truncate text-center text-xs font-medium leading-tight text-slate-800">
         {{ tool.name }}
       </span>
-    </button>
+    </div>
     <p
-      v-if="!filtered.length"
+      v-if="!renderItems.length"
+      key="__empty"
       class="col-span-full py-10 text-center text-xs text-slate-500"
     >
       没有匹配的工具
     </p>
+    </TransitionGroup>
   </div>
 
   <!-- 网站：卡片网格 -->
@@ -179,13 +192,13 @@ async function pick(tool: SiteTool) {
         :class="
           variant === 'compact'
             ? [
-                'flex items-center gap-2 rounded-lg border border-slate-200/90 bg-white px-2 py-1.5 hover:border-blue-200 hover:bg-blue-50/40',
-                !tool.path ? 'cursor-default opacity-75' : ''
-              ]
+              'flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-2 py-1.5 hover:border-indigo-200 hover:bg-indigo-50/40',
+              !tool.path ? 'cursor-default opacity-75' : ''
+            ]
             : [
-                'flex flex-col items-start gap-2.5 rounded-xl border border-slate-200/90 bg-white p-3.5 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:gap-3 sm:p-4',
-                !tool.path ? 'cursor-default opacity-75' : ''
-              ]
+              'flex flex-col items-start gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3.5 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md sm:gap-3 sm:p-4',
+              !tool.path ? 'cursor-default opacity-75' : ''
+            ]
         "
         @click="pick(tool)"
       >
@@ -226,4 +239,55 @@ async function pick(tool: SiteTool) {
       没有匹配的工具
     </p>
   </template>
+
+  <Teleport to="body">
+    <div
+      v-if="ghostBox && dragItem"
+      class="tool-grid-ghost flex flex-col items-center gap-1.5 rounded-2xl border border-indigo-300 bg-white px-1.5 py-2.5 shadow-lg shadow-indigo-500/20"
+      :style="{
+        left: `${ghostBox.left}px`,
+        top: `${ghostBox.top}px`,
+        width: `${ghostBox.width}px`,
+        height: `${ghostBox.height}px`
+      }"
+    >
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-xl"
+        :class="dragItem.bgColor"
+      >
+        <van-icon :name="dragItem.icon" size="22" :class="dragItem.iconColor" />
+      </div>
+      <span class="w-full truncate text-center text-xs font-medium leading-tight text-slate-800">
+        {{ dragItem.name }}
+      </span>
+    </div>
+  </Teleport>
 </template>
+
+<style scoped>
+.tool-grid-move {
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.tool-grid--dragging .tool-grid-move {
+  transition-duration: 0.18s;
+}
+
+.tool-grid--sortable .tool-grid-item {
+  touch-action: none;
+  user-select: none;
+}
+</style>
+
+<style>
+body.nexus-sort-dragging {
+  user-select: none;
+}
+
+.tool-grid-ghost {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  transform: scale(1.04);
+}
+</style>

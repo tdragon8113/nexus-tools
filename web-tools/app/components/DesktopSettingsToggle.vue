@@ -32,7 +32,7 @@ const emit = defineEmits<{
         @change="emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
       />
       <span
-        class="absolute inset-0 rounded-full bg-slate-200/90 transition-colors duration-200 peer-checked:bg-blue-500 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500/25"
+        class="absolute inset-0 rounded-full bg-slate-200/90 transition-colors duration-200 peer-checked:bg-indigo-600 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500/25"
         aria-hidden="true"
       />
       <span

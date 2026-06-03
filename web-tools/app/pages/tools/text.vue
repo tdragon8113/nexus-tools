@@ -1,7 +1,7 @@
 <template>
   <div class="text-tool-page desktop-tool-page flex h-full min-h-0 flex-col">
     <div
-      class="relative z-30 mb-2 flex shrink-0 flex-col gap-2 overflow-visible rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
+      class="nexus-toolbar flex-col gap-2"
     >
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex flex-wrap items-center gap-0.5">

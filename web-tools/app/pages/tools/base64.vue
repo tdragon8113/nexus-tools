@@ -3,7 +3,7 @@
     <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
       <div class="space-y-4 pb-4">
       <section
-        class="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4 space-y-3"
+        class="nexus-upload-zone"
         aria-label="上传图片编码"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -14,7 +14,6 @@
               <input
                 v-model="imageOutputFormat"
                 type="radio"
-                class="text-green-600 focus:ring-green-500/40"
                 value="data-uri"
               >
               Data URI
@@ -23,7 +22,6 @@
               <input
                 v-model="imageOutputFormat"
                 type="radio"
-                class="text-green-600 focus:ring-green-500/40"
                 value="raw"
               >
               纯 Base64
@@ -42,7 +40,7 @@
         <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-green-500/30"
+            class="nexus-btn-secondary"
             :disabled="encodingImage"
             @click="pickImageFile"
           >
@@ -58,7 +56,7 @@
         <span class="sr-only">输入文本</span>
         <textarea
           v-model="input"
-          class="w-full min-h-[140px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 font-mono"
+          class="w-full min-h-[140px] px-3 py-2.5 text-sm font-mono text-slate-900"
           placeholder="文本或图片 Base64 / data:image/...;base64,…"
           spellcheck="false"
         />
@@ -66,24 +64,24 @@
 
       <section
         v-if="imagePreview"
-        class="shrink-0 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3"
+        class="nexus-callout space-y-3"
         aria-label="图片预览"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <p class="text-sm font-medium text-emerald-900">
+          <p class="text-sm font-medium text-indigo-950">
             已识别为图片
           </p>
-          <p class="text-xs text-emerald-800/80 font-mono">
+          <p class="text-xs text-indigo-900/70 font-mono">
             {{ imagePreview.mime }} · {{ formatBytes(imagePreview.byteLength) }}
           </p>
         </div>
 
         <div
-          class="base64-preview-frame rounded-lg border border-emerald-100 bg-white p-3 overflow-auto"
+          class="base64-preview-frame rounded-xl border border-indigo-100/80 bg-white p-3 overflow-auto"
         >
           <button
             type="button"
-            class="base64-preview-hitbox mx-auto block cursor-zoom-in rounded-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+            class="base64-preview-hitbox mx-auto block cursor-zoom-in rounded-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-indigo-500/50"
             :title="`查看大图：${imagePreview.fileName}`"
             @click="openImageLightbox"
           >
@@ -95,19 +93,19 @@
             >
           </button>
         </div>
-        <p class="text-xs text-emerald-800/70">点击查看大图 · 滚轮缩放 · 按住左键拖动</p>
+        <p class="text-xs text-indigo-900/60">点击查看大图 · 滚轮缩放 · 按住左键拖动</p>
 
         <div class="flex flex-wrap gap-2">
           <a
             :href="imagePreview.url"
             :download="imagePreview.fileName"
-            class="inline-flex rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50"
+            class="nexus-btn-secondary inline-flex"
           >
             下载图片
           </a>
           <button
             type="button"
-            class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            class="nexus-btn-secondary"
             @click="dismissImagePreview"
           >
             关闭预览
@@ -122,28 +120,28 @@
       <div class="flex flex-wrap gap-2">
         <button
           type="button"
-          class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-700 focus-visible:outline focus-visible:ring-2 focus-visible:ring-green-500/40"
+          class="nexus-btn-primary"
           @click="encode"
         >
           编码为 Base64
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-300"
+          class="nexus-btn-secondary"
           @click="decode"
         >
           从 Base64 解码文本
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           @click="clearAll"
         >
           清空
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           :disabled="!input"
           @click="copyInput"
         >
@@ -170,14 +168,14 @@
         />
         <button
           type="button"
-          class="absolute right-4 top-4 z-20 rounded-lg border border-white/20 bg-black/50 px-3 py-1.5 text-sm text-white hover:bg-black/70"
+          class="absolute right-4 top-4 z-20 rounded-xl border border-white/20 bg-black/50 px-3 py-1.5 text-sm text-white hover:bg-black/70"
           aria-label="关闭预览"
           @click="closeImageLightbox"
         >
           关闭
         </button>
         <p
-          class="absolute left-4 top-4 z-20 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-mono text-white/90 tabular-nums pointer-events-none"
+          class="absolute left-4 top-4 z-20 rounded-xl bg-black/50 px-2.5 py-1 text-xs font-mono text-white/90 tabular-nums pointer-events-none"
         >
           {{ Math.round(imageLightboxZoom * 100) }}%
         </p>
@@ -503,7 +501,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* button 默认行高会裁切块级图片；用块级布局保证预览按比例完整显示 */
 .base64-preview-frame {
   min-height: 8rem;
   max-height: min(70vh, 32rem);

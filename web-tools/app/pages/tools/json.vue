@@ -1,7 +1,7 @@
 <template>
   <div class="json-tool-page desktop-tool-page flex h-full min-h-0 flex-col">
     <div
-      class="relative z-30 mb-2 flex shrink-0 flex-wrap items-center gap-2 rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
+      class="nexus-toolbar"
     >
       <div class="flex flex-wrap items-center gap-0.5">
         <button
@@ -96,7 +96,7 @@
         <span class="shrink-0">缩进</span>
         <select
           v-model="indentMode"
-          class="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          class="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
         >
           <option value="2">2 空格</option>
           <option value="4">4 空格</option>
@@ -104,7 +104,7 @@
         </select>
       </label>
       <label class="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600">
-        <input v-model="sortKeys" type="checkbox" class="rounded border-slate-300 text-blue-600" />
+        <input v-model="sortKeys" type="checkbox" class="rounded border-slate-300 text-indigo-600" />
         键名排序
       </label>
 

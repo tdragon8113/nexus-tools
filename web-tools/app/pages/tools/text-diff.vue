@@ -1,14 +1,14 @@
 <template>
   <div class="text-diff-tool-page desktop-tool-page flex h-full min-h-0 flex-col">
     <div
-      class="relative z-30 mb-2 flex shrink-0 flex-col gap-2 overflow-visible rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
+      class="nexus-toolbar flex-col gap-2"
     >
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex shrink-0 flex-wrap items-center gap-1.5">
           <button
             v-if="!compareMode"
             type="button"
-            class="rounded-md border border-blue-600 bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40"
+            class="rounded-xl border border-indigo-600 bg-indigo-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-40"
             :disabled="!canStartCompare"
             @click="enterCompareWithSync"
           >
@@ -111,7 +111,7 @@
           <span class="shrink-0">语法</span>
           <select
             v-model="diffLanguage"
-            class="max-w-[7.5rem] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            class="max-w-[7.5rem] rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             :disabled="compareMode"
           >
             <option v-for="item in textDiffLanguages" :key="item.id" :value="item.id">
@@ -122,7 +122,7 @@
         </label>
 
         <label class="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600">
-          <input v-model="wordWrap" type="checkbox" class="rounded border-slate-300 text-blue-600" />
+          <input v-model="wordWrap" type="checkbox" class="rounded border-slate-300 text-indigo-600" />
           自动换行
         </label>
 
@@ -134,7 +134,7 @@
               <input
                 v-model="compareOptions.ignoreTrimWhitespace"
                 type="checkbox"
-                class="rounded border-slate-300 text-blue-600"
+                class="rounded border-slate-300 text-indigo-600"
               />
               忽略行尾空白
             </label>
@@ -142,7 +142,7 @@
               <input
                 v-model="compareOptions.ignoreWhitespace"
                 type="checkbox"
-                class="rounded border-slate-300 text-blue-600"
+                class="rounded border-slate-300 text-indigo-600"
               />
               忽略空白
             </label>
@@ -150,7 +150,7 @@
               <input
                 v-model="compareOptions.ignoreCase"
                 type="checkbox"
-                class="rounded border-slate-300 text-blue-600"
+                class="rounded border-slate-300 text-indigo-600"
               />
               忽略大小写
             </label>
@@ -158,7 +158,7 @@
               <input
                 v-model="compareOptions.ignoreEmptyLines"
                 type="checkbox"
-                class="rounded border-slate-300 text-blue-600"
+                class="rounded border-slate-300 text-indigo-600"
               />
               忽略空行
             </label>

@@ -2,7 +2,7 @@
 const { pinned, togglePin, closeDesktop, hasElectronBridge } = useDesktop()
 
 const chromeBtn =
-  'desktop-chrome-btn flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-200/80'
+  'desktop-chrome-btn flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-indigo-50 hover:text-indigo-700'
 
 async function onPinDown() {
   await togglePin()
@@ -13,7 +13,7 @@ async function onPinDown() {
   <template v-if="hasElectronBridge">
     <button
       type="button"
-      :class="[chromeBtn, pinned && '!text-blue-600 hover:!bg-blue-50']"
+      :class="[chromeBtn, pinned && '!text-indigo-600 hover:!bg-indigo-50']"
       style="-webkit-app-region: no-drag"
       :aria-label="pinned ? '取消固定' : '固定窗口'"
       :aria-pressed="pinned"

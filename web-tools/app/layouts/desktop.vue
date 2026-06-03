@@ -97,25 +97,21 @@ onUnmounted(() => {
     <div
       v-if="isSearchScreen"
       ref="searchShellRef"
-      class="nexus-desktop-search flex w-full shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-900/10"
+      class="nexus-desktop-search nexus-shell flex w-full shrink-0 flex-col"
     >
-      <div
-        class="flex h-9 shrink-0 items-center gap-1.5 border-b border-slate-200/90 bg-slate-50/95 px-2.5"
-        style="-webkit-app-region: drag"
-      >
+      <div class="nexus-shell-header">
         <button
           type="button"
-          class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
-          style="-webkit-app-region: no-drag"
+          class="nexus-chrome-link"
           @mousedown.prevent="goHub"
         >
           工具集
         </button>
-        <span class="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">搜索</span>
+        <span class="nexus-shell-drag-region min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">搜索</span>
         <DesktopHeaderSettingsButton />
         <DesktopWindowChrome />
       </div>
-      <div class="shrink-0" style="-webkit-app-region: no-drag">
+      <div class="shrink-0">
         <slot />
       </div>
     </div>
@@ -123,17 +119,13 @@ onUnmounted(() => {
     <!-- 工具集 / 工具：固定面板高度 -->
     <div
       v-else
-      class="nexus-desktop-panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-900/10"
+      class="nexus-desktop-panel nexus-shell flex min-h-0 flex-1 flex-col"
     >
-      <header
-        class="flex h-9 shrink-0 items-center gap-1.5 border-b border-slate-200/90 bg-slate-50/95 px-2.5"
-        style="-webkit-app-region: drag"
-      >
+      <header class="nexus-shell-header">
         <button
           v-if="isSettingsScreen"
           type="button"
-          class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
-          style="-webkit-app-region: no-drag"
+          class="nexus-chrome-link"
           @click="leaveSettings"
         >
           返回
@@ -141,8 +133,7 @@ onUnmounted(() => {
         <template v-else>
           <button
             type="button"
-            class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
-            style="-webkit-app-region: no-drag"
+            class="nexus-chrome-link"
             @click="goSearch()"
           >
             搜索
@@ -150,14 +141,13 @@ onUnmounted(() => {
           <button
             v-if="!isHubScreen"
             type="button"
-            class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/80"
-            style="-webkit-app-region: no-drag"
+            class="nexus-chrome-link"
             @click="goHub"
           >
             工具集
           </button>
         </template>
-        <span class="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">
+        <span class="nexus-shell-drag-region min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">
           {{ barTitle }}
         </span>
         <DesktopHeaderSettingsButton v-if="!isSettingsScreen" />
@@ -198,7 +188,7 @@ html[data-nexus-desktop='1']
 }
 
 html[data-nexus-desktop='1'] .nexus-desktop-panel__body {
-  background: rgb(248 250 252 / 0.6);
+  background: rgb(241 245 249 / 0.8);
 }
 
 html[data-nexus-desktop='1'] .nexus-desktop-panel__body .py-8,

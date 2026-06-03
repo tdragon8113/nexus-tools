@@ -185,6 +185,27 @@ export const siteTools: SiteTool[] = [
     keywords: ['js', 'javascript', '运行', '执行', 'playground', 'repl', '脚本', 'snippet', '代码运行', 'node']
   },
   {
+    id: 'totp',
+    name: '2FA / TOTP',
+    desc: '双因素验证码',
+    icon: 'certificate',
+    bgColor: 'bg-indigo-100',
+    iconColor: 'text-indigo-600',
+    path: '/tools/totp',
+    keywords: [
+      '2fa',
+      'totp',
+      'otp',
+      'otpauth',
+      '双因素',
+      '两步验证',
+      '验证码',
+      'authenticator',
+      'google authenticator',
+      'mfa'
+    ]
+  },
+  {
     id: 'more',
     name: '更多工具',
     desc: '敬请期待',

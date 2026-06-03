@@ -3,16 +3,16 @@
 <div class="flex gap-2 mb-6 border-b border-slate-200 pb-1">
       <button
         type="button"
-        class="px-3 py-1.5 text-sm rounded-lg transition-colors"
-        :class="tab === 'gen' ? 'bg-purple-100 text-purple-900 font-medium' : 'text-slate-600 hover:bg-slate-100'"
+        class="nexus-tab"
+        :class="tab === 'gen' ? 'nexus-tab--active' : 'nexus-tab--idle'"
         @click="tab = 'gen'"
       >
         生成
       </button>
       <button
         type="button"
-        class="px-3 py-1.5 text-sm rounded-lg transition-colors"
-        :class="tab === 'scan' ? 'bg-purple-100 text-purple-900 font-medium' : 'text-slate-600 hover:bg-slate-100'"
+        class="nexus-tab"
+        :class="tab === 'scan' ? 'nexus-tab--active' : 'nexus-tab--idle'"
         @click="tab = 'scan'"
       >
         解码
@@ -24,7 +24,7 @@
         <span class="block text-xs font-medium text-slate-600 mb-1">内容</span>
         <textarea
           v-model="genText"
-          class="w-full min-h-[100px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+          class="w-full min-h-[100px] px-3 py-2 text-sm"
           placeholder="网址或任意文本…"
         />
       </label>
@@ -37,19 +37,19 @@
             min="64"
             max="1024"
             step="32"
-            class="w-24 rounded-lg border border-slate-200 px-2 py-1 text-sm"
+            class="w-24 px-2 py-1 text-sm"
           >
         </label>
         <button
           type="button"
-          class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
+          class="nexus-btn-primary"
           @click="makeQr"
         >
           生成
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-800 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           :disabled="!dataUrl"
           @click="downloadPng"
         >
@@ -57,7 +57,7 @@
         </button>
       </div>
       <p v-if="genError" class="text-sm text-red-600">{{ genError }}</p>
-      <div v-if="dataUrl" class="rounded-xl border border-slate-200 bg-white p-4 inline-block">
+      <div v-if="dataUrl" class="nexus-card inline-block p-4">
         <img :src="dataUrl" alt="二维码" class="max-w-full h-auto">
       </div>
     </div>
@@ -74,13 +74,13 @@
         >
       </label>
       <p v-if="scanError" class="text-sm text-red-600">{{ scanError }}</p>
-      <p v-if="scanResult" class="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900 font-mono break-all">
+      <p v-if="scanResult" class="nexus-callout text-sm font-mono break-all text-indigo-950">
         {{ scanResult }}
       </p>
       <button
         v-if="scanResult"
         type="button"
-        class="rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
+        class="nexus-btn-secondary"
         @click="copyWithToast(scanResult)"
       >
         复制结果

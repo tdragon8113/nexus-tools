@@ -1,14 +1,14 @@
 <template>
   <div class="desktop-tool-page flex h-full min-h-0 flex-col">
 <section
-      class="mb-6 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700 space-y-2"
+      class="mb-6 nexus-info-panel space-y-2 text-sm text-slate-700"
       aria-label="当前时间"
     >
       <div class="flex flex-wrap items-center justify-between gap-2">
         <span class="font-medium text-slate-800">当前时间</span>
         <button
           type="button"
-          class="text-xs text-orange-700 hover:underline"
+          class="nexus-text-link text-xs"
           @click="refreshNow"
         >
           刷新
@@ -19,7 +19,7 @@
           <span class="text-slate-500">毫秒</span>
           <div class="flex items-center gap-2 mt-0.5">
             <span class="tabular-nums">{{ nowMs }}</span>
-            <button type="button" class="text-orange-600 text-[11px] hover:underline" @click="copyWithToast(String(nowMs))">
+            <button type="button" class="nexus-text-link text-[11px]" @click="copyWithToast(String(nowMs))">
               复制
             </button>
           </div>
@@ -28,7 +28,7 @@
           <span class="text-slate-500">秒</span>
           <div class="flex items-center gap-2 mt-0.5">
             <span class="tabular-nums">{{ nowSec }}</span>
-            <button type="button" class="text-orange-600 text-[11px] hover:underline" @click="copyWithToast(String(nowSec))">
+            <button type="button" class="nexus-text-link text-[11px]" @click="copyWithToast(String(nowSec))">
               复制
             </button>
           </div>
@@ -41,7 +41,7 @@
         <span class="block text-xs font-medium text-slate-600 mb-1">时间戳、ISO 日期或粘贴识别</span>
         <textarea
           v-model="input"
-          class="w-full min-h-[100px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono"
+          class="w-full min-h-[100px] px-3 py-2.5 text-sm font-mono text-slate-900"
           placeholder="例如 1717000000、1717000000000 或 2024-05-15T12:00:00…"
           spellcheck="false"
         />
@@ -53,7 +53,7 @@
 
       <div
         v-else-if="formatted"
-        class="rounded-xl border border-slate-200 bg-white p-4 text-sm space-y-2"
+        class="nexus-info-panel text-sm space-y-2"
       >
         <div class="grid gap-2 sm:grid-cols-2">
           <div>
@@ -75,7 +75,7 @@
         </div>
         <button
           type="button"
-          class="mt-2 rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+          class="mt-2 nexus-btn-secondary px-3 py-1.5 text-xs"
           @click="copyWithToast(String(formatted.ms))"
         >
           复制毫秒时间戳
@@ -85,19 +85,19 @@
       <div class="flex flex-wrap gap-2">
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           @click="useNowMs"
         >
           填入当前毫秒
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           @click="useNowSec"
         >
           填入当前秒
         </button>
-        <button type="button" class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" @click="input = ''">
+        <button type="button" class="nexus-btn-secondary" @click="input = ''">
           清空
         </button>
       </div>

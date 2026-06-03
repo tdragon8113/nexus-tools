@@ -9,7 +9,7 @@
             type="number"
             min="4"
             max="256"
-            class="w-24 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            class="w-24 px-3 py-2 text-sm"
           >
         </label>
         <div class="flex flex-wrap gap-4 text-sm">
@@ -41,7 +41,7 @@
         <input
           v-model="symbolSet"
           type="text"
-          class="w-full max-w-xl rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono"
+          class="w-full max-w-xl px-3 py-2 text-sm font-mono"
           placeholder="!@#$..."
           spellcheck="false"
           autocomplete="off"
@@ -51,14 +51,14 @@
       <div class="flex flex-wrap gap-2">
         <button
           type="button"
-          class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-emerald-700"
+          class="nexus-btn-primary"
           @click="regenerate"
         >
           生成
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           :disabled="!password"
           @click="copyWithToast(password)"
         >
@@ -70,7 +70,7 @@
 
       <div
         v-if="password"
-        class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm break-all text-slate-900 select-all"
+        class="nexus-info-panel font-mono text-sm break-all text-slate-900 select-all"
         role="status"
       >
         {{ password }}

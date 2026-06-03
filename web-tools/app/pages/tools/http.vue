@@ -9,14 +9,14 @@
         <div class="flex gap-2">
           <select
             v-model="method"
-            class="rounded-lg border border-slate-200 px-2 py-2 text-sm bg-white"
+            class="rounded-xl px-2 py-2 text-sm bg-white"
           >
             <option v-for="m in methods" :key="m" :value="m">{{ m }}</option>
           </select>
           <input
             v-model="url"
             type="url"
-            class="flex-1 min-w-0 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            class="flex-1 min-w-0 px-3 py-2 text-sm"
             placeholder="https://api.github.com/"
           >
         </div>
@@ -24,7 +24,7 @@
           <span class="block text-xs font-medium text-slate-600 mb-1">请求头（每行 Key: Value）</span>
           <textarea
             v-model="headersRaw"
-            class="w-full min-h-[100px] rounded-lg border border-slate-200 px-3 py-2 text-xs font-mono"
+            class="w-full min-h-[100px] px-3 py-2 text-xs font-mono"
             placeholder="Accept: application/json"
           />
         </label>
@@ -32,13 +32,13 @@
           <span class="block text-xs font-medium text-slate-600 mb-1">Body</span>
           <textarea
             v-model="body"
-            class="w-full min-h-[120px] rounded-lg border border-slate-200 px-3 py-2 text-xs font-mono"
+            class="w-full min-h-[120px] px-3 py-2 text-xs font-mono"
             placeholder='{"hello":"world"}'
           />
         </label>
         <button
           type="button"
-          class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          class="nexus-btn-primary disabled:opacity-50"
           :disabled="loading"
           @click="send"
         >
@@ -47,7 +47,7 @@
         <p v-if="err" class="text-sm text-red-600">{{ err }}</p>
       </div>
 
-      <div class="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm min-h-[200px]">
+      <div class="nexus-info-panel text-sm min-h-[200px]">
         <template v-if="statusLine">
           <p class="font-mono text-slate-900 mb-2">{{ statusLine }}</p>
           <pre class="text-xs whitespace-pre-wrap break-all text-slate-700 mb-3 max-h-40 overflow-auto border border-slate-100 bg-white rounded p-2">{{ respHeaders }}</pre>
@@ -55,7 +55,7 @@
           <button
             v-if="respBody"
             type="button"
-            class="mt-3 rounded-lg border border-slate-200 px-3 py-1.5 text-xs hover:bg-white"
+            class="mt-3 nexus-btn-secondary px-3 py-1.5 text-xs"
             @click="copyWithToast(respBody)"
           >
             复制正文

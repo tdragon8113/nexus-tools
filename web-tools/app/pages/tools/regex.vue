@@ -7,7 +7,7 @@
           <input
             v-model="pattern"
             type="text"
-            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono"
+            class="w-full px-3 py-2 text-sm font-mono"
             placeholder="例如 \\d+"
           >
         </label>
@@ -26,24 +26,24 @@
         <span class="block text-xs font-medium text-slate-600 mb-1">待测文本</span>
         <textarea
           v-model="haystack"
-          class="w-full min-h-[140px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono shadow-sm"
+          class="w-full min-h-[140px] px-3 py-2 text-sm font-mono"
           placeholder="在此粘贴文本…"
         />
       </label>
 
       <p v-if="reError" class="text-sm text-red-600">{{ reError }}</p>
 
-      <div v-if="matches.length" class="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm">
+      <div v-if="matches.length" class="nexus-info-panel text-sm">
         <p class="font-medium text-slate-800 mb-2">匹配 {{ matches.length }} 处</p>
         <ul class="space-y-2 max-h-80 overflow-auto">
           <li
             v-for="(m, i) in matches"
             :key="i"
-            class="rounded-lg bg-white border border-slate-100 px-3 py-2 font-mono text-xs break-all"
+            class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 font-mono text-xs break-all"
           >
             <div class="text-slate-500 mb-1">{{ m.index }}–{{ m.index + m[0].length }}</div>
             <div>{{ m[0] }}</div>
-            <ul v-if="m.groups && Object.keys(m.groups).length" class="mt-1 text-emerald-800">
+            <ul v-if="m.groups && Object.keys(m.groups).length" class="mt-1 text-indigo-800">
               <li v-for="(v, k) in m.groups" :key="k">{{ k }}: {{ v }}</li>
             </ul>
           </li>

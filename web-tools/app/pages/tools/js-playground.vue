@@ -1,11 +1,11 @@
 <template>
   <div class="js-playground-page desktop-tool-page flex h-full min-h-0 flex-col">
     <div
-      class="relative z-30 mb-2 flex shrink-0 flex-wrap items-center gap-2 overflow-visible rounded-xl border border-slate-200/85 bg-slate-50/90 px-2 py-1.5 shadow-sm"
+      class="nexus-toolbar"
     >
       <button
         type="button"
-        class="inline-flex items-center gap-1.5 rounded-md border border-emerald-600 bg-emerald-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-emerald-700 disabled:opacity-40"
+        class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-600 bg-indigo-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-40"
         :disabled="running || !code.trim()"
         @click="runCode"
       >
@@ -77,7 +77,7 @@
       <label class="flex items-center gap-1.5 text-xs text-slate-600">
         <span class="shrink-0">示例</span>
         <select
-          class="max-w-[8.5rem] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          class="max-w-[8.5rem] rounded-xl border border-slate-200/80 bg-white px-2 py-1 text-xs text-slate-800 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           @change="onSnippetChange"
         >
           <option value="">插入示例…</option>
@@ -88,7 +88,7 @@
       </label>
 
       <label class="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600">
-        <input v-model="wordWrap" type="checkbox" class="rounded border-slate-300 text-emerald-600" />
+        <input v-model="wordWrap" type="checkbox" class="rounded border-slate-300 text-indigo-600" />
         自动换行
       </label>
 
@@ -131,7 +131,7 @@
           <span
             v-if="lastResult"
             class="text-xs tabular-nums"
-            :class="lastResult.ok ? 'text-emerald-600' : 'text-red-600'"
+            :class="lastResult.ok ? 'text-indigo-600' : 'text-red-600'"
           >
             {{ lastResult.ok ? '成功' : '失败' }} · {{ lastResult.durationMs.toFixed(1) }} ms
           </span>

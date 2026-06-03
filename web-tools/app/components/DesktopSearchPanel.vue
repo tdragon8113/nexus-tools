@@ -32,7 +32,7 @@ function onSearchFocus(event: FocusEvent) {
 <template>
   <div ref="rootRef" class="px-3.5 pb-2.5 pt-3.5">
     <div
-      class="desktop-search-bar flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20"
+      class="desktop-search-bar flex items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/20"
       style="-webkit-app-region: no-drag"
     >
       <van-icon name="search" class="pointer-events-none shrink-0 text-slate-400" size="18" />
@@ -80,7 +80,7 @@ function onSearchFocus(event: FocusEvent) {
       </button>
     </div>
 
-    <p v-if="hint" class="mt-2 text-xs text-blue-600">
+    <p v-if="hint" class="mt-2 text-xs text-indigo-600">
       识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>，回车打开
     </p>
     <p v-else-if="showEmpty" class="mt-2 text-xs text-slate-400">无匹配，可打开工具集</p>

@@ -154,5 +154,3 @@ export function useJsPlayground() {
     copyOutput
   }
 }
-
-export type { JsPlaygroundLogEntry, JsPlaygroundRunResult }

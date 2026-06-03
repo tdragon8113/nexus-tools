@@ -11,6 +11,7 @@ export type ContentHintKind =
   | 'hash'
   | 'calculator'
   | 'text'
+  | 'totp'
 
 export interface ContentHint {
   kind: ContentHintKind
@@ -339,6 +340,10 @@ export function detectContentHint(raw: string): ContentHint | null {
 
   const firstLine = unquoted.split(/\r?\n/)[0]?.trim() ?? unquoted
   const firstToken = firstLine.split(/\s+/)[0] ?? firstLine
+
+  if (/^otpauth:\/\/totp\//i.test(firstToken)) {
+    return { kind: 'totp', toolId: 'totp', label: '2FA / TOTP' }
+  }
 
   if (/^https?:\/\//i.test(firstToken) || /^[a-z][a-z0-9+.-]*:\/\//i.test(firstToken)) {
     try {

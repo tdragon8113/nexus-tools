@@ -28,11 +28,11 @@ function setActive(i: number) {
       type="button"
       role="option"
       :aria-selected="i === props.activeIndex"
-      class="flex w-[5.25rem] shrink-0 flex-col items-center gap-1.5 rounded-xl border px-2 py-2.5 transition-colors"
+      class="flex w-[5.25rem] shrink-0 flex-col items-center gap-1.5 rounded-2xl border px-2 py-2.5 transition-colors"
       :class="
         i === props.activeIndex
-          ? 'border-blue-400 bg-blue-50 shadow-sm shadow-blue-500/10'
-          : 'border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50'
+          ? 'border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-500/10'
+          : 'border-slate-200/80 bg-white hover:border-indigo-200 hover:bg-indigo-50/40'
       "
       @mouseenter="setActive(i)"
       @mousedown.prevent="emit('pick', tool)"

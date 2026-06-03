@@ -21,7 +21,7 @@
       </button>
     </div>
 
-    <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       <ul
         v-if="entries.length > 0"
         role="list"

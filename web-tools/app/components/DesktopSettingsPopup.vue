@@ -94,7 +94,7 @@ onUnmounted(() => {
           <button
             type="button"
             role="option"
-            class="flex w-full items-center justify-center px-2 py-1.5 text-center text-[13px] transition-colors hover:bg-blue-500 hover:text-white"
+            class="flex w-full items-center justify-center px-2 py-1.5 text-center text-[13px] transition-colors hover:bg-indigo-600 hover:text-white"
             :class="modelValue === opt.value ? 'font-medium text-slate-900' : 'text-slate-700'"
             :aria-selected="modelValue === opt.value"
             :title="opt.hint"

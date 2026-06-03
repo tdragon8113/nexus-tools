@@ -18,7 +18,7 @@
       :open="defaultOpen"
     >
       <summary
-        class="cursor-pointer list-none text-slate-600 hover:text-blue-600 select-none [&::-webkit-details-marker]:hidden inline-flex items-center gap-1"
+        class="cursor-pointer list-none text-slate-600 hover:text-indigo-600 select-none [&::-webkit-details-marker]:hidden inline-flex items-center gap-1"
       >
         <span class="text-slate-400 group-open:rotate-90 transition-transform inline-block w-3">▸</span>
         <span>[ {{ (data as unknown[]).length }} ]</span>
@@ -39,14 +39,14 @@
       :open="defaultOpen"
     >
       <summary
-        class="cursor-pointer list-none text-slate-600 hover:text-blue-600 select-none [&::-webkit-details-marker]:hidden inline-flex items-center gap-1"
+        class="cursor-pointer list-none text-slate-600 hover:text-indigo-600 select-none [&::-webkit-details-marker]:hidden inline-flex items-center gap-1"
       >
         <span class="text-slate-400 group-open:rotate-90 transition-transform inline-block w-3">▸</span>
         <span>{ {{ keys.length }} keys }</span>
       </summary>
       <ul class="mt-1 ml-4 pl-2 border-l border-slate-200 space-y-1 list-none">
         <li v-for="k in keys" :key="k" class="flex gap-2 flex-wrap">
-          <span class="text-blue-700 font-medium shrink-0">"{{ k }}"</span>
+          <span class="text-indigo-700 font-medium shrink-0">"{{ k }}"</span>
           <span class="text-slate-500">:</span>
           <div class="min-w-0 flex-1">
             <JsonTreeView :data="(data as Record<string, unknown>)[k]" :depth="depth + 1" />

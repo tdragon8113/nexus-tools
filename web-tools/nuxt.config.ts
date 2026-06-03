@@ -13,6 +13,7 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       Inter: [400, 500, 600, 700],
+      'Noto Sans SC': [400, 500, 600, 700],
       'Noto Serif SC': [400, 600, 700],
       'JetBrains Mono': [400, 500, 600]
     },
@@ -68,7 +69,8 @@ export default defineNuxtConfig({
         '/tools/code',
         '/tools/text',
         '/tools/text-diff',
-        '/tools/js-playground'
+        '/tools/js-playground',
+        '/tools/totp'
       ]
     },
     compressPublicAssets: true

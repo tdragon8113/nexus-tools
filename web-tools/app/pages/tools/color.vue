@@ -13,7 +13,7 @@
             <input
               v-model="hexInput"
               type="text"
-              class="flex-1 min-w-[8rem] rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono uppercase"
+              class="flex-1 min-w-[8rem] px-3 py-2 text-sm font-mono uppercase"
               placeholder="#RRGGBB"
               @blur="syncFromHex"
             >
@@ -25,7 +25,7 @@
           <input
             v-model="rgbText"
             type="text"
-            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono"
+            class="w-full px-3 py-2 text-sm font-mono"
             placeholder="rgb(255, 0, 128)"
             @blur="syncFromRgbText"
           >
@@ -35,7 +35,7 @@
           <input
             v-model="hslText"
             type="text"
-            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono"
+            class="w-full px-3 py-2 text-sm font-mono"
             placeholder="hsl(330, 100%, 50%)"
             @blur="syncFromHslText"
           >
@@ -44,21 +44,21 @@
         <div class="flex flex-wrap gap-2">
           <button
             type="button"
-            class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
+            class="nexus-btn-secondary px-3 py-1.5 text-sm"
             @click="copyWithToast(rgbDerived, '已复制 RGB')"
           >
             复制 RGB
           </button>
           <button
             type="button"
-            class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
+            class="nexus-btn-secondary px-3 py-1.5 text-sm"
             @click="copyWithToast(hslDerived, '已复制 HSL')"
           >
             复制 HSL
           </button>
           <button
             type="button"
-            class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
+            class="nexus-btn-secondary px-3 py-1.5 text-sm"
             @click="copyWithToast(hexNorm, '已复制 HEX')"
           >
             复制 HEX

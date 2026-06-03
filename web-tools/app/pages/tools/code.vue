@@ -3,13 +3,13 @@
 <div class="flex flex-wrap gap-3 items-center mb-4">
       <label class="text-sm text-slate-600">
         语言
-        <select v-model="lang" class="ml-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm">
+        <select v-model="lang" class="ml-2 px-2 py-1.5 text-sm bg-white">
           <option v-for="l in langs" :key="l.id" :value="l.id">{{ l.label }}</option>
         </select>
       </label>
       <button
         type="button"
-        class="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+        class="nexus-btn-primary disabled:opacity-50"
         :disabled="formatting"
         @click="runFormat"
       >
@@ -17,7 +17,7 @@
       </button>
       <button
         type="button"
-        class="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+        class="nexus-btn-secondary"
         :disabled="!output"
         @click="copyWithToast(output)"
       >
@@ -30,13 +30,13 @@
         <span class="block text-xs font-medium text-slate-600 mb-1">输入</span>
         <textarea
           v-model="input"
-          class="w-full min-h-[280px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-mono shadow-sm"
+          class="w-full min-h-[280px] px-3 py-2 text-xs font-mono"
         />
       </label>
       <div>
         <span class="block text-xs font-medium text-slate-600 mb-1">输出</span>
         <pre
-          class="w-full min-h-[280px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono whitespace-pre-wrap break-all overflow-auto"
+          class="w-full min-h-[280px] nexus-card bg-slate-50 px-3 py-2 text-xs font-mono whitespace-pre-wrap break-all overflow-auto"
         >{{ output || '—' }}</pre>
       </div>
     </div>

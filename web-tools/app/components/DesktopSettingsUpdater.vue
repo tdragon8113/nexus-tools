@@ -18,7 +18,7 @@ const {
 const actionBtn =
   'inline-flex h-7 shrink-0 items-center justify-center rounded-[6px] border px-2.5 text-[12px] font-medium leading-none transition-colors disabled:pointer-events-none disabled:opacity-45'
 const actionBtnDefault = `${actionBtn} border-slate-200/90 bg-white text-slate-700 shadow-sm hover:bg-slate-50`
-const actionBtnPrimary = `${actionBtn} border-blue-200/90 bg-blue-50 text-blue-800 hover:bg-blue-100`
+const actionBtnPrimary = `${actionBtn} border-indigo-200/90 bg-indigo-50 text-indigo-800 hover:bg-indigo-100`
 const actionBtnSuccess = `${actionBtn} border-emerald-200/90 bg-emerald-50 text-emerald-800 hover:bg-emerald-100`
 
 const compactStatus = computed(() => {

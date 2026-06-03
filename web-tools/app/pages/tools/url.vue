@@ -5,7 +5,7 @@
         <span class="sr-only">文本</span>
         <textarea
           v-model="input"
-          class="w-full min-h-[140px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 font-mono"
+          class="w-full min-h-[140px] px-3 py-2.5 text-sm font-mono text-slate-900"
           placeholder="输入 URL、查询参数片段或任意需编码的文本…"
           spellcheck="false"
         />
@@ -18,24 +18,24 @@
       <div class="flex flex-wrap gap-2">
         <button
           type="button"
-          class="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-teal-700"
+          class="nexus-btn-primary"
           @click="encode"
         >
           编码（encodeURIComponent）
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50"
+          class="nexus-btn-secondary"
           @click="decode"
         >
           解码（decodeURIComponent）
         </button>
-        <button type="button" class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" @click="clear">
+        <button type="button" class="nexus-btn-secondary" @click="clear">
           清空
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           :disabled="!input"
           @click="copyWithToast(input)"
         >

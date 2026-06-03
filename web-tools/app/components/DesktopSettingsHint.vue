@@ -22,7 +22,7 @@ function hide() {
   >
     <button
       type="button"
-      class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-slate-300/90 bg-slate-100/90 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition-colors hover:border-blue-300/80 hover:bg-blue-50 hover:text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500/40"
+      class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-slate-300/90 bg-slate-100/90 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition-colors hover:border-indigo-300/80 hover:bg-indigo-50 hover:text-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-500/40"
       :aria-label="text"
       :aria-describedby="open ? 'settings-hint-popover' : undefined"
       @focus="show"

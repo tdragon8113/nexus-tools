@@ -4,13 +4,13 @@
       <div class="flex flex-wrap gap-3 items-center">
         <label class="text-sm text-slate-600">
           算法
-          <select v-model="algo" class="ml-2 rounded-lg border border-slate-200 px-2 py-1.5 text-sm bg-white">
+          <select v-model="algo" class="ml-2 px-2 py-1.5 text-sm bg-white">
             <option v-for="a in algos" :key="a" :value="a">{{ a }}</option>
           </select>
         </label>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
+          class="nexus-btn-secondary px-3 py-1.5 text-sm"
           :disabled="!out"
           @click="copyWithToast(out)"
         >
@@ -22,14 +22,14 @@
         <span class="block text-xs font-medium text-slate-600 mb-1">输入</span>
         <textarea
           v-model="text"
-          class="w-full min-h-[160px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono shadow-sm"
+          class="w-full min-h-[160px] px-3 py-2 text-sm font-mono"
           placeholder="任意文本…"
         />
       </label>
 
       <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
-      <div v-if="out" class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div v-if="out" class="nexus-info-panel">
         <p class="text-xs text-slate-500 mb-1">十六进制</p>
         <p class="font-mono text-sm break-all text-slate-900">{{ out }}</p>
       </div>

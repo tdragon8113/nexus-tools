@@ -3,28 +3,28 @@
 @tailwind utilities;
 
 :root {
-  /* 与初版站点一致的蓝紫主色 */
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
+  /* 与 2FA/TOTP 工具一致的 indigo 主色 */
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
   --accent-purple: #7c3aed;
-  --doc-bg: #f8fafc;
+  --doc-bg: #f1f5f9;
   --doc-surface: #ffffff;
   --doc-ink: #0f172a;
   --doc-muted: #64748b;
   --doc-faint: #94a3b8;
   --doc-border: #e2e8f0;
-  --doc-accent: #3b82f6;
-  --doc-accent-hover: #2563eb;
-  --doc-accent-muted: rgba(59, 130, 246, 0.12);
-  --doc-code-bg: #f1f5f9;
+  --doc-accent: #6366f1;
+  --doc-accent-hover: #4f46e5;
+  --doc-accent-muted: rgba(99, 102, 241, 0.12);
+  --doc-code-bg: #f8fafc;
   --font-display: 'Noto Serif SC', 'Songti SC', 'STSong', serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  /* 语义令牌：圆角、阴影、焦点环（与 Tailwind focus 环对齐） */
-  --radius-card: 0.75rem;
+  --radius-card: 1rem;
   --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.05);
-  --shadow-card-hover: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.06);
-  --ring-focus: rgb(59 130 246 / 0.45);
+  --shadow-card-hover: 0 4px 12px -2px rgb(99 102 241 / 0.12), 0 2px 4px -2px rgb(15 23 42 / 0.06);
+  --shadow-shell: 0 10px 40px -12px rgb(99 102 241 / 0.18), 0 4px 12px -4px rgb(15 23 42 / 0.08);
+  --ring-focus: rgb(99 102 241 / 0.45);
   --ring-focus-offset: #fff;
   --pb-safe: env(safe-area-inset-bottom, 0px);
 }
@@ -41,7 +41,7 @@
   --doc-faint: #64748b;
   --doc-border: #334155;
   --doc-code-bg: #0f172a;
-  --doc-accent-muted: rgba(59, 130, 246, 0.2);
+  --doc-accent-muted: rgba(99, 102, 241, 0.2);
   --ring-focus-offset: #0f172a;
   --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.35);
   --shadow-card-hover: 0 8px 16px -4px rgb(0 0 0 / 0.45);
@@ -85,7 +85,7 @@
 
 @layer components {
   .doc-surface {
-    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-sm;
   }
 
   .doc-prose-muted {
@@ -93,7 +93,93 @@
   }
 
   .doc-eyebrow {
-    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600/80;
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-600/80;
+  }
+
+  .nexus-shell {
+    @apply overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[var(--shadow-shell)];
+  }
+
+  .nexus-shell-header {
+    @apply flex h-9 shrink-0 items-center gap-1.5 border-b border-slate-200/80 bg-white/95 px-2.5 backdrop-blur-sm;
+  }
+
+  .nexus-chrome-link {
+    @apply shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700;
+  }
+
+  .nexus-page-canvas {
+    @apply bg-slate-100/80;
+    font-family: var(--font-sans);
+  }
+
+  .desktop-tool-page,
+  .desktop-hub-page,
+  .desktop-settings-page {
+    @apply nexus-page-canvas;
+  }
+
+  .nexus-toolbar {
+    @apply relative z-30 mb-2 flex shrink-0 flex-wrap items-center gap-2 overflow-visible rounded-2xl border border-slate-200/80 bg-white px-2 py-1.5 shadow-sm;
+  }
+
+  .nexus-input {
+    @apply rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-sm shadow-sm outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/20;
+  }
+
+  .nexus-btn-primary {
+    @apply rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-40;
+  }
+
+  .nexus-btn-secondary {
+    @apply rounded-xl border border-slate-200/80 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-40;
+  }
+
+  .nexus-card {
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-sm;
+  }
+
+  .nexus-info-panel {
+    @apply nexus-card p-4;
+  }
+
+  .nexus-upload-zone {
+    @apply nexus-card space-y-3 border-2 border-dashed border-slate-300 bg-slate-50/80 p-4;
+  }
+
+  .nexus-callout {
+    @apply rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4;
+  }
+
+  .nexus-text-link {
+    @apply text-indigo-600 hover:text-indigo-700 hover:underline;
+  }
+
+  .nexus-tab {
+    @apply rounded-xl px-3 py-1.5 text-sm transition-colors;
+  }
+
+  .nexus-tab--active {
+    @apply bg-indigo-50 font-medium text-indigo-900;
+  }
+
+  .nexus-tab--idle {
+    @apply text-slate-600 hover:bg-slate-100;
+  }
+
+  /* 桌面列表/网格项：默认箭头，排序模式再显示 grab（放在 components 层外见文件末尾） */
+
+  html[data-nexus-desktop='1'] .desktop-tool-page textarea,
+  html[data-nexus-desktop='1'] .desktop-tool-page select,
+  html[data-nexus-desktop='1'] .desktop-tool-page input[type='text'],
+  html[data-nexus-desktop='1'] .desktop-tool-page input[type='number'],
+  html[data-nexus-desktop='1'] .desktop-tool-page input[type='search'] {
+    @apply rounded-xl border border-slate-200/80 bg-slate-50 shadow-sm transition focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20;
+  }
+
+  html[data-nexus-desktop='1'] .desktop-tool-page input[type='checkbox'],
+  html[data-nexus-desktop='1'] .desktop-tool-page input[type='radio'] {
+    @apply text-indigo-600 focus:ring-indigo-500/40;
   }
 }
 
@@ -103,9 +189,9 @@
  * 与上方 .dark 中的 --doc-* 对齐，避免组件与页面背景脱节。
  */
 
-/* Electron 桌面壳：不透明白底，窗体尺寸与面板一致 */
+/* Electron 桌面壳：与工具页一致的浅灰底 */
 body.nexus-desktop-body {
-  background: #ffffff !important;
+  background: rgb(241 245 249 / 0.95) !important;
 }
 
 html[data-nexus-desktop='1'],
@@ -195,4 +281,44 @@ html[data-nexus-desktop='1'] .desktop-search-input {
   overflow-x: auto;
   text-overflow: clip;
   white-space: nowrap;
+}
+
+/* Electron 无边框窗：默认 no-drag，仅标题条中间区域可拖窗口（避免内容区出现巴掌光标） */
+html[data-nexus-desktop='1'] body,
+html[data-nexus-desktop='1'] #__nuxt,
+html[data-nexus-desktop='1'] .nexus-desktop-root,
+html[data-nexus-desktop='1'] .nexus-desktop-panel,
+html[data-nexus-desktop='1'] .nexus-desktop-panel__body,
+html[data-nexus-desktop='1'] .nexus-desktop-panel__inner,
+html[data-nexus-desktop='1'] .nexus-desktop-panel__scroll,
+html[data-nexus-desktop='1'] .nexus-desktop-search,
+html[data-nexus-desktop='1'] .desktop-hub-page,
+html[data-nexus-desktop='1'] .desktop-tool-page,
+html[data-nexus-desktop='1'] .desktop-settings-page,
+html[data-nexus-desktop='1'] .nexus-shell-header,
+html[data-nexus-desktop='1'] .nexus-chrome-link {
+  -webkit-app-region: no-drag;
+}
+
+html[data-nexus-desktop='1'] .nexus-shell-drag-region {
+  -webkit-app-region: drag;
+}
+
+html[data-nexus-desktop='1'] [data-reorder='off'] .tool-grid-item,
+html[data-nexus-desktop='1'] [data-reorder='off'] .nexus-desktop-tile {
+  cursor: default !important;
+}
+
+html[data-nexus-desktop='1'] [data-reorder='on'] .tool-grid-item,
+html[data-nexus-desktop='1'] [data-reorder='on'] .nexus-desktop-tile {
+  cursor: grab !important;
+}
+
+body.nexus-sort-dragging [data-reorder='on'] .tool-grid-item,
+body.nexus-sort-dragging [data-reorder='on'] .nexus-desktop-tile {
+  cursor: grabbing !important;
+}
+
+body.nexus-sort-dragging {
+  user-select: none;
 }

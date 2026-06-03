@@ -6,7 +6,7 @@
           <span class="text-slate-500">数量</span>
           <select
             v-model.number="count"
-            class="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm"
+            class="px-2.5 py-1.5 text-sm bg-white"
           >
             <option v-for="n in 20" :key="n" :value="n">
               {{ n }}
@@ -15,14 +15,14 @@
         </label>
         <button
           type="button"
-          class="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-amber-700"
+          class="nexus-btn-primary"
           @click="generate"
         >
           生成
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-slate-50"
+          class="nexus-btn-secondary"
           :disabled="!lines.length"
           @click="copyAll"
         >
@@ -35,19 +35,19 @@
         <input
           v-model="checkInput"
           type="text"
-          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+          class="w-full px-3 py-2 text-sm font-mono"
           placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
           spellcheck="false"
           autocomplete="off"
         />
       </label>
-      <p v-if="checkMessage" class="text-sm" :class="checkOk ? 'text-emerald-700' : 'text-red-600'">
+      <p v-if="checkMessage" class="text-sm" :class="checkOk ? 'text-indigo-700' : 'text-red-600'">
         {{ checkMessage }}
       </p>
 
       <ul
         v-if="lines.length"
-        class="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100 text-sm font-mono"
+        class="nexus-card divide-y divide-slate-100 text-sm font-mono"
         role="list"
       >
         <li
@@ -58,7 +58,7 @@
           <span class="tabular-nums break-all text-slate-900">{{ line }}</span>
           <button
             type="button"
-            class="shrink-0 text-xs text-amber-700 hover:underline"
+            class="shrink-0 nexus-text-link text-xs"
             @click="copyWithToast(line)"
           >
             复制
