@@ -78,6 +78,7 @@ export interface NexusDesktopBridge {
     accountId: string,
     accelerator: string | null
   ): Promise<{ ok: boolean; error?: string }>
+  setTotpShortcutCapture?(active: boolean): Promise<boolean>
   requestTotpAccessibilityPermission?(): Promise<{
     trusted: boolean
     required: boolean

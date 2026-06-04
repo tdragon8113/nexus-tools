@@ -18,26 +18,49 @@ const emit = defineEmits<{
   saved: [accelerator: string | null]
 }>()
 
-const { setShortcut } = useTotpDesktopAutofill()
+const { setShortcut, setShortcutCaptureActive } = useTotpDesktopAutofill()
 const { trusted, required, refresh } = useTotpAccessibility()
 const { goSettings } = useDesktop()
 
 const capturing = ref(false)
-const draftAccelerator = ref('')
+const pendingAccelerator = ref('')
+const initialAccelerator = ref('')
+const sheetRef = ref<HTMLElement | null>(null)
+
+const hasPendingChanges = computed(
+  () => pendingAccelerator.value !== initialAccelerator.value
+)
 
 watch(
   () => props.open,
   (visible) => {
     if (!visible) {
+      void setShortcutCaptureActive(false)
       capturing.value = false
-      draftAccelerator.value = ''
+      pendingAccelerator.value = ''
+      initialAccelerator.value = ''
       return
     }
-    draftAccelerator.value = props.currentShortcut ?? ''
-    capturing.value = true
+    initialAccelerator.value = props.currentShortcut ?? ''
+    pendingAccelerator.value = initialAccelerator.value
+    capturing.value = false
     void refresh()
   }
 )
+
+watch(capturing, (active) => {
+  void setShortcutCaptureActive(active)
+})
+
+onBeforeUnmount(() => {
+  void setShortcutCaptureActive(false)
+})
+
+function startCapturing() {
+  if (capturing.value) return
+  capturing.value = true
+  nextTick(() => sheetRef.value?.focus())
+}
 
 async function openSettingsForAuth() {
   emit('close')
@@ -45,47 +68,50 @@ async function openSettingsForAuth() {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (!capturing.value) return
-  event.preventDefault()
-  event.stopPropagation()
-
   if (event.key === 'Escape') {
     emit('close')
     return
   }
 
+  if (!capturing.value) return
+  event.preventDefault()
+  event.stopPropagation()
+
   if (event.key === 'Backspace' && !event.metaKey && !event.ctrlKey && !event.altKey) {
-    void clearShortcut()
+    pendingAccelerator.value = ''
     return
   }
 
   const accelerator = keyboardEventToAccelerator(event)
   if (!accelerator) return
-  void saveShortcut(accelerator)
+  pendingAccelerator.value = accelerator
+  capturing.value = false
 }
 
-async function saveShortcut(accelerator: string) {
-  draftAccelerator.value = accelerator
+async function confirmSave() {
+  if (!hasPendingChanges.value) {
+    emit('close')
+    return
+  }
+
+  const accelerator = pendingAccelerator.value || null
   const result = await setShortcut(props.accountId, accelerator)
   if (!result.ok) {
     showToast(totpShortcutErrorMessage(result.error))
     return
   }
-  showToast(`已设置快捷键 ${formatAcceleratorLabel(accelerator)}`)
+  if (accelerator) {
+    showToast(`已设置快捷键 ${formatAcceleratorLabel(accelerator)}`)
+  } else {
+    showToast('已清除快捷键')
+  }
   emit('saved', accelerator)
   emit('close')
 }
 
-async function clearShortcut() {
-  const result = await setShortcut(props.accountId, null)
-  if (!result.ok) {
-    showToast(totpShortcutErrorMessage(result.error))
-    return
-  }
-  draftAccelerator.value = ''
-  showToast('已清除快捷键')
-  emit('saved', null)
-  emit('close')
+function clearPending() {
+  pendingAccelerator.value = ''
+  capturing.value = false
 }
 </script>
 
@@ -97,7 +123,8 @@ async function clearShortcut() {
       @mousedown.self="emit('close')"
     >
       <div
-        class="totp-shortcut-sheet w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
+        ref="sheetRef"
+        class="totp-shortcut-sheet w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl outline-none"
         tabindex="-1"
         @keydown="onKeydown"
       >
@@ -128,38 +155,50 @@ async function clearShortcut() {
         </div>
 
         <div
-          class="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/60 px-4 py-6 text-center"
-          :class="capturing ? 'ring-2 ring-indigo-500/20' : ''"
+          role="button"
+          tabindex="0"
+          class="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/60 px-4 py-6 text-center transition-colors"
+          :class="
+            capturing
+              ? 'cursor-default ring-2 ring-indigo-500/20'
+              : 'cursor-pointer hover:border-indigo-300 hover:bg-indigo-50'
+          "
+          @click="startCapturing"
+          @keydown.enter.prevent="startCapturing"
+          @keydown.space.prevent="startCapturing"
         >
-          <p class="text-xs text-slate-500">按下组合键</p>
+          <p class="text-xs text-slate-500">
+            {{ capturing ? '按下组合键' : '点击此处开始录制' }}
+          </p>
           <p class="mt-2 font-mono text-2xl font-semibold tracking-wide text-slate-900">
             {{
-              draftAccelerator
-                ? formatAcceleratorLabel(draftAccelerator)
-                : currentShortcut
-                  ? formatAcceleratorLabel(currentShortcut)
+              capturing
+                ? '…'
+                : pendingAccelerator
+                  ? formatAcceleratorLabel(pendingAccelerator)
                   : '未设置'
             }}
           </p>
           <p class="mt-3 text-xs leading-relaxed text-slate-500">
             在任意输入框聚焦时按下快捷键，会自动键入当前验证码（类似 Raycast）。
-            <span class="text-slate-400">Esc 取消 · Backspace 清除</span>
+            <span v-if="capturing" class="text-slate-400">Esc 取消 · Backspace 清除</span>
+            <span v-else-if="hasPendingChanges" class="text-slate-400">点击「完成」保存</span>
           </p>
         </div>
 
         <div class="mt-4 flex justify-end gap-2">
           <button
-            v-if="currentShortcut || draftAccelerator"
+            v-if="initialAccelerator || pendingAccelerator"
             type="button"
             class="rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
-            @click="clearShortcut"
+            @click="clearPending"
           >
             清除快捷键
           </button>
           <button
             type="button"
             class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-            @click="emit('close')"
+            @click="confirmSave"
           >
             完成
           </button>

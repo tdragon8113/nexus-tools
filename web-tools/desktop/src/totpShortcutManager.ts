@@ -32,6 +32,7 @@ export class TotpShortcutManager {
   private acceleratorToAccount = new Map<string, string>()
   private autofillInFlight = false
   private lastTriggerAt = 0
+  private captureSuspended = false
 
   constructor(
     private readonly deps: {
@@ -60,7 +61,20 @@ export class TotpShortcutManager {
     this.acceleratorToAccount.clear()
   }
 
+  setCaptureActive(active: boolean) {
+    if (active) {
+      if (this.captureSuspended) return
+      this.captureSuspended = true
+      this.unregisterAllTotpShortcuts()
+      return
+    }
+    if (!this.captureSuspended) return
+    this.captureSuspended = false
+    this.reload()
+  }
+
   reload() {
+    if (this.captureSuspended) return
     this.unregisterAllTotpShortcuts()
     const shortcuts = this.getShortcuts()
     for (const [accountId, accelerator] of Object.entries(shortcuts)) {

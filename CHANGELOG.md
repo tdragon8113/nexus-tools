@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.10] - 2026-06-04
+
+### 改进（web-tools 桌面端）
+
+- **2FA 快捷键设置**：点击区域开始录制；需点「完成」才保存；录制期间暂停全局快捷键，避免与组合键冲突
+
 ## [0.2.9] - 2026-06-04
 
 ### 新增（web-tools 桌面端）

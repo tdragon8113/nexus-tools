@@ -68,6 +68,15 @@ export function useTotpDesktopAutofill() {
     return setShortcut(accountId, null)
   }
 
+  async function setShortcutCaptureActive(active: boolean) {
+    if (!window.nexusDesktop?.setTotpShortcutCapture) return
+    try {
+      await window.nexusDesktop.setTotpShortcutCapture(active)
+    } catch (err) {
+      console.error('[Nexus Tools] 切换 TOTP 快捷键录制模式失败', err)
+    }
+  }
+
   function shortcutFor(accountId: string): string | undefined {
     return shortcuts.value[accountId]
   }
@@ -115,6 +124,7 @@ export function useTotpDesktopAutofill() {
     refreshShortcuts,
     setShortcut,
     clearShortcut,
+    setShortcutCaptureActive,
     shortcutFor,
     getAccessibilityStatus,
     requestAccessibilityPermission,

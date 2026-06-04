@@ -30,6 +30,7 @@ export const IPC = {
   totpSyncAccounts: 'desktop:totp-sync-accounts',
   totpGetShortcuts: 'desktop:totp-get-shortcuts',
   totpSetShortcut: 'desktop:totp-set-shortcut',
+  totpSetShortcutCapture: 'desktop:totp-set-shortcut-capture',
   totpOpenAccessibility: 'desktop:totp-open-accessibility',
   totpOpenAccessibilitySettings: 'desktop:totp-open-accessibility-settings',
   totpGetAccessibility: 'desktop:totp-get-accessibility'

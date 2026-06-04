@@ -176,6 +176,11 @@ app.whenReady().then(async () => {
           : null
     return totpShortcuts.setShortcut(accountId, next)
   })
+  ipcMain.handle(IPC.totpSetShortcutCapture, (_e, active: unknown) => {
+    if (typeof active !== 'boolean') return false
+    totpShortcuts?.setCaptureActive(active)
+    return true
+  })
   ipcMain.handle(IPC.totpOpenAccessibility, () => requestAccessibilityPermission())
   ipcMain.handle(IPC.totpOpenAccessibilitySettings, () => {
     openAccessibilitySettings()

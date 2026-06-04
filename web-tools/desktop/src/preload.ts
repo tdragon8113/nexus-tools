@@ -133,6 +133,9 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       error?: string
     }>
   },
+  setTotpShortcutCapture(active: boolean) {
+    return ipcRenderer.invoke(IPC.totpSetShortcutCapture, active) as Promise<boolean>
+  },
   requestTotpAccessibilityPermission() {
     return ipcRenderer.invoke(IPC.totpOpenAccessibility) as Promise<{
       trusted: boolean
