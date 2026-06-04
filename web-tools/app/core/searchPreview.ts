@@ -188,7 +188,7 @@ export function buildToolSearchPreview(
   if (!raw) {
     return {
       title: tool?.name ?? '预览',
-      emptyHint: '在 Query 中输入要处理的内容，或 Tab 切换到 Query 编辑'
+      emptyHint: '在 Query 中粘贴或输入内容，将自动匹配工具并预览'
     }
   }
 

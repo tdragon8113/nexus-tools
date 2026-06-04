@@ -2,13 +2,13 @@
   <div
     class="group json-cm-wrap relative flex min-h-0 min-w-0 flex-col overflow-hidden"
     :class="[
-      tone === 'output' ? 'bg-slate-50/50' : 'bg-[var(--doc-code-bg)]',
+      tone === 'output' ? 'bg-[var(--nexus-tool-muted-surface)]' : 'bg-[var(--doc-code-bg)]',
       fillHeight ? 'json-cm-wrap--fill h-full min-h-[20rem]' : 'h-full min-h-0 flex-1'
     ]"
   >
     <p
       v-if="placeholder && showPlaceholder"
-      class="json-cm-ph pointer-events-none absolute top-3 z-[1] max-w-[calc(100%-4.5rem)] truncate text-sm font-mono text-slate-400 group-focus-within:hidden"
+      class="json-cm-ph pointer-events-none absolute top-3 z-[1] max-w-[calc(100%-4.5rem)] truncate text-sm font-mono group-focus-within:hidden"
       :style="{ left: 'var(--json-cm-ph-left)' }"
     >
       {{ placeholder }}
@@ -23,6 +23,7 @@ import { indentWithTab } from '@codemirror/commands'
 import { indentUnit as cmIndentUnit } from '@codemirror/language'
 import { Annotation, Compartment, EditorState, type Extension } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
+import { jsonSyntaxHighlightForTheme } from '~/utils/jsonCodeMirrorHighlight'
 import { jsonLiveLintExtension } from '~/utils/jsonCodeMirrorLint'
 import { jsonIndentLayerExtension } from '~/utils/jsonCodeMirrorNesting'
 import { jsonCodeMirrorBasicSetup } from '~/utils/jsonCodeMirrorSetup'
@@ -74,6 +75,9 @@ const readOnlyComp = new Compartment()
 const tabSizeComp = new Compartment()
 const indentUnitComp = new Compartment()
 const tabIndentComp = new Compartment()
+const highlightComp = new Compartment()
+
+const { resolved: desktopTheme } = useDesktopTheme()
 
 const showPlaceholder = computed(() => !props.modelValue.trim())
 
@@ -122,16 +126,23 @@ watch(
   }
 )
 
+watch(desktopTheme, (theme) => {
+  viewRef.value?.dispatch({
+    effects: highlightComp.reconfigure(jsonSyntaxHighlightForTheme(theme))
+  })
+})
+
 function buildExtensions(): Extension[] {
   const isInput = props.tone === 'input'
-  const scrollerBg = isInput ? 'var(--doc-code-bg)' : 'rgb(248 250 252 / 0.5)'
-  const gutterBg = isInput ? 'rgb(241 245 249 / 0.85)' : 'rgb(248 250 252 / 0.95)'
-  const lineNoColor = 'rgb(148 163 184)'
-  const foldIdle = 'rgb(100 116 139)'
-  const foldHover = 'rgb(71 85 105)'
+  const scrollerBg = isInput ? 'var(--json-cm-scroller-bg)' : 'var(--json-cm-gutter-bg)'
+  const gutterBg = 'var(--json-cm-gutter-bg)'
+  const lineNoColor = 'var(--json-cm-line-number)'
+  const foldIdle = 'var(--json-cm-fold-idle)'
+  const foldHover = 'var(--json-cm-fold-hover)'
 
   return [
     ...jsonCodeMirrorBasicSetup,
+    highlightComp.of(jsonSyntaxHighlightForTheme(desktopTheme.value)),
     json(),
     tabSizeComp.of(EditorState.tabSize.of(Math.max(1, props.tabSize))),
     indentUnitComp.of(cmIndentUnit.of(props.singleIndent)),
@@ -158,7 +169,7 @@ function buildExtensions(): Extension[] {
       '.cm-content': { padding: '12px 0' },
       '.cm-gutters': {
         backgroundColor: gutterBg,
-        borderRight: '1px solid rgb(226 232 240)',
+        borderRight: '1px solid var(--json-cm-gutter-border)',
         paddingLeft: '0',
         color: lineNoColor
       },
@@ -167,16 +178,16 @@ function buildExtensions(): Extension[] {
         minWidth: '0'
       },
       '.cm-activeLine': {
-        backgroundColor: isInput ? 'rgb(248 250 252 / 0.55)' : 'rgb(248 250 252 / 0.35)'
+        backgroundColor: 'var(--json-cm-active-line)'
       },
       '.cm-activeLineGutter': {
-        backgroundColor: isInput ? 'rgb(241 245 249 / 0.45)' : 'rgb(248 250 252 / 0.5)'
+        backgroundColor: 'var(--json-cm-active-line-gutter)'
       },
       '.cm-selectionBackground': {
-        backgroundColor: 'rgb(191 219 254 / 0.38)'
+        backgroundColor: 'var(--json-cm-selection)'
       },
       '&.cm-focused .cm-selectionBackground': {
-        backgroundColor: 'rgb(191 219 254 / 0.48)'
+        backgroundColor: 'var(--json-cm-selection-focused)'
       },
       '.cm-lineNumbers .cm-gutterElement': {
         display: 'flex',
@@ -228,16 +239,33 @@ function buildExtensions(): Extension[] {
       },
       '&.cm-focused': { outline: 'none' },
       '&.cm-focused .cm-cursor': {
-        borderLeftColor: 'rgb(30 41 59)'
+        borderLeftColor: 'var(--json-cm-cursor)'
+      },
+      '.cm-foldPlaceholder.json-cm-fold-placeholder': {
+        fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+        fontSize: '12px',
+        fontWeight: '500',
+        color: 'var(--json-cm-fold-ph-text)',
+        backgroundColor: 'var(--json-cm-fold-ph-bg)',
+        border: '1px solid var(--json-cm-fold-ph-border)',
+        borderRadius: '4px',
+        padding: '0 6px',
+        margin: '0 2px',
+        cursor: 'pointer',
+        verticalAlign: 'baseline'
+      },
+      '.cm-foldPlaceholder.json-cm-fold-placeholder:hover': {
+        color: 'var(--json-cm-fold-ph-text-hover)',
+        backgroundColor: 'var(--json-cm-fold-ph-bg-hover)'
       },
       '.cm-matchingBracket': {
-        backgroundColor: 'rgb(191 219 254 / 0.45)',
-        outline: '1px solid rgb(59 130 246 / 0.55)',
+        backgroundColor: 'var(--json-cm-bracket-match)',
+        outline: '1px solid var(--json-cm-bracket-match-outline)',
         borderRadius: '2px'
       },
       '.cm-nonmatchingBracket': {
-        backgroundColor: 'rgb(254 202 202 / 0.5)',
-        outline: '1px solid rgb(239 68 68 / 0.55)',
+        backgroundColor: 'var(--json-cm-bracket-mismatch)',
+        outline: '1px solid var(--json-cm-bracket-mismatch-outline)',
         borderRadius: '2px'
       }
     }),

@@ -342,10 +342,10 @@ watch(sortKeys, () => {
   font-size: 12px;
   line-height: 1.35;
   font-weight: 500;
-  color: rgb(51 65 85);
+  color: var(--nexus-tool-tooltip-text);
   white-space: nowrap;
-  background: #fff;
-  border: 1px solid rgb(226 232 240);
+  background: var(--nexus-tool-tooltip-bg);
+  border: 1px solid var(--nexus-tool-tooltip-border);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgb(15 23 42 / 0.08);
   pointer-events: none;

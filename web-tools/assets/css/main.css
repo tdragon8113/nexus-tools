@@ -362,6 +362,81 @@ html[data-nexus-desktop='1']:not([data-nexus-theme]) {
   --nexus-shell-border: rgb(226 232 240 / 0.8);
   --nexus-shell-title: rgb(30 41 59);
   --nexus-panel-body-bg: rgb(241 245 249 / 0.8);
+  --doc-bg: #f1f5f9;
+  --doc-surface: #ffffff;
+  --doc-ink: #0f172a;
+  --doc-muted: #64748b;
+  --doc-faint: #94a3b8;
+  --doc-border: #e2e8f0;
+  --doc-code-bg: #f8fafc;
+  --nexus-tool-canvas-bg: rgb(241 245 249 / 0.8);
+  --nexus-tool-surface: rgb(255 255 255);
+  --nexus-tool-border: rgb(226 232 240 / 0.8);
+  --nexus-tool-text: rgb(51 65 85);
+  --nexus-tool-text-muted: rgb(100 116 139);
+  --nexus-tool-text-faint: rgb(148 163 184);
+  --nexus-tool-tbar-hover: rgb(15 23 42 / 0.055);
+  --nexus-tool-tbar-active: rgb(15 23 42 / 0.08);
+  --nexus-tool-input-bg: rgb(255 255 255);
+  --nexus-tool-input-border: rgb(226 232 240);
+  --nexus-tool-tooltip-bg: rgb(255 255 255);
+  --nexus-tool-tooltip-border: rgb(226 232 240);
+  --nexus-tool-tooltip-text: rgb(51 65 85);
+  --json-cm-scroller-bg: var(--doc-code-bg);
+  --json-cm-gutter-bg: rgb(241 245 249 / 0.85);
+  --json-cm-gutter-border: rgb(226 232 240);
+  --json-cm-line-number: rgb(148 163 184);
+  --json-cm-active-line: rgb(248 250 252 / 0.55);
+  --json-cm-active-line-gutter: rgb(241 245 249 / 0.45);
+  --json-cm-selection: rgb(191 219 254 / 0.38);
+  --json-cm-selection-focused: rgb(191 219 254 / 0.48);
+  --json-cm-cursor: rgb(30 41 59);
+  --json-cm-fold-idle: rgb(100 116 139);
+  --json-cm-fold-hover: rgb(71 85 105);
+  --json-cm-fold-ph-bg: rgb(241 245 249);
+  --json-cm-fold-ph-border: rgb(226 232 240);
+  --json-cm-fold-ph-text: rgb(100 116 139);
+  --json-cm-fold-ph-text-hover: rgb(71 85 105);
+  --json-cm-fold-ph-bg-hover: rgb(226 232 240 / 0.65);
+  --json-cm-bracket-match: rgb(191 219 254 / 0.45);
+  --json-cm-bracket-match-outline: rgb(59 130 246 / 0.55);
+  --json-cm-bracket-mismatch: rgb(254 202 202 / 0.5);
+  --json-cm-bracket-mismatch-outline: rgb(239 68 68 / 0.55);
+  --json-cm-placeholder: rgb(148 163 184);
+  --nexus-tool-tile-hover-border: rgb(199 210 254);
+  --nexus-tool-tile-hover-bg: rgb(238 242 255 / 0.95);
+  --nexus-tool-tile-active-bg: rgb(238 242 255);
+  --nexus-tool-tile-active-border: rgb(165 180 252);
+  --nexus-tool-tile-active-shadow: rgb(99 102 241 / 0.1);
+  --nexus-tool-ring: rgb(199 210 254 / 0.8);
+  --nexus-tool-ring-offset: rgb(241 245 249);
+  --nexus-tool-focus-border: rgb(129 140 248);
+  --nexus-tool-focus-ring: rgb(99 102 241 / 0.15);
+  --nexus-tool-input-bg-focus: rgb(255 255 255);
+  --nexus-tool-muted-surface: rgb(248 250 252);
+  --nexus-tool-border-strong: rgb(203 213 225);
+  --nexus-tool-callout-bg: rgb(238 242 255 / 0.7);
+  --nexus-tool-callout-border: rgb(224 231 255);
+  --nexus-tool-accent: rgb(79 70 229);
+  --nexus-tool-accent-strong: rgb(49 46 129);
+  --nexus-switch-track: rgb(226 232 240 / 0.9);
+  --nexus-switch-track-on: rgb(79 70 229);
+  --nexus-switch-thumb: rgb(255 255 255);
+  --nexus-settings-trigger-bg: linear-gradient(to bottom, #fff, #f8fafc);
+  --nexus-settings-trigger-bg-hover: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+  --nexus-settings-trigger-shadow: 0 1px 0 rgb(0 0 0 / 0.04);
+  --nexus-settings-trigger-chevron-bg: rgb(248 250 252 / 0.5);
+  --nexus-settings-menu-shadow: 0 8px 24px rgb(15 23 42 / 0.12), 0 0 0 0.5px rgb(15 23 42 / 0.06);
+  --nexus-settings-hint-border: rgb(203 213 225 / 0.9);
+  --nexus-settings-hint-bg: rgb(241 245 249 / 0.95);
+  --nexus-settings-hint-icon: rgb(100 116 139);
+  --nexus-settings-hint-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7);
+  --nexus-settings-hint-border-hover: rgb(199 210 254 / 0.8);
+  --nexus-settings-hint-bg-hover: rgb(238 242 255);
+  --nexus-settings-hint-icon-hover: rgb(79 70 229);
+  --nexus-settings-hint-popover-bg: rgb(30 30 30 / 0.92);
+  --nexus-settings-hint-popover-text: rgb(255 255 255 / 0.95);
+  --nexus-settings-hint-popover-shadow: 0 8px 20px rgb(15 23 42 / 0.2);
 }
 
 html[data-nexus-desktop='1'][data-nexus-theme='dark'] {
@@ -397,6 +472,81 @@ html[data-nexus-desktop='1'][data-nexus-theme='dark'] {
   --nexus-shell-border: rgb(255 255 255 / 0.08);
   --nexus-shell-title: rgb(255 255 255 / 0.9);
   --nexus-panel-body-bg: rgb(0 0 0 / 0.2);
+  --doc-bg: #0f172a;
+  --doc-surface: #1e293b;
+  --doc-ink: #f1f5f9;
+  --doc-muted: #94a3b8;
+  --doc-faint: #64748b;
+  --doc-border: #334155;
+  --doc-code-bg: #141416;
+  --nexus-tool-canvas-bg: rgb(0 0 0 / 0.2);
+  --nexus-tool-surface: rgb(44 44 46);
+  --nexus-tool-border: rgb(255 255 255 / 0.1);
+  --nexus-tool-text: rgb(255 255 255 / 0.88);
+  --nexus-tool-text-muted: rgb(255 255 255 / 0.55);
+  --nexus-tool-text-faint: rgb(255 255 255 / 0.35);
+  --nexus-tool-tbar-hover: rgb(255 255 255 / 0.08);
+  --nexus-tool-tbar-active: rgb(255 255 255 / 0.12);
+  --nexus-tool-input-bg: rgb(255 255 255 / 0.06);
+  --nexus-tool-input-border: rgb(255 255 255 / 0.12);
+  --nexus-tool-tooltip-bg: rgb(44 44 46);
+  --nexus-tool-tooltip-border: rgb(255 255 255 / 0.12);
+  --nexus-tool-tooltip-text: rgb(255 255 255 / 0.9);
+  --json-cm-scroller-bg: var(--doc-code-bg);
+  --json-cm-gutter-bg: rgb(39 39 42);
+  --json-cm-gutter-border: rgb(255 255 255 / 0.08);
+  --json-cm-line-number: rgb(255 255 255 / 0.32);
+  --json-cm-active-line: rgb(255 255 255 / 0.04);
+  --json-cm-active-line-gutter: rgb(255 255 255 / 0.06);
+  --json-cm-selection: rgb(99 102 241 / 0.28);
+  --json-cm-selection-focused: rgb(99 102 241 / 0.38);
+  --json-cm-cursor: rgb(255 255 255 / 0.9);
+  --json-cm-fold-idle: rgb(255 255 255 / 0.4);
+  --json-cm-fold-hover: rgb(255 255 255 / 0.72);
+  --json-cm-fold-ph-bg: rgb(255 255 255 / 0.08);
+  --json-cm-fold-ph-border: rgb(255 255 255 / 0.12);
+  --json-cm-fold-ph-text: rgb(255 255 255 / 0.5);
+  --json-cm-fold-ph-text-hover: rgb(255 255 255 / 0.75);
+  --json-cm-fold-ph-bg-hover: rgb(255 255 255 / 0.12);
+  --json-cm-bracket-match: rgb(99 102 241 / 0.25);
+  --json-cm-bracket-match-outline: rgb(129 140 248 / 0.55);
+  --json-cm-bracket-mismatch: rgb(248 113 113 / 0.22);
+  --json-cm-bracket-mismatch-outline: rgb(248 113 113 / 0.55);
+  --json-cm-placeholder: rgb(255 255 255 / 0.32);
+  --nexus-tool-tile-hover-border: rgb(129 140 248 / 0.45);
+  --nexus-tool-tile-hover-bg: rgb(99 102 241 / 0.12);
+  --nexus-tool-tile-active-bg: rgb(99 102 241 / 0.22);
+  --nexus-tool-tile-active-border: rgb(129 140 248 / 0.55);
+  --nexus-tool-tile-active-shadow: rgb(99 102 241 / 0.2);
+  --nexus-tool-ring: rgb(129 140 248 / 0.35);
+  --nexus-tool-ring-offset: rgb(28 28 30);
+  --nexus-tool-focus-border: rgb(129 140 248);
+  --nexus-tool-focus-ring: rgb(99 102 241 / 0.25);
+  --nexus-tool-input-bg-focus: rgb(255 255 255 / 0.08);
+  --nexus-tool-muted-surface: rgb(255 255 255 / 0.05);
+  --nexus-tool-border-strong: rgb(255 255 255 / 0.14);
+  --nexus-tool-callout-bg: rgb(99 102 241 / 0.12);
+  --nexus-tool-callout-border: rgb(99 102 241 / 0.25);
+  --nexus-tool-accent: rgb(165 180 252);
+  --nexus-tool-accent-strong: rgb(199 210 254);
+  --nexus-switch-track: rgb(255 255 255 / 0.15);
+  --nexus-switch-track-on: rgb(99 102 241);
+  --nexus-switch-thumb: rgb(255 255 255 / 0.95);
+  --nexus-settings-trigger-bg: rgb(55 55 58);
+  --nexus-settings-trigger-bg-hover: rgb(63 63 67);
+  --nexus-settings-trigger-shadow: 0 1px 0 rgb(0 0 0 / 0.35);
+  --nexus-settings-trigger-chevron-bg: rgb(255 255 255 / 0.06);
+  --nexus-settings-menu-shadow: 0 8px 24px rgb(0 0 0 / 0.4), 0 0 0 0.5px rgb(255 255 255 / 0.08);
+  --nexus-settings-hint-border: rgb(255 255 255 / 0.14);
+  --nexus-settings-hint-bg: rgb(255 255 255 / 0.06);
+  --nexus-settings-hint-icon: rgb(255 255 255 / 0.42);
+  --nexus-settings-hint-shadow: none;
+  --nexus-settings-hint-border-hover: rgb(129 140 248 / 0.45);
+  --nexus-settings-hint-bg-hover: rgb(99 102 241 / 0.14);
+  --nexus-settings-hint-icon-hover: rgb(165 180 252);
+  --nexus-settings-hint-popover-bg: rgb(44 44 46 / 0.98);
+  --nexus-settings-hint-popover-text: rgb(255 255 255 / 0.92);
+  --nexus-settings-hint-popover-shadow: 0 8px 24px rgb(0 0 0 / 0.45), 0 0 0 0.5px rgb(255 255 255 / 0.08);
 }
 
 html[data-nexus-desktop='1'] .nexus-shell--search {
@@ -582,4 +732,114 @@ body.nexus-sort-dragging [data-reorder='on'] .nexus-desktop-tile {
 
 body.nexus-sort-dragging {
   user-select: none;
+}
+
+/* 桌面暗色：工具页画布、工具栏、编辑区（与 Raycast 壳一致） */
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] body.nexus-desktop-body {
+  background: var(--nexus-panel-body-bg) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-hub-page,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-settings-page {
+  background: var(--nexus-tool-canvas-bg);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-toolbar {
+  background: var(--nexus-tool-surface);
+  border-color: var(--nexus-tool-border);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .doc-surface {
+  background: var(--doc-surface);
+  border-color: var(--nexus-tool-border) !important;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .text-slate-600,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .text-slate-800 {
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .text-slate-400 {
+  color: var(--nexus-tool-text-faint);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .bg-slate-200\/90,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .bg-slate-200 {
+  background-color: var(--nexus-tool-border);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page select,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .border-slate-200 {
+  border-color: var(--nexus-tool-input-border) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page select {
+  background-color: var(--nexus-tool-input-bg);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page select option {
+  background: rgb(28 28 30);
+  color: rgb(255 255 255 / 0.9);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .text-slate-600.hover\:bg-black\/\[0\.055\]:hover,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page button.text-slate-600:hover {
+  background-color: var(--nexus-tool-tbar-hover);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page button.text-slate-600:active {
+  background-color: var(--nexus-tool-tbar-active);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .json-cm-wrap .json-cm-ph {
+  color: var(--json-cm-placeholder);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.18);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.28);
+}
+
+/* CodeMirror 默认折叠占位（language 包内写死浅灰） */
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .cm-foldPlaceholder:not(.json-cm-fold-placeholder) {
+  background-color: var(--json-cm-fold-ph-bg) !important;
+  border-color: var(--json-cm-fold-ph-border) !important;
+  color: var(--json-cm-fold-ph-text) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .json-tool-page .json-tbar-tip[data-tip]::after {
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.35);
+}
+
+/* 其它工具页 CodeMirror（文本对比、JS 沙盒等） */
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .cm-editor,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .cm-scroller {
+  background-color: var(--json-cm-scroller-bg) !important;
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .cm-gutters {
+  background-color: var(--json-cm-gutter-bg) !important;
+  border-color: var(--json-cm-gutter-border) !important;
+  color: var(--json-cm-line-number) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .cm-activeLine {
+  background-color: var(--json-cm-active-line) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .cm-activeLineGutter {
+  background-color: var(--json-cm-active-line-gutter) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .desktop-tool-page .cm-cursor {
+  border-left-color: var(--json-cm-cursor) !important;
 }

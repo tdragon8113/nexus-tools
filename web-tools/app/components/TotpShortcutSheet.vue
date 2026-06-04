@@ -97,7 +97,7 @@ async function clearShortcut() {
       @mousedown.self="emit('close')"
     >
       <div
-        class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
+        class="totp-shortcut-sheet w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
         tabindex="-1"
         @keydown="onKeydown"
       >

@@ -117,9 +117,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
   return [
     'nexus-desktop-tile',
     reorderEnabled ? 'nexus-desktop-tile--sortable' : '',
-    isActive && !isDragging.value
-      ? 'border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-500/10'
-      : 'border-slate-200/80 bg-white hover:border-indigo-200 hover:bg-indigo-50/40',
+    isActive && !isDragging.value ? 'nexus-tile--active' : 'nexus-tile--idle',
     !tool.path ? 'opacity-60' : '',
     draggingSelf ? 'pointer-events-none opacity-35 scale-[0.98]' : ''
   ]
@@ -132,7 +130,11 @@ function itemButtonClass(tool: SiteTool, i: number) {
     v-if="variant === 'icons'"
     ref="listRef"
     :data-reorder="reorderEnabled ? 'on' : 'off'"
-    :class="reorderEnabled ? 'rounded-2xl ring-2 ring-indigo-200/80 ring-offset-2 ring-offset-slate-50' : ''"
+    :class="
+      reorderEnabled
+        ? 'nexus-tile-reorder-ring rounded-2xl ring-2 ring-[var(--nexus-tool-ring)] ring-offset-2 ring-offset-[var(--nexus-tool-ring-offset)]'
+        : ''
+    "
   >
     <TransitionGroup
       tag="div"
@@ -167,7 +169,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
       >
         <van-icon :name="tool.icon" size="22" :class="tool.iconColor" />
       </div>
-      <span class="w-full truncate text-center text-xs font-medium leading-tight text-slate-800">
+      <span class="nexus-tile-label w-full truncate text-center text-xs font-medium leading-tight">
         {{ tool.name }}
       </span>
     </div>
@@ -243,7 +245,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
   <Teleport to="body">
     <div
       v-if="ghostBox && dragItem"
-      class="tool-grid-ghost flex flex-col items-center gap-1.5 rounded-2xl border border-indigo-300 bg-white px-1.5 py-2.5 shadow-lg shadow-indigo-500/20"
+      class="tool-grid-ghost nexus-tile--active flex flex-col items-center gap-1.5 rounded-2xl border px-1.5 py-2.5 shadow-lg"
       :style="{
         left: `${ghostBox.left}px`,
         top: `${ghostBox.top}px`,
@@ -257,7 +259,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
       >
         <van-icon :name="dragItem.icon" size="22" :class="dragItem.iconColor" />
       </div>
-      <span class="w-full truncate text-center text-xs font-medium leading-tight text-slate-800">
+      <span class="nexus-tile-label w-full truncate text-center text-xs font-medium leading-tight">
         {{ dragItem.name }}
       </span>
     </div>

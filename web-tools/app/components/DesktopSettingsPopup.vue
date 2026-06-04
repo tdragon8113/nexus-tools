@@ -56,19 +56,16 @@ onUnmounted(() => {
   <div ref="rootRef" class="relative inline-flex">
     <button
       type="button"
-      class="inline-flex h-7 w-[4.75rem] shrink-0 items-stretch overflow-hidden rounded-[6px] border border-slate-300/90 bg-gradient-to-b from-white to-slate-50 text-[13px] text-slate-900 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-colors hover:from-slate-50 hover:to-slate-100/90 disabled:cursor-not-allowed disabled:opacity-50"
+      class="nexus-settings-trigger disabled:cursor-not-allowed disabled:opacity-50"
       :disabled="disabled"
       :aria-expanded="open"
       aria-haspopup="listbox"
       @click="toggle"
     >
       <span class="flex min-w-0 flex-1 items-center truncate pl-2">{{ currentLabel }}</span>
-      <span
-        class="flex w-5 shrink-0 items-center justify-center border-l border-slate-300/80 bg-slate-50/50"
-        aria-hidden="true"
-      >
+      <span class="nexus-settings-trigger-chevron flex w-5 shrink-0 items-center justify-center" aria-hidden="true">
         <svg
-          class="h-3 w-3 text-slate-500 transition-transform duration-150"
+          class="h-3 w-3 transition-transform duration-150"
           :class="open && 'rotate-180'"
           viewBox="0 0 12 12"
           fill="none"
@@ -88,14 +85,13 @@ onUnmounted(() => {
       <ul
         v-if="open"
         role="listbox"
-        class="absolute right-0 top-[calc(100%+4px)] z-50 w-[4.75rem] overflow-hidden rounded-lg border border-slate-300/80 bg-white py-1 shadow-[0_8px_24px_rgba(0,0,0,0.12),0_0_0_0.5px_rgba(0,0,0,0.06)]"
+        class="nexus-settings-menu absolute right-0 top-[calc(100%+4px)] z-50 w-[4.75rem] overflow-hidden rounded-lg py-1"
       >
         <li v-for="opt in options" :key="opt.value" role="presentation">
           <button
             type="button"
             role="option"
-            class="flex w-full items-center justify-center px-2 py-1.5 text-center text-[13px] transition-colors hover:bg-indigo-600 hover:text-white"
-            :class="modelValue === opt.value ? 'font-medium text-slate-900' : 'text-slate-700'"
+            class="nexus-settings-menu-option flex w-full items-center justify-center px-2 py-1.5 text-center text-[13px] transition-colors hover:bg-indigo-600 hover:text-white"
             :aria-selected="modelValue === opt.value"
             :title="opt.hint"
             @click="select(opt.value)"
@@ -118,13 +114,5 @@ onUnmounted(() => {
 .settings-popup-leave-to {
   opacity: 0;
   transform: translateY(-2px);
-}
-
-button[role='option'][aria-selected='true'] {
-  color: rgb(59 130 246);
-}
-
-button[role='option'][aria-selected='true']:hover {
-  color: white;
 }
 </style>

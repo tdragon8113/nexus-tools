@@ -1,0 +1,352 @@
+/**
+ * Electron 桌面壳主题：工具集 / 设置 / 各工具页
+ * 依赖 html[data-nexus-desktop] + html[data-nexus-theme]
+ */
+
+/* ---------- 语义化组件类（随 CSS 变量切换亮/暗） ---------- */
+
+html[data-nexus-desktop='1'] .nexus-tool-input {
+  border-radius: 0.75rem;
+  border: 1px solid var(--nexus-tool-input-border);
+  background-color: var(--nexus-tool-input-bg);
+  color: var(--nexus-tool-text);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+html[data-nexus-desktop='1'] .nexus-tool-input::placeholder {
+  color: var(--nexus-tool-text-faint);
+}
+
+html[data-nexus-desktop='1'] .nexus-tool-input:focus {
+  border-color: var(--nexus-tool-focus-border);
+  box-shadow: 0 0 0 2px var(--nexus-tool-focus-ring);
+}
+
+html[data-nexus-desktop='1'] .nexus-tile--idle {
+  border-color: var(--nexus-tool-border);
+  background-color: var(--nexus-tool-surface);
+}
+
+html[data-nexus-desktop='1'] .nexus-tile--idle:hover {
+  border-color: var(--nexus-tool-tile-hover-border);
+  background-color: var(--nexus-tool-tile-hover-bg);
+}
+
+html[data-nexus-desktop='1'] .nexus-tile--active {
+  border-color: var(--nexus-tool-tile-active-border);
+  background-color: var(--nexus-tool-tile-active-bg);
+  box-shadow: 0 1px 2px var(--nexus-tool-tile-active-shadow);
+}
+
+html[data-nexus-desktop='1'] .nexus-tile-label {
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .nexus-tile-reorder-ring {
+  --tw-ring-color: var(--nexus-tool-ring);
+  --tw-ring-offset-color: var(--nexus-tool-ring-offset);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-panel {
+  border-radius: 1rem;
+  border: 1px solid var(--nexus-tool-border);
+  background-color: var(--nexus-tool-surface);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+  overflow: visible;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-settings-panel {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-field-label {
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-hint-btn {
+  border-color: var(--nexus-settings-hint-border);
+  background-color: var(--nexus-settings-hint-bg);
+  color: var(--nexus-settings-hint-icon);
+  box-shadow: var(--nexus-settings-hint-shadow);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-hint-btn:hover {
+  border-color: var(--nexus-settings-hint-border-hover);
+  background-color: var(--nexus-settings-hint-bg-hover);
+  color: var(--nexus-settings-hint-icon-hover);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-hint-popover {
+  background: var(--nexus-settings-hint-popover-bg);
+  color: var(--nexus-settings-hint-popover-text);
+  box-shadow: var(--nexus-settings-hint-popover-shadow);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-field-border {
+  border-color: var(--nexus-tool-border);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-trigger {
+  display: inline-flex;
+  height: 1.75rem;
+  width: 4.75rem;
+  flex-shrink: 0;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--nexus-tool-input-border);
+  background: var(--nexus-settings-trigger-bg);
+  color: var(--nexus-tool-text);
+  font-size: 13px;
+  box-shadow: var(--nexus-settings-trigger-shadow);
+  transition: background 0.15s ease;
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-trigger:hover:not(:disabled) {
+  background: var(--nexus-settings-trigger-bg-hover);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-trigger-chevron {
+  border-left: 1px solid var(--nexus-tool-input-border);
+  background: var(--nexus-settings-trigger-chevron-bg);
+  color: var(--nexus-tool-text-muted);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-menu {
+  border: 1px solid var(--nexus-tool-input-border);
+  background: var(--nexus-tool-surface);
+  box-shadow: var(--nexus-settings-menu-shadow);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-menu-option {
+  color: var(--nexus-tool-text-muted);
+}
+
+html[data-nexus-desktop='1'] .nexus-settings-menu-option[aria-selected='true'] {
+  color: var(--nexus-tool-accent);
+  font-weight: 500;
+}
+
+html[data-nexus-desktop='1'] .nexus-switch-track {
+  background-color: var(--nexus-switch-track);
+}
+
+html[data-nexus-desktop='1'] .nexus-switch-thumb {
+  background-color: var(--nexus-switch-thumb);
+}
+
+html[data-nexus-desktop='1'] .nexus-switch-input:checked + .nexus-switch-track {
+  background-color: var(--nexus-switch-track-on);
+}
+
+/* ---------- 桌面共享组件：绑定设计令牌 ---------- */
+
+html[data-nexus-desktop='1'] .nexus-toolbar {
+  background-color: var(--nexus-tool-surface);
+  border-color: var(--nexus-tool-border);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .desktop-tool-page,
+html[data-nexus-desktop='1'] .desktop-hub-page,
+html[data-nexus-desktop='1'] .desktop-settings-page {
+  background: var(--nexus-tool-canvas-bg);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .nexus-card,
+html[data-nexus-desktop='1'] .nexus-info-panel,
+html[data-nexus-desktop='1'] .doc-surface {
+  background-color: var(--doc-surface);
+  border-color: var(--nexus-tool-border);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .nexus-btn-secondary {
+  background-color: var(--nexus-tool-surface);
+  border-color: var(--nexus-tool-border);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .nexus-btn-secondary:hover:not(:disabled) {
+  background-color: var(--nexus-tool-tile-hover-bg);
+}
+
+html[data-nexus-desktop='1'] .nexus-input {
+  background-color: var(--nexus-tool-input-bg);
+  border-color: var(--nexus-tool-input-border);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .nexus-input:focus {
+  background-color: var(--nexus-tool-input-bg-focus);
+  border-color: var(--nexus-tool-focus-border);
+}
+
+html[data-nexus-desktop='1'] .nexus-upload-zone {
+  background-color: var(--nexus-tool-muted-surface);
+  border-color: var(--nexus-tool-border-strong);
+}
+
+html[data-nexus-desktop='1'] .nexus-callout {
+  background-color: var(--nexus-tool-callout-bg);
+  border-color: var(--nexus-tool-callout-border);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'] .nexus-tab--active {
+  background-color: var(--nexus-tool-tile-active-bg);
+  color: var(--nexus-tool-accent-strong);
+}
+
+html[data-nexus-desktop='1'] .nexus-tab--idle {
+  color: var(--nexus-tool-text-muted);
+}
+
+html[data-nexus-desktop='1'] .nexus-tab--idle:hover {
+  background-color: var(--nexus-tool-tile-hover-bg);
+}
+
+/* ---------- 暗色：面板内遗留 Tailwind 工具类兜底 ---------- */
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-white,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .tool-grid-ghost {
+  background-color: var(--nexus-tool-surface) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-slate-50,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-slate-50\/50,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-slate-50\/80,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-slate-50\/90 {
+  background-color: var(--nexus-tool-muted-surface) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-indigo-50,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-indigo-50\/40,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-indigo-50\/70,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .tool-grid-ghost {
+  background-color: var(--nexus-tool-tile-active-bg) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .from-white {
+  --tw-gradient-from: var(--nexus-tool-surface) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .to-slate-50,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .to-slate-100\/90 {
+  --tw-gradient-to: var(--nexus-tool-muted-surface) var(--tw-gradient-to-position);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:from-slate-50:hover,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:to-slate-100\/90:hover {
+  --tw-gradient-from: var(--nexus-tool-tile-hover-bg) var(--tw-gradient-from-position);
+  --tw-gradient-to: var(--nexus-tool-muted-surface) var(--tw-gradient-to-position);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-slate-900,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-slate-800,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-slate-700 {
+  color: var(--nexus-tool-text) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-slate-600,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-slate-500 {
+  color: var(--nexus-tool-text-muted) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-slate-400 {
+  color: var(--nexus-tool-text-faint) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-slate-100,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-slate-200,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-slate-200\/80,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-slate-200\/90,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-slate-300,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-slate-300\/80,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-slate-300\/90,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .tool-grid-ghost {
+  border-color: var(--nexus-tool-tile-active-border) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-indigo-100,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-indigo-100\/80,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-indigo-200,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-indigo-300,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:border-indigo-200:hover,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:border-indigo-300:hover {
+  border-color: var(--nexus-tool-tile-hover-border) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .ring-indigo-200\/80 {
+  --tw-ring-color: var(--nexus-tool-ring) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .ring-offset-slate-50,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .ring-offset-2 {
+  --tw-ring-offset-color: var(--nexus-tool-ring-offset) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:bg-indigo-50\/40:hover,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:bg-slate-50:hover,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:bg-slate-100\/80:hover,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .active\:bg-slate-100\/80:active {
+  background-color: var(--nexus-tool-tile-hover-bg) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel input:not([type='checkbox']):not([type='radio']):not([type='color']),
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel select,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel textarea {
+  background-color: var(--nexus-tool-input-bg);
+  border-color: var(--nexus-tool-input-border);
+  color: var(--nexus-tool-text);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel input::placeholder,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel textarea::placeholder {
+  color: var(--nexus-tool-text-faint);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel pre {
+  color: var(--nexus-tool-text-muted);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .shadow-indigo-500\/10,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .shadow-indigo-500\/20,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .tool-grid-ghost {
+  --tw-shadow-color: rgb(99 102 241 / 0.25);
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-emerald-700 {
+  color: rgb(52 211 153) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-amber-700,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .text-amber-900 {
+  color: rgb(251 191 36) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .bg-amber-50,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .hover\:bg-amber-100:hover {
+  background-color: rgb(245 158 11 / 0.15) !important;
+}
+
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .nexus-desktop-panel .border-amber-200\/90 {
+  border-color: rgb(245 158 11 / 0.35) !important;
+}
+
+/* Teleport 到 body 的浮层 */
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .totp-shortcut-sheet,
+html[data-nexus-desktop='1'][data-nexus-theme='dark'] .totp-shortcut-sheet .bg-white {
+  background-color: var(--nexus-tool-surface) !important;
+  border-color: var(--nexus-tool-border) !important;
+  color: var(--nexus-tool-text);
+}

@@ -11,8 +11,8 @@ import { decideClipboardIngest, hashClipboardText, summarizeClipboardOffer } fro
 import { useLastSearchTransferText } from '~/core/prefill'
 import { buildMacAppSearchPreview, buildToolSearchPreview } from '~/core/searchPreview'
 import { mergeSearchResults, type SearchResultItem } from '~/core/searchResults'
-import { resolveDisplayToolsForQuery } from '~/core/search'
-import { getToolById, siteTools, type SiteTool } from '~/core/tools'
+import { resolveToolsByContent, resolveToolsByName } from '~/core/search'
+import { siteTools, type SiteTool } from '~/core/tools'
 import type { MacAppEntry } from '~~/shared/macApps'
 import type { NexusOpenToolPayload } from '~/types/nexus-desktop'
 
@@ -69,26 +69,25 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   const { prefetch: prefetchMacAppIcons } = useMacAppIconCache()
   const MAC_APP_LIMIT = 6
 
-  const resolved = computed(() =>
-    resolveDisplayToolsForQuery(commandQuery.value.trim(), limit, {
-      fallbackText: false
-    })
+  const commandTrimmed = computed(() => commandQuery.value.trim())
+  const queryTrimmed = computed(() => queryText.value.trim())
+
+  const nameResolved = computed(() => resolveToolsByName(commandTrimmed.value, limit))
+  const contentResolved = computed(() =>
+    resolveToolsByContent(queryTrimmed.value, limit, { fallbackText: true })
   )
-  const hint = computed(() => (queryText.value.trim() ? resolved.value.hint : null))
+  const hint = computed(() => contentResolved.value.hint)
 
   const displayTools = computed(() => {
-    const base = resolved.value.tools
-    if (commandQuery.value.trim() || base.length) return base
-    const hinted = hint.value
-    if (hinted) {
-      const tool = getToolById(hinted.toolId)
-      if (tool?.path) return [tool]
-    }
-    if (!commandQuery.value.trim()) return defaultSuggestions()
-    return base
+    if (commandTrimmed.value) return nameResolved.value.tools
+    if (queryTrimmed.value) return contentResolved.value.tools
+    return defaultSuggestions()
   })
 
-  const displayMacApps = computed(() => matchMacApps(commandQuery.value.trim(), MAC_APP_LIMIT))
+  const displayMacApps = computed(() => {
+    if (!commandTrimmed.value) return []
+    return matchMacApps(commandTrimmed.value, MAC_APP_LIMIT)
+  })
 
   watch(
     displayMacApps,
@@ -99,11 +98,14 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   )
 
   const searchItems = computed(() => {
-    const q = commandQuery.value.trim()
     const merged = mergeSearchResults(displayTools.value, displayMacApps.value)
 
-    if (q) {
+    if (commandTrimmed.value) {
       return tagSection(merged, merged.length ? 'Results' : undefined)
+    }
+
+    if (queryTrimmed.value) {
+      return tagSection(merged, merged.length ? '内容匹配' : undefined)
     }
 
     const recents = resolveRecentItems(apps.value)
@@ -118,7 +120,13 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     return out
   })
 
-  const showEmpty = computed(() => commandQuery.value.trim() && searchItems.value.length === 0)
+  const showEmpty = computed(() => {
+    if (commandTrimmed.value) {
+      return nameResolved.value.showEmpty && displayMacApps.value.length === 0
+    }
+    if (queryTrimmed.value) return contentResolved.value.showEmpty
+    return false
+  })
   const selectableCount = computed(() => searchItems.value.length)
   const hasClipboardOffer = computed(() => Boolean(clipboardOfferText.value.trim()))
 
@@ -128,26 +136,30 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     return searchItems.value[idx] ?? null
   })
 
-  const showQueryEditor = computed(() => {
-    const item = selectedItem.value
-    if (item?.kind === 'mac-app') {
-      return queryFocused.value || hasQueryEditor.value || hasPayload.value
-    }
-    if (item?.kind === 'tool') return true
-    return queryFocused.value || hasQueryEditor.value || hasPayload.value
-  })
+  /** Query 始终可见：内容匹配与预览不依赖先选中工具 */
+  const showQueryEditor = computed(() => true)
 
   const preview = computed(() => {
     const item = selectedItem.value
+    const q = queryTrimmed.value
+
     if (item?.kind === 'mac-app' && item.app) {
       return buildMacAppSearchPreview(item.app.name, item.app.path)
     }
+
+    const toolId =
+      item?.kind === 'tool' && item.tool
+        ? item.tool.id
+        : displayTools.value[0]?.id ?? hint.value?.toolId
+
+    if (toolId && q) {
+      return buildToolSearchPreview(toolId, q, hint.value)
+    }
+
     if (item?.kind === 'tool' && item.tool) {
-      return buildToolSearchPreview(item.tool.id, queryText.value, hint.value)
+      return buildToolSearchPreview(item.tool.id, q, hint.value)
     }
-    if (queryText.value.trim() && hint.value) {
-      return buildToolSearchPreview(hint.value.toolId, queryText.value, hint.value)
-    }
+
     return null
   })
 
@@ -155,8 +167,8 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     const item = selectedItem.value
     if (!item) return '继续'
     if (item.kind === 'mac-app') return '打开应用'
-    if (preview.value?.copyText && item.tool) return '复制结果'
-    return '打开工具'
+    if (item.kind === 'tool') return '打开工具'
+    return '继续'
   })
 
   function resolveTransferTextForOpen(): string {
@@ -200,13 +212,6 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     }
 
     if (item.kind === 'tool' && item.tool) {
-      const copy = preview.value?.copyText?.trim()
-      if (copy) {
-        await copyWithToast(copy, '已复制到剪贴板')
-        recordItem(item)
-        closeDesktop()
-        return
-      }
       await openTool(item.tool)
       recordItem(item)
     }
@@ -225,26 +230,12 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
         run: () => runPrimaryAction()
       })
     } else if (item?.kind === 'tool' && item.tool) {
-      if (copy) {
-        list.push({
-          id: 'primary',
-          label: '复制结果',
-          shortcut: '↵',
-          run: () => runPrimaryAction()
-        })
-        list.push({
-          id: 'open-tool',
-          label: '打开完整工具',
-          run: () => openTool(item.tool!)
-        })
-      } else {
-        list.push({
-          id: 'primary',
-          label: '打开工具',
-          shortcut: '↵',
-          run: () => runPrimaryAction()
-        })
-      }
+      list.push({
+        id: 'primary',
+        label: '打开工具',
+        shortcut: '↵',
+        run: () => runPrimaryAction()
+      })
     }
 
     if (copy) {
@@ -473,6 +464,10 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
 
   watch(commandQuery, () => {
     activeIndex.value = 0
+  })
+
+  watch(queryText, () => {
+    if (!commandTrimmed.value) activeIndex.value = 0
   })
 
   watch(panelActions, (list) => {

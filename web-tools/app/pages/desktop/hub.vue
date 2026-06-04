@@ -97,21 +97,21 @@ onUnmounted(() => {
         role="searchbox"
         placeholder="筛选工具…"
         autocomplete="off"
-        class="min-w-0 flex-1 rounded-xl border border-slate-200/80 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+        class="nexus-tool-input min-w-0 flex-1 px-3 py-2"
         @keydown.down.prevent="filtered.length && (activeIndex = (activeIndex + 1) % filtered.length)"
         @keydown.up.prevent="filtered.length && (activeIndex = (activeIndex - 1 + filtered.length) % filtered.length)"
         @keydown.enter.prevent="pickActive"
       />
     </div>
     <div class="mb-2 flex shrink-0 items-center justify-between gap-2 px-0.5">
-      <p class="min-w-0 text-xs tabular-nums text-slate-400">
+      <p class="min-w-0 text-xs tabular-nums text-[var(--nexus-tool-text-faint)]">
         {{ hintText }}
       </p>
       <div
         class="flex shrink-0 items-center gap-1.5"
         :class="!canReorder ? 'pointer-events-none opacity-50' : ''"
       >
-        <span class="text-xs font-medium text-slate-600">排序</span>
+        <span class="text-xs font-medium text-[var(--nexus-tool-text-muted)]">排序</span>
         <DesktopSettingsToggle
           v-model="reorderMode"
           compact

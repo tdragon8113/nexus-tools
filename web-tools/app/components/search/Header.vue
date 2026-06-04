@@ -65,7 +65,7 @@ function onQueryKeydown(event: KeyboardEvent) {
         spellcheck="false"
         class="min-w-0 flex-1 border-0 bg-transparent text-[15px] outline-none focus:ring-0"
         :class="queryFocused ? 'opacity-60' : ''"
-        placeholder="搜索工具或 Mac 应用…"
+        placeholder="按名称搜索工具或应用…"
         autofocus
         @focus="emit('focusCommand')"
         @input="emit('update:command', ($event.target as HTMLInputElement).value)"
@@ -86,7 +86,7 @@ function onQueryKeydown(event: KeyboardEvent) {
           autocomplete="off"
           spellcheck="false"
           class="min-w-0 flex-1 border-0 bg-transparent font-mono text-xs outline-none focus:ring-0"
-          placeholder="输入内容…"
+          placeholder="粘贴内容以匹配工具…"
           @focus="emit('focusQuery')"
           @input="emit('update:query', ($event.target as HTMLInputElement).value)"
           @paste="emit('paste', $event)"

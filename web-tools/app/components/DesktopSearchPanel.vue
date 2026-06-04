@@ -95,10 +95,12 @@ function focusCommandField() {
 
     <div class="nexus-raycast-body flex min-h-[17rem] flex-1">
       <div class="flex min-w-0 flex-[0_0_42%] flex-col overflow-hidden" style="-webkit-app-region: no-drag">
-        <p v-if="hint" class="nexus-raycast-border-b nexus-raycast-hint px-3 py-2 text-xs">
-          Query 识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>
+        <p v-if="hint && !commandQuery.trim()" class="nexus-raycast-border-b nexus-raycast-hint px-3 py-2 text-xs">
+          内容识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>
         </p>
-        <p v-else-if="showEmpty" class="nexus-raycast-border-b nexus-raycast-text-tertiary px-3 py-2 text-xs">无匹配工具或应用</p>
+        <p v-else-if="showEmpty" class="nexus-raycast-border-b nexus-raycast-text-tertiary px-3 py-2 text-xs">
+          {{ commandQuery.trim() ? '无匹配工具或应用' : '未识别到可用工具' }}
+        </p>
 
         <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <SearchResultList

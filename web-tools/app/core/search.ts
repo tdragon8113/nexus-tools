@@ -501,13 +501,69 @@ export function resolveToolSearchResults(
   }
 }
 
-/** 桌面搜索：仅已上线工具，默认最多 6 条 */
+/** 桌面搜索：仅已上线工具，默认最多 6 条（名称 + 内容混合，Web 等场景） */
 export function resolveDisplayToolsForQuery(
   query: string,
   limit = 6,
   options?: Pick<ToolSearchResolveOptions, 'fallbackText'>
 ): ToolSearchResolveResult {
   return resolveToolSearchResults(query, { limit, pathOnly: true, fallbackText: options?.fallbackText })
+}
+
+/** 桌面 Command：仅按工具名 / 关键词 / 拼音匹配，不做内容格式识别 */
+export function resolveToolsByName(query: string, limit = 6): ToolSearchResolveResult {
+  const trimmed = query.trim()
+  if (!trimmed) {
+    return { hint: null, tools: [], totalCount: 0, showEmpty: false }
+  }
+
+  const tokens = queryTokensForToolSearch(trimmed)
+  const scored = siteTools
+    .map((tool) => ({ tool, score: scoreTool(tool, tokens) }))
+    .filter((item) => item.score > 0 && item.tool.path && item.tool.id !== 'more')
+    .sort((a, b) => b.score - a.score)
+
+  const tools = scored.map((item) => item.tool).slice(0, limit)
+  return {
+    hint: null,
+    tools,
+    totalCount: scored.length,
+    showEmpty: tools.length === 0
+  }
+}
+
+/** 桌面 Query：按粘贴内容格式匹配工具（可无 Command 搜索词） */
+export function resolveToolsByContent(
+  query: string,
+  limit = 6,
+  options?: Pick<ToolSearchResolveOptions, 'fallbackText'>
+): ToolSearchResolveResult {
+  const trimmed = query.trim()
+  if (!trimmed) {
+    return { hint: null, tools: [], totalCount: 0, showEmpty: false }
+  }
+
+  const hint = resolveContentHint(trimmed, options?.fallbackText ?? true)
+  const tools: SiteTool[] = []
+
+  if (hint) {
+    const primary = siteTools.find((x) => x.id === hint.toolId && x.path)
+    if (primary) tools.push(primary)
+  }
+
+  if (tools.length) {
+    const limited = limit != null ? tools.slice(0, limit) : tools
+    return { hint, tools: limited, totalCount: tools.length, showEmpty: false }
+  }
+
+  if (hint) {
+    const fallback = siteTools.find((x) => x.id === hint.toolId)
+    if (fallback?.path) {
+      return { hint, tools: [fallback], totalCount: 1, showEmpty: false }
+    }
+  }
+
+  return { hint, tools: [], totalCount: 0, showEmpty: true }
 }
 
 /** 工具集筛选：与搜索框同一套匹配（含拼音） */

@@ -7,7 +7,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="!loaded" class="py-1 text-[13px] text-slate-400">加载中…</div>
+  <div v-if="!loaded" class="py-1 text-[13px] text-[var(--nexus-tool-text-faint)]">加载中…</div>
   <DesktopSettingsPopup
     v-else
     :model-value="preference"

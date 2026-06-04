@@ -54,7 +54,7 @@ defineProps<{
     </template>
 
     <div v-else class="nexus-raycast-text-tertiary flex flex-1 items-center justify-center px-6 text-center text-sm">
-      选择一项以查看详情
+      在 Query 中输入内容以匹配工具，或选择列表项查看详情
     </div>
   </aside>
 </template>

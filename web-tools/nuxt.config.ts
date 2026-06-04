@@ -20,7 +20,7 @@ export default defineNuxtConfig({
     display: 'swap'
   },
 
-  css: ['~~/assets/css/main.css'],
+  css: ['~~/assets/css/main.css', '~~/assets/css/desktop-theme.css'],
 
   vant: {
     lazyload: true

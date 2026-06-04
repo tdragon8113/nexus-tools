@@ -6,7 +6,7 @@ import {
   foldKeymap,
   indentOnInput
 } from '@codemirror/language'
-import { jsonSyntaxHighlightExtension } from '~/utils/jsonCodeMirrorHighlight'
+import { jsonFoldPlaceholderExtension } from '~/utils/jsonCodeMirrorFold'
 import { lintKeymap } from '@codemirror/lint'
 import { EditorState, type Extension } from '@codemirror/state'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
@@ -52,11 +52,11 @@ export const jsonCodeMirrorBasicSetup: Extension[] = [
   highlightSpecialChars(),
   history(),
   foldGutter({ markerDOM: jsonFoldMarkerEl }),
+  jsonFoldPlaceholderExtension,
   drawSelection(),
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
-  jsonSyntaxHighlightExtension,
   bracketMatching(),
   closeBrackets(),
   autocompletion(),
