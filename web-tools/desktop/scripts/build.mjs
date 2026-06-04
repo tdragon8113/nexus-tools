@@ -10,7 +10,7 @@ await esbuild.build({
   platform: 'node',
   format: 'cjs',
   target: 'node20',
-  external: ['electron', 'electron-updater'],
+  external: ['electron', 'electron-updater', '@nut-tree-fork/nut-js', '@nut-tree-fork/libnut-darwin'],
   sourcemap: true,
   entryPoints: [path.join(root, 'src/main.ts')],
   outfile: path.join(root, 'dist/main.cjs')

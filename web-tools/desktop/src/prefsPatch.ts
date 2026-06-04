@@ -1,6 +1,10 @@
 import { applyOpenAtLogin, getOpenAtLoginFromSystem } from './loginItem'
 import type { AppUpdaterService } from './updater'
-import type { ClipboardPolicy, DesktopPrefs, DesktopPrefsStore } from './prefs'
+import type { ClipboardPolicy, DesktopPrefs, DesktopPrefsStore, DesktopThemePreference } from './prefs'
+
+function isThemePreference(value: unknown): value is DesktopThemePreference {
+  return value === 'light' || value === 'dark' || value === 'system'
+}
 
 export type PrefsPatchDeps = {
   appUpdater?: AppUpdaterService | null
@@ -33,6 +37,18 @@ export function applyPrefsPatch(
   if (typeof patch.openAtLogin === 'boolean') {
     next.openAtLogin = patch.openAtLogin
     applyOpenAtLogin(patch.openAtLogin)
+  }
+  if (isThemePreference(patch.theme)) {
+    next.theme = patch.theme
+  }
+  if (patch.totpShortcuts && typeof patch.totpShortcuts === 'object') {
+    const cleaned: Record<string, string> = {}
+    for (const [id, accelerator] of Object.entries(patch.totpShortcuts)) {
+      if (typeof id === 'string' && typeof accelerator === 'string' && accelerator.trim()) {
+        cleaned[id] = accelerator.trim()
+      }
+    }
+    next.totpShortcuts = cleaned
   }
 
   const saved = store.write(next)

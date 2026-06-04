@@ -47,6 +47,7 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       autoHideOnBlur?: boolean
       autoUpdateEnabled?: boolean
       openAtLogin?: boolean
+      theme?: 'light' | 'dark' | 'system'
     }>
   },
   patchClipboardPrefs(patch: {
@@ -56,6 +57,7 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
     autoHideOnBlur?: boolean
     autoUpdateEnabled?: boolean
     openAtLogin?: boolean
+    theme?: 'light' | 'dark' | 'system'
   }) {
     return ipcRenderer.invoke(IPC.clipboardPrefsPatch, patch) as Promise<{
       clipboardPolicy: 'smart' | 'always' | 'never'
@@ -64,7 +66,11 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       autoHideOnBlur?: boolean
       autoUpdateEnabled?: boolean
       openAtLogin?: boolean
+      theme?: 'light' | 'dark' | 'system'
     }>
+  },
+  syncWindowTheme(theme: 'light' | 'dark') {
+    ipcRenderer.send(IPC.windowThemeSync, theme)
   },
   getUpdateState() {
     return ipcRenderer.invoke(IPC.updaterGetState) as Promise<UpdateState>
@@ -101,5 +107,59 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
     const listener = (_e: unknown, payload: OpenToolPayload) => handler(payload)
     ipcRenderer.on(channel, listener)
     return () => ipcRenderer.removeListener(channel, listener)
+  },
+  listMacApps() {
+    return ipcRenderer.invoke(IPC.macAppsList) as Promise<
+      import('../../shared/macApps').MacAppEntry[]
+    >
+  },
+  getMacAppIcon(appPath: string) {
+    return ipcRenderer.invoke(IPC.macAppGetIcon, appPath) as Promise<string | null>
+  },
+  openMacApp(appPath: string) {
+    return ipcRenderer.invoke(IPC.macAppOpen, appPath) as Promise<boolean>
+  },
+  syncTotpAccounts(accounts: import('../../utils/totp').StoredTotpAccount[]) {
+    return ipcRenderer.invoke(IPC.totpSyncAccounts, accounts) as Promise<
+      import('../../utils/totp').StoredTotpAccount[]
+    >
+  },
+  getTotpShortcuts() {
+    return ipcRenderer.invoke(IPC.totpGetShortcuts) as Promise<Record<string, string>>
+  },
+  setTotpShortcut(accountId: string, accelerator: string | null) {
+    return ipcRenderer.invoke(IPC.totpSetShortcut, { accountId, accelerator }) as Promise<{
+      ok: boolean
+      error?: string
+    }>
+  },
+  requestTotpAccessibilityPermission() {
+    return ipcRenderer.invoke(IPC.totpOpenAccessibility) as Promise<{
+      trusted: boolean
+      required: boolean
+      appName: string
+      isDev: boolean
+      hint: string
+      prompted: boolean
+      openedSettings: boolean
+    }>
+  },
+  openTotpAccessibilitySettings() {
+    return ipcRenderer.invoke(IPC.totpOpenAccessibilitySettings) as Promise<{
+      trusted: boolean
+      required: boolean
+      appName: string
+      isDev: boolean
+      hint: string
+    }>
+  },
+  getTotpAccessibilityStatus() {
+    return ipcRenderer.invoke(IPC.totpGetAccessibility) as Promise<{
+      trusted: boolean
+      required: boolean
+      appName: string
+      isDev: boolean
+      hint: string
+    }>
   }
 })

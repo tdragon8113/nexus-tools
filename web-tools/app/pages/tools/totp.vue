@@ -80,6 +80,12 @@
                 >
                   {{ displayAccount(row.account) }}
                 </p>
+                <p
+                  v-if="desktopAutofillSupported && shortcutFor(row.account.id)"
+                  class="mt-1 truncate font-mono text-[11px] text-indigo-600"
+                >
+                  快捷键 {{ formatAcceleratorLabel(shortcutFor(row.account.id)!) }}
+                </p>
               </div>
 
               <div class="flex shrink-0 items-center gap-3">
@@ -131,6 +137,15 @@
                   v-if="!reorderMode"
                   class="absolute -right-1 -top-1 z-10 flex gap-0.5 rounded-full border border-slate-200 bg-white p-0.5 opacity-0 shadow-sm pointer-events-none transition group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto"
                 >
+              <button
+                v-if="desktopAutofillSupported"
+                type="button"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"
+                aria-label="快捷键"
+                @click.stop="openShortcutSheet(row.account)"
+              >
+                <van-icon name="guide-o" size="14" />
+              </button>
               <button
                 type="button"
                 class="flex h-7 w-7 items-center justify-center rounded-full text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"
@@ -479,6 +494,15 @@
         </div>
       </div>
     </Teleport>
+
+    <TotpShortcutSheet
+      :open="shortcutSheetOpen"
+      :account-id="shortcutAccount?.id ?? ''"
+      :account-title="shortcutAccountTitle"
+      :current-shortcut="shortcutAccount ? shortcutFor(shortcutAccount.id) : undefined"
+      @close="closeShortcutSheet"
+      @saved="onShortcutSaved"
+    />
   </div>
 </template>
 
@@ -489,7 +513,9 @@ import { showToast } from 'vant'
 import DesktopSettingsToggle from '~/components/DesktopSettingsToggle.vue'
 import { copyWithToast } from '~/composables/useCopyText'
 import { useConsumeToolPrefill } from '~/composables/useConsumeToolPrefill'
+import { useTotpDesktopAutofill } from '~/composables/useTotpDesktopAutofill'
 import { useTotpAccounts, type TotpAccountLive } from '~/composables/useTotpAccounts'
+import { formatAcceleratorLabel } from '~/core/totpShortcut'
 import {
   applyTotpDisplayNames,
   buildOtpAuthUrl,
@@ -517,6 +543,21 @@ const {
   setAccountOrder,
   hasDuplicate
 } = useTotpAccounts()
+
+const {
+  supported: desktopAutofillSupported,
+  refreshShortcuts,
+  clearShortcut,
+  shortcutFor
+} = useTotpDesktopAutofill()
+
+const shortcutSheetOpen = ref(false)
+const shortcutAccount = ref<StoredTotpAccount | null>(null)
+
+const shortcutAccountTitle = computed(() => {
+  if (!shortcutAccount.value) return ''
+  return displayIssuer(shortcutAccount.value)
+})
 
 type TotpSortItem = { id: string; row: TotpAccountLive }
 
@@ -560,13 +601,14 @@ const dragGhostRow = computed(() => {
 
 const hintText = computed(() => {
   const count = `${liveRows.value.length} 个账户`
+  const autofillHint = desktopAutofillSupported.value ? ' · 悬停可设快捷键自动填入' : ''
   if (reorderMode.value && reorderEnabled.value) {
-    return `${count} · 拖动调整顺序 · 点击不会复制验证码`
+    return `${count} · 拖动调整顺序 · 点击不会复制验证码${autofillHint}`
   }
   if (liveRows.value.length > 1) {
-    return `${count} · 点击复制验证码 · 开启排序后可拖动`
+    return `${count} · 点击复制验证码 · 开启排序后可拖动${autofillHint}`
   }
-  return `${count} · 点击复制验证码`
+  return `${count} · 点击复制验证码${autofillHint}`
 })
 
 type FormMode = 'add' | 'edit'
@@ -839,8 +881,23 @@ async function onQrFile(ev: Event) {
 }
 
 function removeRow(id: string) {
+  void clearShortcut(id)
   removeAccount(id)
   showToast('已删除')
+}
+
+function openShortcutSheet(account: StoredTotpAccount) {
+  shortcutAccount.value = account
+  shortcutSheetOpen.value = true
+}
+
+function closeShortcutSheet() {
+  shortcutSheetOpen.value = false
+  shortcutAccount.value = null
+}
+
+function onShortcutSaved() {
+  void refreshShortcuts()
 }
 
 async function onRowClick(row: TotpAccountLive) {
@@ -871,6 +928,7 @@ useConsumeToolPrefill('totp', applyPrefill)
 
 onMounted(() => {
   loadAccounts()
+  void refreshShortcuts()
 })
 </script>
 

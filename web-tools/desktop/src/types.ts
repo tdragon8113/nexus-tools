@@ -22,7 +22,17 @@ export const IPC = {
   updaterDownload: 'desktop:updater-download',
   updaterInstall: 'desktop:updater-install',
   updaterOpenRelease: 'desktop:updater-open-release',
-  updateState: 'desktop:update-state'
+  updateState: 'desktop:update-state',
+  macAppsList: 'desktop:mac-apps-list',
+  macAppGetIcon: 'desktop:mac-app-get-icon',
+  macAppOpen: 'desktop:mac-app-open',
+  windowThemeSync: 'desktop:window-theme-sync',
+  totpSyncAccounts: 'desktop:totp-sync-accounts',
+  totpGetShortcuts: 'desktop:totp-get-shortcuts',
+  totpSetShortcut: 'desktop:totp-set-shortcut',
+  totpOpenAccessibility: 'desktop:totp-open-accessibility',
+  totpOpenAccessibilitySettings: 'desktop:totp-open-accessibility-settings',
+  totpGetAccessibility: 'desktop:totp-get-accessibility'
 } as const
 
 export type ClipboardOpenSource = 'hotkey' | 'navigation'
@@ -38,7 +48,7 @@ export const DESKTOP_FRAME_WIDTH = 800
 
 export const LAUNCHER_WIDTH = DESKTOP_FRAME_WIDTH
 /** 搜索窗可缩放下限（须能容纳顶栏 + 输入框；实际高度以内容测量为准） */
-export const LAUNCHER_MIN_HEIGHT = 88
+export const LAUNCHER_MIN_HEIGHT = 320
 
 /** 工具集与所有工具页统一窗口尺寸 */
 export const PANEL_WIDTH = DESKTOP_FRAME_WIDTH

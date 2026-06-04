@@ -97,23 +97,9 @@ onUnmounted(() => {
     <div
       v-if="isSearchScreen"
       ref="searchShellRef"
-      class="nexus-desktop-search nexus-shell flex w-full shrink-0 flex-col"
+      class="nexus-desktop-search nexus-shell nexus-shell--search flex w-full shrink-0 flex-col overflow-hidden"
     >
-      <div class="nexus-shell-header">
-        <button
-          type="button"
-          class="nexus-chrome-link"
-          @mousedown.prevent="goHub"
-        >
-          工具集
-        </button>
-        <span class="nexus-shell-drag-region min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">搜索</span>
-        <DesktopHeaderSettingsButton />
-        <DesktopWindowChrome />
-      </div>
-      <div class="shrink-0">
-        <slot />
-      </div>
+      <slot />
     </div>
 
     <!-- 工具集 / 工具：固定面板高度 -->
@@ -147,7 +133,7 @@ onUnmounted(() => {
             工具集
           </button>
         </template>
-        <span class="nexus-shell-drag-region min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-800">
+        <span class="nexus-shell-drag-region min-w-0 flex-1 truncate text-center text-sm font-semibold">
           {{ barTitle }}
         </span>
         <DesktopHeaderSettingsButton v-if="!isSettingsScreen" />
@@ -185,10 +171,6 @@ html[data-nexus-desktop='1']
   > div {
   max-width: none !important;
   padding: 12px 14px !important;
-}
-
-html[data-nexus-desktop='1'] .nexus-desktop-panel__body {
-  background: rgb(241 245 249 / 0.8);
 }
 
 html[data-nexus-desktop='1'] .nexus-desktop-panel__body .py-8,

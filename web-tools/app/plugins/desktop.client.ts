@@ -6,19 +6,46 @@ function purgeNuxtDevtools() {
   document.querySelectorAll(DEVTOOLS_NODES).forEach((el) => el.remove())
 }
 
+import {
+  readThemePreferenceFromStorage,
+  resolveDesktopTheme
+} from '~/core/desktopTheme'
+
 export default defineNuxtPlugin((nuxtApp) => {
   const { registerElectronBridge, syncWindowChrome, syncPinnedFromMain } = useDesktop()
+  const { syncFromMain: syncThemeFromMain, bindSystemThemeListener } = useDesktopTheme()
   registerElectronBridge()
 
-  if (import.meta.client) {
+  let unbindSystemTheme = () => {}
+
+    if (import.meta.client) {
     document.documentElement.dataset.nexusDesktop = '1'
+    const stored = readThemePreferenceFromStorage() ?? 'system'
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.dataset.nexusTheme = resolveDesktopTheme(stored, prefersDark)
+    unbindSystemTheme = bindSystemThemeListener()
+    void syncThemeFromMain()
+    try {
+      const raw = localStorage.getItem('nexus-totp-accounts-v1')
+      if (raw && window.nexusDesktop?.syncTotpAccounts) {
+        const parsed = JSON.parse(raw) as unknown
+        if (Array.isArray(parsed)) {
+          void window.nexusDesktop.syncTotpAccounts(parsed)
+        }
+      }
+    } catch {
+      /* ignore invalid local TOTP cache */
+    }
     purgeNuxtDevtools()
     const observer = new MutationObserver(purgeNuxtDevtools)
     observer.observe(document.documentElement, { childList: true, subtree: true })
     nuxtApp.hook('page:finish', purgeNuxtDevtools)
     nuxtApp.hook('app:suspense:resolve', purgeNuxtDevtools)
     if (import.meta.hot) {
-      import.meta.hot.dispose(() => observer.disconnect())
+      import.meta.hot.dispose(() => {
+        observer.disconnect()
+        unbindSystemTheme()
+      })
     }
   }
 

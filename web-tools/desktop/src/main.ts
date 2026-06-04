@@ -1,4 +1,4 @@
-import { app, BrowserWindow, clipboard, globalShortcut, ipcMain } from 'electron'
+import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, nativeTheme, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { applyDockIcon } from './appIcon'
@@ -7,15 +7,30 @@ import { startStaticServer } from './staticServer'
 import { MAX_CLIPBOARD_TEXT_CHARS } from './clipboardLimits'
 import { applyOpenAtLogin, getOpenAtLoginFromSystem, wasOpenedAtLogin } from './loginItem'
 import { applyPrefsPatch } from './prefsPatch'
-import { DesktopPrefsStore } from './prefs'
+import { DesktopPrefsStore, type DesktopPrefs } from './prefs'
 import { clearMacAppQuarantine } from './macQuarantine'
 import { AppUpdaterService } from './updater'
 import { setupAppTray } from './trayManager'
+import { listMacApplications } from './macApps'
+import { getMacAppIconDataUrl } from './macAppIcon'
+import { TotpAccountStore } from './totpAccountStore'
+import {
+  getAccessibilityStatus,
+  openAccessibilitySettings,
+  requestAccessibilityPermission,
+  warmUpKeyboardAutomation
+} from './totpAutofill'
+import { TotpShortcutManager } from './totpShortcutManager'
 import { WindowManager } from './windowManager'
 import { IPC } from './types'
+import type { StoredTotpAccount } from '../../utils/totp'
 
 const isDev = process.env.NEXUS_WEB_DEV === '1'
 const HOTKEY = process.env.NEXUS_HOTKEY ?? 'Alt+Space'
+
+if (process.platform === 'darwin') {
+  app.setName('Nexus Tools')
+}
 
 function readClipboardForSearch(): string {
   const raw = clipboard.readText().trim()
@@ -26,6 +41,12 @@ function readClipboardForSearch(): string {
   return cut
 }
 
+function resolveThemeFromPrefs(prefs: DesktopPrefs): 'light' | 'dark' {
+  if (prefs.theme === 'light') return 'light'
+  if (prefs.theme === 'dark') return 'dark'
+  return nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+}
+
 const distDir = path.join(__dirname)
 let webBaseUrl = ''
 let staticServerClose: (() => void) | null = null
@@ -33,6 +54,8 @@ let windows: WindowManager | null = null
 const desktopPrefs = new DesktopPrefsStore()
 let appUpdater: AppUpdaterService | null = null
 let appTray: ReturnType<typeof setupAppTray> = null
+const totpAccountStore = new TotpAccountStore()
+let totpShortcuts: TotpShortcutManager | null = null
 
 function allBrowserWindows(): BrowserWindow[] {
   return BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed())
@@ -66,6 +89,17 @@ app.whenReady().then(async () => {
   }
 
   windows = new WindowManager(webBaseUrl, preloadPath, desktopPrefs)
+  windows.setResolvedTheme(resolveThemeFromPrefs(desktopPrefs.read()))
+
+  totpAccountStore.loadFromDisk()
+  totpShortcuts = new TotpShortcutManager({
+    prefs: desktopPrefs,
+    accountStore: totpAccountStore,
+    hideWindow: () => windows?.hide(),
+    mainSearchHotkey: HOTKEY
+  })
+  totpShortcuts.reload()
+  warmUpKeyboardAutomation()
 
   const ok = globalShortcut.register(HOTKEY, () => {
     windows?.toggleSearch(readClipboardForSearch())
@@ -76,6 +110,9 @@ app.whenReady().then(async () => {
     if (typeof h === 'number' && Number.isFinite(h)) windows?.resizeSearch(h)
   })
   ipcMain.on(IPC.searchMode, () => windows?.applySearchChrome())
+  ipcMain.on(IPC.windowThemeSync, (_e, theme: unknown) => {
+    if (theme === 'light' || theme === 'dark') windows?.setResolvedTheme(theme)
+  })
   ipcMain.handle(IPC.panelMode, (_e, p: unknown) => {
     if (typeof p === 'string') windows?.setPanelMode(p)
   })
@@ -109,7 +146,45 @@ app.whenReady().then(async () => {
   ipcMain.on(IPC.updaterInstall, () => appUpdater?.install())
   ipcMain.on(IPC.updaterOpenRelease, () => appUpdater?.openReleasePage())
 
+  ipcMain.handle(IPC.macAppsList, () => listMacApplications())
+  ipcMain.handle(IPC.macAppGetIcon, async (_e, appPath: unknown) => {
+    if (typeof appPath !== 'string' || !appPath.endsWith('.app')) return null
+    return getMacAppIconDataUrl(appPath)
+  })
+  ipcMain.handle(IPC.macAppOpen, async (_e, appPath: unknown) => {
+    if (typeof appPath !== 'string' || !appPath.endsWith('.app')) return false
+    const err = await shell.openPath(appPath)
+    return err === ''
+  })
+
+  ipcMain.handle(IPC.totpSyncAccounts, (_e, accounts: unknown) => {
+    if (!Array.isArray(accounts)) return totpAccountStore.list()
+    return totpAccountStore.saveAccounts(accounts as StoredTotpAccount[])
+  })
+  ipcMain.handle(IPC.totpGetShortcuts, () => totpShortcuts?.getShortcuts() ?? {})
+  ipcMain.handle(IPC.totpSetShortcut, (_e, payload: unknown) => {
+    if (!totpShortcuts || !payload || typeof payload !== 'object') {
+      return { ok: false, error: 'invalid' }
+    }
+    const { accountId, accelerator } = payload as { accountId?: unknown; accelerator?: unknown }
+    if (typeof accountId !== 'string') return { ok: false, error: 'invalid' }
+    const next =
+      accelerator === null || accelerator === undefined || accelerator === ''
+        ? null
+        : typeof accelerator === 'string'
+          ? accelerator
+          : null
+    return totpShortcuts.setShortcut(accountId, next)
+  })
+  ipcMain.handle(IPC.totpOpenAccessibility, () => requestAccessibilityPermission())
+  ipcMain.handle(IPC.totpOpenAccessibilitySettings, () => {
+    openAccessibilitySettings()
+    return getAccessibilityStatus()
+  })
+  ipcMain.handle(IPC.totpGetAccessibility, () => getAccessibilityStatus())
+
   if (process.platform === 'darwin') {
+    void listMacApplications()
     app.dock?.show()
     applyDockIcon()
   }

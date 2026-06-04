@@ -8,6 +8,7 @@ export interface NexusOpenToolPayload {
 }
 
 import type { ClipboardOpenSource, ClipboardPolicy } from '~/core/desktopClipboardPolicy'
+import type { DesktopThemePreference } from '~/core/desktopTheme'
 
 export type NexusShowSearchPayload = {
   clipboard?: string
@@ -22,6 +23,7 @@ export type NexusClipboardPrefs = {
   autoHideOnBlur?: boolean
   autoUpdateEnabled?: boolean
   openAtLogin?: boolean
+  theme?: DesktopThemePreference
 }
 
 export type NexusUpdateStatus =
@@ -55,6 +57,7 @@ export interface NexusDesktopBridge {
   onPinnedChange?(handler: (pinned: boolean) => void): () => void
   getClipboardPrefs?(): Promise<NexusClipboardPrefs>
   patchClipboardPrefs?(patch: Partial<NexusClipboardPrefs>): Promise<NexusClipboardPrefs>
+  syncWindowTheme?(theme: 'light' | 'dark'): void
   getUpdateState?(): Promise<NexusUpdateState>
   checkForUpdates?(): Promise<NexusUpdateState>
   downloadUpdate?(): Promise<NexusUpdateState>
@@ -64,6 +67,46 @@ export interface NexusDesktopBridge {
   applyOpenTool?(payload: NexusOpenToolPayload): void
   onShowSearch(handler: (payload: NexusShowSearchPayload) => void): () => void
   onOpenTool?(handler: (payload: NexusOpenToolPayload) => void): () => void
+  listMacApps?(): Promise<import('~~/shared/macApps').MacAppEntry[]>
+  getMacAppIcon?(appPath: string): Promise<string | null>
+  openMacApp?(appPath: string): Promise<boolean>
+  syncTotpAccounts?(accounts: import('~~/utils/totp').StoredTotpAccount[]): Promise<
+    import('~~/utils/totp').StoredTotpAccount[]
+  >
+  getTotpShortcuts?(): Promise<Record<string, string>>
+  setTotpShortcut?(
+    accountId: string,
+    accelerator: string | null
+  ): Promise<{ ok: boolean; error?: string }>
+  requestTotpAccessibilityPermission?(): Promise<{
+    trusted: boolean
+    required: boolean
+    appName: string
+    isDev: boolean
+    hint: string
+    authStatus?: string
+    launchHost?: string | null
+    prompted: boolean
+    openedSettings: boolean
+  }>
+  openTotpAccessibilitySettings?(): Promise<{
+    trusted: boolean
+    required: boolean
+    appName: string
+    isDev: boolean
+    hint: string
+    authStatus?: string
+    launchHost?: string | null
+  }>
+  getTotpAccessibilityStatus?(): Promise<{
+    trusted: boolean
+    required: boolean
+    appName: string
+    isDev: boolean
+    hint: string
+    authStatus?: string
+    launchHost?: string | null
+  }>
 }
 
 declare global {

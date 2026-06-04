@@ -4,6 +4,8 @@ import path from 'node:path'
 
 export type ClipboardPolicy = 'smart' | 'always' | 'never'
 
+export type DesktopThemePreference = 'light' | 'dark' | 'system'
+
 export type DesktopPrefs = {
   clipboardPolicy?: ClipboardPolicy
   lastAppliedClipboardHash?: string
@@ -14,13 +16,18 @@ export type DesktopPrefs = {
   autoUpdateEnabled?: boolean
   /** 登录系统后自动启动应用（默认关闭） */
   openAtLogin?: boolean
+  /** 界面主题：亮色 / 暗色 / 跟随系统 */
+  theme?: DesktopThemePreference
+  /** 2FA 账户全局快捷键：accountId → Electron accelerator */
+  totpShortcuts?: Record<string, string>
 }
 
 const DEFAULT_PREFS: DesktopPrefs = {
   clipboardPolicy: 'smart',
   autoHideOnBlur: true,
   autoUpdateEnabled: true,
-  openAtLogin: false
+  openAtLogin: false,
+  theme: 'system'
 }
 
 export class DesktopPrefsStore {

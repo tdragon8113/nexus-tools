@@ -93,6 +93,9 @@ export function useTotpAccounts() {
     accounts.value = next
     persistAccounts(next)
     void refreshLiveRows()
+    if (import.meta.client && window.nexusDesktop?.syncTotpAccounts) {
+      void window.nexusDesktop.syncTotpAccounts(next)
+    }
   }
 
   function loadAccounts() {

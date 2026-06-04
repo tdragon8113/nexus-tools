@@ -89,6 +89,7 @@ export function useSearchQueryPayload(displayKey: string, payloadKey: string) {
 
   return {
     query,
+    displayQuery: computed(() => display.value.trim()),
     payload,
     fromClipboard,
     effectiveText,

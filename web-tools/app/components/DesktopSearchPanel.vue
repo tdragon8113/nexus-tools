@@ -1,96 +1,127 @@
 <script setup lang="ts">
 const {
   rootRef,
-  query,
-  hasQuery,
+  headerRef,
+  commandQuery,
+  queryEditor,
+  queryFocused,
+  showQueryEditor,
+  hasQueryEditor,
   hasPayload,
   payloadSize,
   hint,
-  displayTools,
+  searchItems,
+  selectedItem,
+  preview,
   showEmpty,
   activeIndex,
+  footerPrimaryLabel,
   hasClipboardOffer,
   clipboardOfferLabel,
   acceptClipboardOffer,
   dismissClipboardOffer,
-  clearQuery,
-  closeDesktop,
-  openTool,
+  actionsOpen,
+  actionIndex,
+  panelActions,
+  runPanelAction,
+  toggleActionsMenu,
+  pickItem,
   onEnter,
-  onSearchPaste,
-  onSearchKeydown
+  onQueryPaste,
+  onSearchKeydown,
+  setQueryEditor,
+  clearQueryContent
 } = useDesktopSearchPanel()
 
-function onSearchFocus(event: FocusEvent) {
-  if (!hasPayload.value) return
-  const el = event.target
-  if (!(el instanceof HTMLInputElement)) return
-  nextTick(() => el.select())
+function focusQueryField() {
+  queryFocused.value = true
+  headerRef.value?.focusQuery()
+}
+
+function focusCommandField() {
+  queryFocused.value = false
+  headerRef.value?.focusCommand()
 }
 </script>
 
 <template>
-  <div ref="rootRef" class="px-3.5 pb-2.5 pt-3.5">
-    <div
-      class="desktop-search-bar flex items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/20"
-      style="-webkit-app-region: no-drag"
-    >
-      <van-icon name="search" class="pointer-events-none shrink-0 text-slate-400" size="18" />
-      <input
-        v-model="query"
-        type="text"
-        role="searchbox"
-        autocomplete="off"
-        spellcheck="false"
-        class="desktop-search-input min-w-0 flex-1 border-0 bg-transparent font-mono text-sm outline-none placeholder:text-slate-400 placeholder:font-sans focus:ring-0"
-        placeholder="搜索 Nexus 工具…"
-        style="-webkit-app-region: no-drag"
-        autofocus
-        @focus="onSearchFocus"
-        @paste="onSearchPaste"
-        @keydown="onSearchKeydown"
-        @keydown.enter.prevent="onEnter"
-      />
-      <button
-        v-if="hasQuery || hasPayload"
-        type="button"
-        class="flex shrink-0 items-center justify-center rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-        aria-label="清空"
-        @click="clearQuery"
-      >
-        <van-icon name="cross" size="16" />
-      </button>
+  <div ref="rootRef" class="nexus-raycast-search flex min-h-0 flex-col">
+    <div class="nexus-raycast-titlebar flex h-7 shrink-0 items-center gap-1 px-2">
+      <div class="nexus-shell-drag-region min-w-0 flex-1" />
+      <DesktopWindowChrome />
     </div>
+
+    <SearchHeader
+      ref="headerRef"
+      v-model:command="commandQuery"
+      :query="queryEditor"
+      :query-focused="queryFocused"
+      :show-query="showQueryEditor"
+      :has-query="hasQueryEditor"
+      :has-payload="hasPayload"
+      @update:query="setQueryEditor"
+      @clear-query="clearQueryContent"
+      @focus-query="focusQueryField"
+      @focus-command="focusCommandField"
+      @paste="onQueryPaste"
+      @keydown="onSearchKeydown"
+      @keydown.enter.prevent="onEnter"
+    />
 
     <div
       v-if="hasClipboardOffer"
-      class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-amber-200/80 bg-amber-50/90 px-2.5 py-2 text-xs text-amber-950"
+      class="nexus-raycast-border-b nexus-raycast-surface-muted flex items-center gap-2 px-3 py-2 text-xs"
       style="-webkit-app-region: no-drag"
     >
-      <span class="min-w-0 flex-1">
-        剪贴板：<span class="font-medium">{{ clipboardOfferLabel }}</span>
-        <span class="text-amber-800/80"> · Tab 填入 · Esc 忽略</span>
+      <span class="nexus-raycast-text-secondary min-w-0 flex-1 truncate">
+        剪贴板 · {{ clipboardOfferLabel }}
+        <span class="nexus-raycast-text-tertiary">· Tab 填入</span>
       </span>
       <button
         type="button"
-        class="shrink-0 rounded-md bg-amber-200/80 px-2 py-0.5 font-medium text-amber-950 hover:bg-amber-300/80"
+        class="nexus-raycast-btn-muted nexus-raycast-text-primary shrink-0 rounded-md px-2 py-0.5 transition-colors"
         @click="acceptClipboardOffer"
       >
         填入
       </button>
+      <button
+        type="button"
+        class="nexus-raycast-text-muted nexus-raycast-btn-ghost shrink-0 rounded-md px-2 py-0.5 transition-colors"
+        @click="dismissClipboardOffer"
+      >
+        忽略
+      </button>
     </div>
 
-    <p v-if="hint" class="mt-2 text-xs text-indigo-600">
-      识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>，回车打开
-    </p>
-    <p v-else-if="showEmpty" class="mt-2 text-xs text-slate-400">无匹配，可打开工具集</p>
+    <div class="nexus-raycast-body flex min-h-[17rem] flex-1">
+      <div class="flex min-w-0 flex-[0_0_42%] flex-col overflow-hidden" style="-webkit-app-region: no-drag">
+        <p v-if="hint" class="nexus-raycast-border-b nexus-raycast-hint px-3 py-2 text-xs">
+          Query 识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>
+        </p>
+        <p v-else-if="showEmpty" class="nexus-raycast-border-b nexus-raycast-text-tertiary px-3 py-2 text-xs">无匹配工具或应用</p>
 
-    <SearchToolMatchChips
-      class="mt-2.5"
-      :tools="displayTools"
-      :active-index="activeIndex"
-      @update:active-index="activeIndex = $event"
-      @pick="openTool"
+        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <SearchResultList
+            :items="searchItems"
+            :active-index="activeIndex"
+            @update:active-index="activeIndex = $event"
+            @pick="pickItem"
+          />
+        </div>
+      </div>
+
+      <SearchPreviewPanel :preview="preview" :item="selectedItem" class="min-w-0 flex-1" />
+    </div>
+
+    <SearchActionFooter :primary-label="footerPrimaryLabel" @open-actions="toggleActionsMenu" />
+
+    <SearchActionsMenu
+      :open="actionsOpen"
+      :actions="panelActions"
+      :active-index="actionIndex"
+      @close="actionsOpen = false"
+      @pick="runPanelAction"
+      @update:active-index="actionIndex = $event"
     />
   </div>
 </template>

@@ -38,6 +38,7 @@ export class WindowManager {
   private lastSearchHeight = LAUNCHER_MIN_HEIGHT
   /** 冷启动：等渲染层首次测高后再 show，避免先矮窗后撑开闪一下 */
   private deferShowUntilSearchMeasured = true
+  private resolvedTheme: 'light' | 'dark' = 'light'
 
   constructor(
     private readonly webBaseUrl: string,
@@ -183,7 +184,7 @@ export class WindowManager {
 
   /** 搜索窗高度：以内容测量为准，仅做上下限裁剪（避免 LAUNCHER_MIN 撑出底部空白条） */
   private searchHeightFromContent(measured: number): number {
-    const maxH = Math.round(this.workArea().height * 0.65)
+    const maxH = Math.round(this.workArea().height * 0.72)
     const h = Number.isFinite(measured) ? Math.round(measured) : LAUNCHER_MIN_HEIGHT
     return Math.min(maxH, Math.max(LAUNCHER_MIN_HEIGHT, h))
   }
@@ -328,6 +329,21 @@ export class WindowManager {
     return new URL(pathname, this.webBaseUrl).toString()
   }
 
+  private themeBackground(): string {
+    return this.resolvedTheme === 'dark' ? '#1c1c1e' : '#ffffff'
+  }
+
+  setResolvedTheme(theme: 'light' | 'dark') {
+    this.resolvedTheme = theme
+    this.syncWindowBackground()
+  }
+
+  private syncWindowBackground() {
+    const win = this.shell
+    if (!win || win.isDestroyed()) return
+    win.setBackgroundColor(this.themeBackground())
+  }
+
   private searchUrl(q = '') {
     const url = new URL('/desktop/search', this.webBaseUrl)
     const safeQ = q.trim()
@@ -341,7 +357,7 @@ export class WindowManager {
     const win = this.shell
     if (!win || win.isDestroyed()) return
     this.clearSavedPanelBounds()
-    win.setBackgroundColor('#ffffff')
+    win.setBackgroundColor(this.themeBackground())
     const current = win.getBounds()
     const fromPanel = current.height > PANEL_HEIGHT * 0.75
     const height = fromPanel
@@ -388,7 +404,7 @@ export class WindowManager {
   ) {
     const win = this.shell
     if (!win || win.isDestroyed()) return
-    win.setBackgroundColor('#ffffff')
+    win.setBackgroundColor(this.themeBackground())
     const area = this.workArea()
     const displayId = this.activeDisplay().id
     const w = Math.min(width, area.width - 40)

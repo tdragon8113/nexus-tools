@@ -37,6 +37,22 @@ onMounted(() => {
 
       <DesktopSettingsField
         border-top
+        label="外观主题"
+        description="搜索启动器与桌面窗口背景。跟随系统时会随 macOS 浅色/深色外观自动切换。"
+      >
+        <DesktopThemeSettings />
+      </DesktopSettingsField>
+
+      <DesktopSettingsField
+        border-top
+        label="辅助功能"
+        description="用于快捷键自动填入等能力。macOS 需在系统设置中授权一次。"
+      >
+        <DesktopAccessibilitySettings />
+      </DesktopSettingsField>
+
+      <DesktopSettingsField
+        border-top
         label="剪贴板填入"
         description="用快捷键打开搜索时，是否将剪贴板内容写入搜索框。应用内点击「搜索」不会自动填入。"
       >
