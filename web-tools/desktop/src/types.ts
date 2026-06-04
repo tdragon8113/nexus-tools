@@ -17,6 +17,7 @@ export const IPC = {
   pinChanged: 'desktop:pinned-changed',
   clipboardPrefsGet: 'desktop:clipboard-prefs-get',
   clipboardPrefsPatch: 'desktop:clipboard-prefs-patch',
+  clipboardWriteText: 'desktop:clipboard-write-text',
   updaterGetState: 'desktop:updater-get-state',
   updaterCheck: 'desktop:updater-check',
   updaterDownload: 'desktop:updater-download',

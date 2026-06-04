@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   command: string
   query: string
   queryFocused: boolean
@@ -11,6 +11,7 @@ defineProps<{
 const emit = defineEmits<{
   'update:command': [value: string]
   'update:query': [value: string]
+  clearCommand: []
   clearQuery: []
   focusQuery: []
   focusCommand: []
@@ -52,40 +53,57 @@ function onQueryKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="nexus-raycast-header" style="-webkit-app-region: no-drag">
-    <div class="flex min-w-0 flex-1 items-center gap-2.5 px-3 py-3">
-      <van-icon name="search" class="nexus-raycast-icon-muted pointer-events-none shrink-0" size="18" />
+  <div class="nexus-raycast-header nexus-raycast-header--embedded mb-2 shrink-0" style="-webkit-app-region: no-drag">
+    <div
+      class="nexus-raycast-header-input flex min-w-0 flex-1 items-center gap-2 rounded-xl border px-3 py-1.5"
+    >
+      <van-icon name="search" class="nexus-raycast-icon-muted pointer-events-none shrink-0" size="16" />
 
-      <input
-        ref="commandRef"
-        :value="command"
-        type="text"
-        role="searchbox"
-        autocomplete="off"
-        spellcheck="false"
-        class="min-w-0 flex-1 border-0 bg-transparent text-[15px] outline-none focus:ring-0"
-        :class="queryFocused ? 'opacity-60' : ''"
-        placeholder="按名称搜索工具或应用…"
-        autofocus
-        @focus="emit('focusCommand')"
-        @input="emit('update:command', ($event.target as HTMLInputElement).value)"
-        @keydown="onCommandKeydown"
-        @keydown.enter.prevent="emit('keydown', $event)"
-      />
+      <div
+        class="relative min-w-0 flex-1"
+        :class="props.showQuery ? 'max-w-[calc(100%-11.5rem)]' : ''"
+      >
+        <input
+          ref="commandRef"
+          :value="command"
+          type="text"
+          role="searchbox"
+          autocomplete="off"
+          spellcheck="false"
+          class="nexus-raycast-type-body w-full border-0 bg-transparent pr-6 outline-none focus:ring-0"
+          :class="queryFocused ? 'opacity-60' : ''"
+          placeholder="按名称搜索工具或应用…"
+          autofocus
+          @focus="emit('focusCommand')"
+          @input="emit('update:command', ($event.target as HTMLInputElement).value)"
+          @keydown="onCommandKeydown"
+          @keydown.enter.prevent="emit('keydown', $event)"
+        />
+        <button
+          v-if="command.trim()"
+          type="button"
+          class="nexus-raycast-icon-muted nexus-raycast-btn-ghost absolute right-0 top-1/2 -translate-y-1/2 rounded p-0.5 transition-colors"
+          aria-label="清空搜索"
+          @mousedown.prevent
+          @click="emit('clearCommand')"
+        >
+          <van-icon name="cross" size="14" />
+        </button>
+      </div>
 
       <div
         v-if="showQuery"
-        class="nexus-raycast-query-pill flex max-w-[min(44%,15rem)] shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-colors"
+        class="nexus-raycast-query-pill ml-1 flex w-[11.5rem] max-w-[38%] shrink-0 items-center gap-1.5 rounded-lg border px-2 py-1.5 transition-colors"
         :class="queryFocused ? 'is-focused' : ''"
       >
-        <span class="nexus-raycast-text-muted shrink-0 text-[10px] font-semibold uppercase tracking-wide">Query</span>
+        <span class="nexus-raycast-text-muted nexus-raycast-type-caption shrink-0 font-semibold uppercase tracking-wide">Query</span>
         <input
           ref="queryRef"
           :value="query"
           type="text"
           autocomplete="off"
           spellcheck="false"
-          class="min-w-0 flex-1 border-0 bg-transparent font-mono text-xs outline-none focus:ring-0"
+          class="nexus-raycast-type-secondary min-w-0 flex-1 border-0 bg-transparent font-mono outline-none focus:ring-0"
           placeholder="粘贴内容以匹配工具…"
           @focus="emit('focusQuery')"
           @input="emit('update:query', ($event.target as HTMLInputElement).value)"

@@ -15,22 +15,22 @@ const {
   preview,
   showEmpty,
   activeIndex,
-  footerPrimaryLabel,
   hasClipboardOffer,
   clipboardOfferLabel,
   acceptClipboardOffer,
   dismissClipboardOffer,
-  actionsOpen,
-  actionIndex,
-  panelActions,
-  runPanelAction,
-  toggleActionsMenu,
   pickItem,
   onEnter,
   onQueryPaste,
   onSearchKeydown,
   setQueryEditor,
-  clearQueryContent
+  clearQueryContent,
+  clearCommandContent,
+  isFavorite,
+  resultContextMenu,
+  openResultContextMenu,
+  closeResultContextMenu,
+  confirmResultContextMenuFavorite
 } = useDesktopSearchPanel()
 
 function focusQueryField() {
@@ -45,12 +45,7 @@ function focusCommandField() {
 </script>
 
 <template>
-  <div ref="rootRef" class="nexus-raycast-search flex min-h-0 flex-col">
-    <div class="nexus-raycast-titlebar flex h-7 shrink-0 items-center gap-1 px-2">
-      <div class="nexus-shell-drag-region min-w-0 flex-1" />
-      <DesktopWindowChrome />
-    </div>
-
+  <div ref="rootRef" class="nexus-raycast-search flex min-h-0 flex-1 flex-col">
     <SearchHeader
       ref="headerRef"
       v-model:command="commandQuery"
@@ -60,6 +55,7 @@ function focusCommandField() {
       :has-query="hasQueryEditor"
       :has-payload="hasPayload"
       @update:query="setQueryEditor"
+      @clear-command="clearCommandContent"
       @clear-query="clearQueryContent"
       @focus-query="focusQueryField"
       @focus-command="focusCommandField"
@@ -70,7 +66,7 @@ function focusCommandField() {
 
     <div
       v-if="hasClipboardOffer"
-      class="nexus-raycast-border-b nexus-raycast-surface-muted flex items-center gap-2 px-3 py-2 text-xs"
+      class="nexus-raycast-border-b nexus-raycast-surface-muted nexus-raycast-type-secondary flex items-center gap-2 px-3 py-2"
       style="-webkit-app-region: no-drag"
     >
       <span class="nexus-raycast-text-secondary min-w-0 flex-1 truncate">
@@ -94,11 +90,11 @@ function focusCommandField() {
     </div>
 
     <div class="nexus-raycast-body flex min-h-[17rem] flex-1">
-      <div class="flex min-w-0 flex-[0_0_42%] flex-col overflow-hidden" style="-webkit-app-region: no-drag">
-        <p v-if="hint && !commandQuery.trim()" class="nexus-raycast-border-b nexus-raycast-hint px-3 py-2 text-xs">
+      <div class="flex min-w-0 flex-[0_0_34%] flex-col overflow-hidden" style="-webkit-app-region: no-drag">
+        <p v-if="hint && !commandQuery.trim()" class="nexus-raycast-border-b nexus-raycast-hint nexus-raycast-type-secondary px-3 py-2">
           内容识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>
         </p>
-        <p v-else-if="showEmpty" class="nexus-raycast-border-b nexus-raycast-text-tertiary px-3 py-2 text-xs">
+        <p v-else-if="showEmpty" class="nexus-raycast-border-b nexus-raycast-text-tertiary nexus-raycast-type-secondary px-3 py-2">
           {{ commandQuery.trim() ? '无匹配工具或应用' : '未识别到可用工具' }}
         </p>
 
@@ -106,8 +102,10 @@ function focusCommandField() {
           <SearchResultList
             :items="searchItems"
             :active-index="activeIndex"
+            :is-favorite="isFavorite"
             @update:active-index="activeIndex = $event"
             @pick="pickItem"
+            @context-menu="openResultContextMenu($event.item, $event.event)"
           />
         </div>
       </div>
@@ -115,15 +113,14 @@ function focusCommandField() {
       <SearchPreviewPanel :preview="preview" :item="selectedItem" class="min-w-0 flex-1" />
     </div>
 
-    <SearchActionFooter :primary-label="footerPrimaryLabel" @open-actions="toggleActionsMenu" />
-
-    <SearchActionsMenu
-      :open="actionsOpen"
-      :actions="panelActions"
-      :active-index="actionIndex"
-      @close="actionsOpen = false"
-      @pick="runPanelAction"
-      @update:active-index="actionIndex = $event"
+    <SearchResultContextMenu
+      :open="Boolean(resultContextMenu)"
+      :x="resultContextMenu?.x ?? 0"
+      :y="resultContextMenu?.y ?? 0"
+      :item="resultContextMenu?.item ?? null"
+      :favorited="resultContextMenu ? isFavorite(resultContextMenu.item.id) : false"
+      @close="closeResultContextMenu"
+      @toggle-favorite="confirmResultContextMenuFavorite"
     />
   </div>
 </template>

@@ -36,8 +36,11 @@ export class WindowManager {
   private resetPanelPositionOnNextOpen = false
   /** 上次搜索窗测得高度，工具 → 搜索时立即缩到该高度，避免先 hide 再 show */
   private lastSearchHeight = LAUNCHER_MIN_HEIGHT
-  /** 冷启动：等渲染层首次测高后再 show，避免先矮窗后撑开闪一下 */
-  private deferShowUntilSearchMeasured = true
+  /** 搜索页已在隐藏窗完成测高，唤起时可直接 show */
+  private shellLayoutReady = false
+  /** 用户已请求显示，但仍在等待首次测高 */
+  private awaitingReveal = false
+  private revealMeasureTimer: ReturnType<typeof setTimeout> | null = null
   private resolvedTheme: 'light' | 'dark' = 'light'
 
   constructor(
@@ -310,6 +313,9 @@ export class WindowManager {
     this.shell.on('closed', () => {
       this.shell = null
       this.loaded = false
+      this.shellLayoutReady = false
+      this.awaitingReveal = false
+      this.clearRevealMeasureTimer()
     })
 
     this.shell.webContents.on('did-finish-load', () => {
@@ -441,18 +447,29 @@ export class WindowManager {
     }
   }
 
+  private clearRevealMeasureTimer() {
+    if (this.revealMeasureTimer) {
+      clearTimeout(this.revealMeasureTimer)
+      this.revealMeasureTimer = null
+    }
+  }
+
+  private finishAwaitingReveal(win: BrowserWindow) {
+    if (!this.awaitingReveal || win.isDestroyed()) return
+    this.awaitingReveal = false
+    this.clearRevealMeasureTimer()
+    this.showAndFocus(win)
+  }
+
   private revealSearchWindow(win: BrowserWindow) {
-    if (!this.deferShowUntilSearchMeasured) {
+    if (this.shellLayoutReady) {
       this.showAndFocus(win)
       return
     }
-    const fallback = setTimeout(() => {
-      if (!this.deferShowUntilSearchMeasured) return
-      if (win.isDestroyed()) return
-      this.deferShowUntilSearchMeasured = false
-      this.showAndFocus(win)
-    }, 480)
-    win.once('closed', () => clearTimeout(fallback))
+    this.awaitingReveal = true
+    this.clearRevealMeasureTimer()
+    this.revealMeasureTimer = setTimeout(() => this.finishAwaitingReveal(win), 480)
+    win.once('closed', () => this.clearRevealMeasureTimer())
   }
 
   /** macOS 用 app.hide/show（等同 ⌘H），Cmd+Tab / 台前调度才能正确恢复 */
@@ -463,9 +480,25 @@ export class WindowManager {
     return win.isVisible()
   }
 
+  /**
+   * macOS 台前调度：优先 win.show + 弱抢焦，避免首次 app.show() 把整个分组顶到最前。
+   * app.hide() 后若窗口仍不出现，再回退 app.show()。
+   */
   private showAndFocus(win: BrowserWindow) {
+    if (win.isDestroyed()) return
     this.restoreLauncherOnTop(win)
-    if (process.platform === 'darwin') app.show()
+    if (process.platform === 'darwin') {
+      if (app.isHidden()) win.show()
+      else if (!win.isVisible()) win.show()
+      try {
+        app.focus({ steal: false })
+      } catch {
+        /* older Electron */
+      }
+      if (!win.isVisible()) app.show()
+      win.focus()
+      return
+    }
     if (!win.isVisible()) win.show()
     win.focus()
   }
@@ -477,10 +510,19 @@ export class WindowManager {
     const height = this.searchHeightFromContent(contentHeight)
     this.lastSearchHeight = height
     this.applySearchBounds(win, height, { keepPosition: true })
-    if (this.deferShowUntilSearchMeasured) {
-      this.deferShowUntilSearchMeasured = false
-      this.showAndFocus(win)
+    if (!this.shellLayoutReady) {
+      this.shellLayoutReady = true
+      this.finishAwaitingReveal(win)
     }
+  }
+
+  /** 启动后预加载搜索页（不显示），减轻首次快捷键/启动时的冷启动与台前调度干扰 */
+  prewarmSearchShell() {
+    const win = this.ensureShell()
+    const target = this.searchUrl()
+    const current = win.webContents.getURL()
+    if (this.loaded && current.includes('/desktop/search')) return
+    win.loadURL(target)
   }
 
   showSettings() {
@@ -583,11 +625,6 @@ export class WindowManager {
 
   /** Dock / 菜单栏图标 / Cmd+Tab 切回本应用时恢复窗口 */
   activateFromUser(clipboard = '') {
-    if (this.deferShowUntilSearchMeasured) {
-      this.showSearch({ clipboard, source: 'hotkey' })
-      return
-    }
-
     const win = this.shell
     if (!win || win.isDestroyed()) {
       this.showSearch({ clipboard, source: 'hotkey' })
@@ -628,7 +665,20 @@ export class WindowManager {
 
   setPanelMode(path: string, opts?: { centerOnActiveDisplay?: boolean }) {
     const size = this.panelSizeForPath(path)
-    this.applyPanelChrome(size.width, size.height, opts)
+    const win = this.shell
+    let height = size.height
+    if (win && !win.isDestroyed()) {
+      const currentH = win.getBounds().height
+      // 从搜索窗进入工具集时保留当前窗高，避免顶栏对齐后仍被强行拉到 600px 产生跳动
+      if (
+        currentH >= LAUNCHER_MIN_HEIGHT &&
+        currentH < PANEL_HEIGHT - 8 &&
+        currentH > height * 0.45
+      ) {
+        height = currentH
+      }
+    }
+    this.applyPanelChrome(size.width, height, opts)
   }
 
   closeFromRenderer() {

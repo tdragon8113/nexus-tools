@@ -160,6 +160,75 @@ html[data-nexus-desktop='1'] .desktop-settings-page {
   color: var(--nexus-tool-text);
 }
 
+/* 工具集：与搜索窗一致的三级字号，避免卡片/筛选条显得过大 */
+html[data-nexus-desktop='1'] .desktop-hub-page {
+  --nexus-hub-font-body: 0.8125rem;
+  --nexus-hub-font-secondary: 0.75rem;
+  --nexus-hub-font-caption: 0.6875rem;
+  font-size: var(--nexus-hub-font-secondary);
+  line-height: 1.35;
+}
+
+html[data-nexus-desktop='1'] .desktop-hub-page .nexus-tool-input {
+  font-size: var(--nexus-hub-font-body);
+  line-height: 1.35;
+}
+
+html[data-nexus-desktop='1'] .desktop-hub-page .nexus-tile-label {
+  font-size: var(--nexus-hub-font-caption);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+html[data-nexus-desktop='1'] .nexus-hub-type-caption {
+  font-size: var(--nexus-hub-font-caption);
+  line-height: 1.3;
+}
+
+html[data-nexus-desktop='1'] .nexus-shell-header {
+  font-size: 0.75rem;
+}
+
+html[data-nexus-desktop='1'] .nexus-shell-header .nexus-shell-drag-region {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+html[data-nexus-desktop='1'] .nexus-shell-settings-btn {
+  color: var(--nexus-tool-text-muted);
+}
+
+html[data-nexus-desktop='1'] .nexus-shell-settings-btn:hover {
+  background: var(--nexus-tool-tile-hover-bg);
+  color: var(--nexus-tool-accent-strong, var(--nexus-tool-accent));
+}
+
+html[data-nexus-desktop='1'] .nexus-desktop-search__body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+html[data-nexus-desktop='1'] .nexus-raycast-header--embedded {
+  border-bottom: none;
+}
+
+html[data-nexus-desktop='1'] .nexus-raycast-header-input {
+  border-color: var(--nexus-tool-input-border);
+  background-color: var(--nexus-tool-input-bg);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+html[data-nexus-desktop='1'] .nexus-raycast-header-input:focus-within {
+  border-color: var(--nexus-tool-focus-border);
+  box-shadow: 0 0 0 2px var(--nexus-tool-focus-ring);
+}
+
 html[data-nexus-desktop='1'] .nexus-card,
 html[data-nexus-desktop='1'] .nexus-info-panel,
 html[data-nexus-desktop='1'] .doc-surface {

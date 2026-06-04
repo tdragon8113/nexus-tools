@@ -1,12 +1,28 @@
 import { evaluateArithmetic, formatCalcResult } from '~~/utils/calcExpression'
 import { parseTimestampFlexible } from '~~/utils/timestampParse'
+import {
+  formatTotpCode,
+  storedToTotpConfig,
+  totpDisplayAccount,
+  totpDisplayIssuer,
+  type StoredTotpAccount,
+  type TotpConfig
+} from '~~/utils/totp'
 import { base64ContentHintFromText, detectContentHint, type ContentHint } from './search'
 import { getToolById } from './tools'
+
+export interface TotpPreviewRow {
+  account: StoredTotpAccount
+  code: string
+  remaining: number
+}
 
 export interface SearchPreviewLine {
   label?: string
   value: string
   mono?: boolean
+  /** 点击该行时复制到剪贴板（通常为原始值，不含展示用空格） */
+  copyText?: string
 }
 
 export interface SearchPreviewModel {
@@ -156,12 +172,113 @@ function previewByHint(hint: ContentHint, raw: string): SearchPreviewModel {
     case 'totp':
       return {
         title: '2FA / TOTP',
-        lines: [{ value: '请在完整工具中查看动态验证码。' }],
-        emptyHint: '识别为 TOTP 链接'
+        emptyHint: '识别为 TOTP 链接，正在生成验证码…'
       }
     case 'text':
     default:
       return previewPlainText(raw)
+  }
+}
+
+function accountMatchesFilter(account: StoredTotpAccount, filter: string): boolean {
+  const q = filter.trim().toLowerCase()
+  if (!q) return true
+  const config = storedToTotpConfig(account)
+  const issuer = totpDisplayIssuer(config).toLowerCase()
+  const name = totpDisplayAccount(config).toLowerCase()
+  const label = account.label.toLowerCase()
+  return issuer.includes(q) || name.includes(q) || label.includes(q)
+}
+
+/**
+ * 名称框用于找工具时（如输入 2fa / totp）不应拿去筛账户；
+ * 仅当输入不像「打开 2FA 工具」的检索词时，才当作账户名筛选。
+ */
+export function resolveTotpPreviewAccountFilter(commandFilter: string): string {
+  const q = commandFilter.trim()
+  if (!q) return ''
+
+  const tool = getToolById('totp')
+  if (!tool) return q
+
+  const lower = q.toLowerCase()
+  const tokens = [
+    tool.id,
+    tool.name,
+    tool.desc,
+    ...(tool.keywords ?? [])
+  ].map((s) => s.toLowerCase())
+
+  const matchesToolDiscovery = tokens.some(
+    (token) => token === lower || token.includes(lower) || lower.includes(token)
+  )
+
+  return matchesToolDiscovery ? '' : q
+}
+
+/** 搜索窗：展示已配置账户与当前验证码 */
+export function buildTotpAccountsSearchPreview(
+  rows: TotpPreviewRow[],
+  nameFilter = ''
+): SearchPreviewModel {
+  const filtered = rows.filter((row) => accountMatchesFilter(row.account, nameFilter))
+  if (filtered.length === 0) {
+    return {
+      title: '2FA / TOTP',
+      emptyHint: nameFilter.trim()
+        ? '没有匹配的账户'
+        : '尚未添加账户，按 ↵ 打开工具添加'
+    }
+  }
+
+  const lines: SearchPreviewLine[] = filtered.slice(0, 12).map((row) => {
+    const config = storedToTotpConfig(row.account)
+    const issuer = totpDisplayIssuer(config)
+    const account = totpDisplayAccount(config)
+    const label = account ? `${issuer} · ${account}` : issuer
+    const code = row.code ? formatTotpCode(row.code, row.account.digits) : '------'
+    const copyCode = row.code?.replace(/\s/g, '') ?? ''
+    return {
+      label,
+      value: `${code}  ·  ${row.remaining}s`,
+      mono: true,
+      copyText: copyCode || undefined
+    }
+  })
+
+  if (filtered.length > 12) {
+    lines.push({
+      value: `另有 ${filtered.length - 12} 个账户，按 ↵ 打开查看全部`
+    })
+  }
+
+  const firstCode = filtered[0]?.code?.replace(/\s/g, '')
+  return {
+    title: filtered.length === 1 ? '2FA / TOTP' : `2FA / TOTP · ${filtered.length} 个账户`,
+    lines,
+    copyText: firstCode || undefined
+  }
+}
+
+export function buildTotpConfigSearchPreview(
+  config: TotpConfig,
+  code: string,
+  remaining: number
+): SearchPreviewModel {
+  const issuer = totpDisplayIssuer(config)
+  const account = totpDisplayAccount(config)
+  const label = account ? `${issuer} · ${account}` : issuer
+  return {
+    title: '2FA / TOTP',
+    lines: [
+      {
+        label,
+        value: `${formatTotpCode(code, config.digits)}  ·  ${remaining}s`,
+        mono: true,
+        copyText: code.replace(/\s/g, '')
+      }
+    ],
+    copyText: code.replace(/\s/g, '')
   }
 }
 
@@ -186,6 +303,12 @@ export function buildToolSearchPreview(
   const tool = getToolById(toolId)
   const raw = queryText.trim()
   if (!raw) {
+    if (toolId === 'totp') {
+      return {
+        title: '2FA / TOTP',
+        emptyHint: '正在加载账户…'
+      }
+    }
     return {
       title: tool?.name ?? '预览',
       emptyHint: '在 Query 中粘贴或输入内容，将自动匹配工具并预览'
@@ -214,6 +337,11 @@ export function buildToolSearchPreview(
       return previewByHint({ kind: 'hash', toolId: 'hash', label: '哈希' }, raw)
     case 'text':
       return previewPlainText(raw)
+    case 'totp':
+      return {
+        title: '2FA / TOTP',
+        emptyHint: '正在解析 TOTP 内容…'
+      }
     default:
       if (detected) return previewByHint(detected, raw)
       return {

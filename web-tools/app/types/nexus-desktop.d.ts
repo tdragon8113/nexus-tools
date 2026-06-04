@@ -57,6 +57,7 @@ export interface NexusDesktopBridge {
   onPinnedChange?(handler: (pinned: boolean) => void): () => void
   getClipboardPrefs?(): Promise<NexusClipboardPrefs>
   patchClipboardPrefs?(patch: Partial<NexusClipboardPrefs>): Promise<NexusClipboardPrefs>
+  writeClipboardText?(text: string): Promise<boolean>
   syncWindowTheme?(theme: 'light' | 'dark'): void
   getUpdateState?(): Promise<NexusUpdateState>
   checkForUpdates?(): Promise<NexusUpdateState>

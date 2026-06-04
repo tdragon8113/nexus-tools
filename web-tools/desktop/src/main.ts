@@ -132,6 +132,11 @@ app.whenReady().then(async () => {
     if (!patch || typeof patch !== 'object') return desktopPrefs.read()
     return applyPrefsPatch(desktopPrefs, patch as Record<string, unknown>, { appUpdater })
   })
+  ipcMain.handle(IPC.clipboardWriteText, (_e, text: unknown) => {
+    if (typeof text !== 'string') return false
+    clipboard.writeText(text)
+    return true
+  })
   const prefs = desktopPrefs.read()
   appUpdater.setAutoUpdateEnabled(prefs.autoUpdateEnabled !== false)
   appUpdater.init()
@@ -205,6 +210,8 @@ app.whenReady().then(async () => {
       windows?.showSettings()
     }
   })
+
+  windows.prewarmSearchShell()
 
   console.log(`[Nexus Tools] 已启动 · ${webBaseUrl} · ${HOTKEY} 唤起搜索`)
   if (!wasOpenedAtLogin()) {

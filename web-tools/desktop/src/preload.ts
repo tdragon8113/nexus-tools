@@ -69,6 +69,9 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       theme?: 'light' | 'dark' | 'system'
     }>
   },
+  writeClipboardText(text: string) {
+    return ipcRenderer.invoke(IPC.clipboardWriteText, text) as Promise<boolean>
+  },
   syncWindowTheme(theme: 'light' | 'dark') {
     ipcRenderer.send(IPC.windowThemeSync, theme)
   },

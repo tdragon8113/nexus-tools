@@ -1,50 +1,18 @@
+import type { TotpPreviewRow } from '~/core/searchPreview'
+import { buildTotpPreviewRows } from '~/core/searchTotpPreview'
+import { loadStoredTotpAccounts, TOTP_STORAGE_KEY } from '~/core/totpStorage'
 import {
-  generateTotp,
-  storedToTotpConfig,
   totpConfigToStored,
-  totpRemainingSeconds,
   totpSecretFingerprint,
   type StoredTotpAccount,
   type TotpConfig
 } from '~~/utils/totp'
 
-const STORAGE_KEY = 'nexus-totp-accounts-v1'
-
-export interface TotpAccountLive {
-  account: StoredTotpAccount
-  code: string
-  remaining: number
-}
-
-function loadStoredAccounts(): StoredTotpAccount[] {
-  if (!import.meta.client) return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as unknown
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter(isStoredTotpAccount)
-  } catch {
-    return []
-  }
-}
-
-function isStoredTotpAccount(value: unknown): value is StoredTotpAccount {
-  if (!value || typeof value !== 'object') return false
-  const row = value as Record<string, unknown>
-  return (
-    typeof row.id === 'string'
-    && typeof row.label === 'string'
-    && typeof row.secretBase32 === 'string'
-    && typeof row.digits === 'number'
-    && typeof row.period === 'number'
-    && (row.algorithm === 'SHA1' || row.algorithm === 'SHA256' || row.algorithm === 'SHA512')
-  )
-}
+export type TotpAccountLive = TotpPreviewRow
 
 function persistAccounts(accounts: StoredTotpAccount[]) {
   if (!import.meta.client) return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts))
+  localStorage.setItem(TOTP_STORAGE_KEY, JSON.stringify(accounts))
 }
 
 export function useTotpAccounts() {
@@ -61,23 +29,7 @@ export function useTotpAccounts() {
   }
 
   async function refreshLiveRows() {
-    if (accounts.value.length === 0) {
-      liveRows.value = []
-      return
-    }
-
-    const rows = await Promise.all(
-      accounts.value.map(async (account) => {
-        const config = storedToTotpConfig(account)
-        const code = await generateTotp(config).catch(() => '')
-        return {
-          account,
-          code,
-          remaining: totpRemainingSeconds(account.period)
-        } satisfies TotpAccountLive
-      })
-    )
-    liveRows.value = rows
+    liveRows.value = await buildTotpPreviewRows(accounts.value)
   }
 
   function startTicker() {
@@ -99,7 +51,7 @@ export function useTotpAccounts() {
   }
 
   function loadAccounts() {
-    accounts.value = loadStoredAccounts()
+    accounts.value = loadStoredTotpAccounts()
     startTicker()
   }
 

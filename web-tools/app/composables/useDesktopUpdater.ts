@@ -59,7 +59,9 @@ export function useDesktopUpdater() {
     try {
       const state = await window.nexusDesktop.checkForUpdates()
       applyState(state)
-      if (state.status === 'not-available' && !state.error) {
+      if (state.status === 'not-available' && state.error) {
+        showToast(state.error)
+      } else if (state.status === 'not-available') {
         showToast('已是最新版本')
       } else if (state.status === 'error' && state.error) {
         showToast(state.error)

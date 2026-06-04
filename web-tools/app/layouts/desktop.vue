@@ -99,7 +99,15 @@ onUnmounted(() => {
       ref="searchShellRef"
       class="nexus-desktop-search nexus-shell nexus-shell--search flex w-full shrink-0 flex-col overflow-hidden"
     >
-      <slot />
+      <DesktopShellHeader
+        primary-label="工具集"
+        title="搜索"
+        :show-settings="true"
+        @primary="goHub"
+      />
+      <main class="nexus-desktop-search__body flex min-h-0 flex-1 flex-col overflow-hidden">
+        <slot />
+      </main>
     </div>
 
     <!-- 工具集 / 工具：固定面板高度 -->
@@ -107,38 +115,14 @@ onUnmounted(() => {
       v-else
       class="nexus-desktop-panel nexus-shell flex min-h-0 flex-1 flex-col"
     >
-      <header class="nexus-shell-header">
-        <button
-          v-if="isSettingsScreen"
-          type="button"
-          class="nexus-chrome-link"
-          @click="leaveSettings"
-        >
-          返回
-        </button>
-        <template v-else>
-          <button
-            type="button"
-            class="nexus-chrome-link"
-            @click="goSearch()"
-          >
-            搜索
-          </button>
-          <button
-            v-if="!isHubScreen"
-            type="button"
-            class="nexus-chrome-link"
-            @click="goHub"
-          >
-            工具集
-          </button>
-        </template>
-        <span class="nexus-shell-drag-region min-w-0 flex-1 truncate text-center text-sm font-semibold">
-          {{ barTitle }}
-        </span>
-        <DesktopHeaderSettingsButton v-if="!isSettingsScreen" />
-        <DesktopWindowChrome />
-      </header>
+      <DesktopShellHeader
+        :primary-label="isSettingsScreen ? '返回' : '搜索'"
+        :secondary-label="!isSettingsScreen && !isHubScreen ? '工具集' : undefined"
+        :title="barTitle"
+        :show-settings="!isSettingsScreen"
+        @primary="isSettingsScreen ? leaveSettings() : goSearch()"
+        @secondary="goHub"
+      />
       <main
         class="nexus-desktop-panel__body min-h-0 flex-1"
         :class="

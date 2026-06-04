@@ -156,7 +156,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
       :aria-selected="activeIndex === i"
       :tabindex="tool.path ? 0 : -1"
       :title="reorderEnabled ? `${tool.name} — 长按拖动排序` : tool.desc"
-      class="tool-grid-item flex flex-col items-center gap-1.5 rounded-2xl border px-1.5 py-2.5 transition-[transform,opacity,box-shadow,border-color,background-color] outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
+      class="tool-grid-item flex flex-col items-center gap-1 rounded-2xl border px-1 py-2 transition-[transform,opacity,box-shadow,border-color,background-color] outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
       :class="itemButtonClass(tool, i)"
       @pointerdown="onItemPointerDown($event, i, tool)"
       @click="pick(tool)"
@@ -164,19 +164,19 @@ function itemButtonClass(tool: SiteTool, i: number) {
       @keydown.space.prevent="pick(tool)"
     >
       <div
-        class="flex h-10 w-10 items-center justify-center rounded-xl"
+        class="flex h-9 w-9 items-center justify-center rounded-lg"
         :class="tool.bgColor"
       >
-        <van-icon :name="tool.icon" size="22" :class="tool.iconColor" />
+        <van-icon :name="tool.icon" size="20" :class="tool.iconColor" />
       </div>
-      <span class="nexus-tile-label w-full truncate text-center text-xs font-medium leading-tight">
+      <span class="nexus-tile-label w-full truncate text-center leading-tight">
         {{ tool.name }}
       </span>
     </div>
     <p
       v-if="!renderItems.length"
       key="__empty"
-      class="col-span-full py-10 text-center text-xs text-slate-500"
+      class="nexus-hub-type-caption col-span-full py-10 text-center text-slate-500"
     >
       没有匹配的工具
     </p>
@@ -245,7 +245,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
   <Teleport to="body">
     <div
       v-if="ghostBox && dragItem"
-      class="tool-grid-ghost nexus-tile--active flex flex-col items-center gap-1.5 rounded-2xl border px-1.5 py-2.5 shadow-lg"
+      class="tool-grid-ghost nexus-tile--active flex flex-col items-center gap-1 rounded-2xl border px-1 py-2 shadow-lg"
       :style="{
         left: `${ghostBox.left}px`,
         top: `${ghostBox.top}px`,
@@ -254,12 +254,12 @@ function itemButtonClass(tool: SiteTool, i: number) {
       }"
     >
       <div
-        class="flex h-10 w-10 items-center justify-center rounded-xl"
+        class="flex h-9 w-9 items-center justify-center rounded-lg"
         :class="dragItem.bgColor"
       >
-        <van-icon :name="dragItem.icon" size="22" :class="dragItem.iconColor" />
+        <van-icon :name="dragItem.icon" size="20" :class="dragItem.iconColor" />
       </div>
-      <span class="nexus-tile-label w-full truncate text-center text-xs font-medium leading-tight">
+      <span class="nexus-tile-label w-full truncate text-center leading-tight">
         {{ dragItem.name }}
       </span>
     </div>
