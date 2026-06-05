@@ -22,12 +22,16 @@ const actionBtnPrimary = `${actionBtn} border-indigo-200/90 bg-indigo-50 text-in
 const actionBtnSuccess = `${actionBtn} border-emerald-200/90 bg-emerald-50 text-emerald-800 hover:bg-emerald-100`
 
 const compactStatus = computed(() => {
-  const s = statusText.value
-  if (updateState.value.status === 'error') {
-    return s.length > 12 ? '无法检查' : s
+  const s = updateState.value
+  if (s.status === 'downloaded' && s.manualInstallRecommended) {
+    return '请手动安装'
   }
-  if (s === '尚未检查') return ''
-  return s
+  if (s.status === 'error') {
+    return statusText.value
+  }
+  const text = statusText.value
+  if (text === '尚未检查') return ''
+  return text
 })
 
 onMounted(() => {
@@ -70,7 +74,7 @@ onMounted(() => {
       下载
     </button>
     <button v-if="canInstall" type="button" :class="actionBtnSuccess" @click="installUpdate">
-      安装
+      {{ updateState.manualInstallRecommended ? '打开下载页' : '安装' }}
     </button>
     <button v-if="showManualRelease" type="button" :class="actionBtnDefault" @click="openReleasePage">
       下载页

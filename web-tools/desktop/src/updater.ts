@@ -90,9 +90,11 @@ export class AppUpdaterService {
     autoUpdater.allowDowngrade = false
 
     autoUpdater.on('checking-for-update', () => {
+      if (this.state.status === 'downloaded' || this.state.status === 'downloading') return
       this.patchState({ status: 'checking', error: undefined })
     })
     autoUpdater.on('update-available', (info) => {
+      if (this.state.status === 'downloaded') return
       this.patchState({
         status: 'available',
         latestVersion: info.version,
@@ -100,6 +102,8 @@ export class AppUpdaterService {
       })
     })
     autoUpdater.on('update-not-available', () => {
+      // GitHub API 已判定有新版本时，忽略 electron-updater 的 not-available（常见于重复检查/未签名包）
+      if (this.releaseTag && this.state.latestVersion) return
       this.patchState({ status: 'not-available', error: undefined })
     })
     autoUpdater.on('download-progress', (progress) => {
@@ -109,13 +113,26 @@ export class AppUpdaterService {
       })
     })
     autoUpdater.on('update-downloaded', () => {
-      this.patchState({ status: 'downloaded', percent: 100, error: undefined })
+      this.patchState({
+        status: 'downloaded',
+        percent: 100,
+        error: undefined,
+        manualInstallRecommended: process.platform === 'darwin'
+      })
       if (this.autoUpdateEnabled && process.platform === 'win32') {
         setTimeout(() => this.install(), 800)
       }
     })
     autoUpdater.on('error', (err) => {
       const manual = process.platform === 'darwin'
+      // macOS 未签名包：下载完成后校验失败不应覆盖「已下载」状态
+      if (this.state.status === 'downloaded') {
+        this.patchState({
+          error: err.message,
+          manualInstallRecommended: manual
+        })
+        return
+      }
       this.patchState({
         status: 'error',
         error: err.message,
@@ -159,8 +176,7 @@ export class AppUpdaterService {
     this.patchState({
       status: 'checking',
       currentVersion: app.getVersion(),
-      error: undefined,
-      percent: undefined
+      error: undefined
     })
 
     try {
@@ -184,8 +200,30 @@ export class AppUpdaterService {
           status: 'not-available',
           latestVersion,
           releaseTag: release.tag_name,
-          releaseUrl: release.html_url
+          releaseUrl: release.html_url,
+          percent: undefined
         })
+        return this.getState()
+      }
+
+      const manualInstallRecommended = process.platform === 'darwin'
+      const alreadyDownloaded =
+        this.state.status === 'downloaded' && this.state.latestVersion === latestVersion
+
+      if (alreadyDownloaded) {
+        this.patchState({
+          status: 'downloaded',
+          latestVersion,
+          releaseTag: release.tag_name,
+          releaseUrl: release.html_url,
+          percent: 100,
+          manualInstallRecommended,
+          error: undefined
+        })
+        return this.getState()
+      }
+
+      if (this.state.status === 'downloading' && this.state.latestVersion === latestVersion) {
         return this.getState()
       }
 
@@ -194,7 +232,8 @@ export class AppUpdaterService {
         latestVersion,
         releaseTag: release.tag_name,
         releaseUrl: release.html_url,
-        manualInstallRecommended: process.platform === 'darwin'
+        manualInstallRecommended,
+        percent: undefined
       })
 
       if (this.autoUpdateEnabled) {
@@ -211,6 +250,7 @@ export class AppUpdaterService {
 
   async download(): Promise<UpdateState> {
     if (!app.isPackaged) return this.getState()
+    if (this.state.status === 'downloaded') return this.getState()
     if (!this.releaseTag) {
       await this.check()
       if (this.state.status !== 'available' || !this.releaseTag) return this.getState()
@@ -224,6 +264,7 @@ export class AppUpdaterService {
     try {
       const checkResult = await autoUpdater.checkForUpdates()
       if (!checkResult?.updateInfo) {
+        if (this.state.status === 'downloaded') return this.getState()
         this.patchState({ status: 'not-available' })
         return this.getState()
       }
@@ -235,6 +276,13 @@ export class AppUpdaterService {
       return this.getState()
     } catch (err) {
       const message = err instanceof Error ? err.message : '下载更新失败'
+      if (this.state.status === 'downloaded') {
+        this.patchState({
+          error: message,
+          manualInstallRecommended: true
+        })
+        return this.getState()
+      }
       this.patchState({
         status: 'error',
         error: message,

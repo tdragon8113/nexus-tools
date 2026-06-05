@@ -16,6 +16,9 @@ function friendlyUpdateError(message: string): string {
   if (message.startsWith('GitHub API')) {
     return '无法连接 GitHub，请检查网络后重试'
   }
+  if (/code signature/i.test(message)) {
+    return 'macOS 未签名，请从下载页手动安装 DMG'
+  }
   return message
 }
 
@@ -119,7 +122,9 @@ export function useDesktopUpdater() {
       case 'downloading':
         return s.percent != null ? `下载中 ${Math.round(s.percent)}%` : '下载中…'
       case 'downloaded':
-        return '已下载，可安装'
+        return s.manualInstallRecommended
+          ? '更新包已就绪，请打开下载页安装'
+          : '已下载，可安装'
       case 'error':
         return friendlyUpdateError(s.error ?? '更新失败')
       default:
