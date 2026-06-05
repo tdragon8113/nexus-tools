@@ -6,6 +6,19 @@ const defaultState = (): NexusUpdateState => ({
   currentVersion: '0.0.0'
 })
 
+function friendlyUpdateError(message: string): string {
+  if (message === 'Please check update first') {
+    return '更新检查未完成，请稍后再试或打开下载页'
+  }
+  if (message === '开发模式不支持检查更新') {
+    return message
+  }
+  if (message.startsWith('GitHub API')) {
+    return '无法连接 GitHub，请检查网络后重试'
+  }
+  return message
+}
+
 export function useDesktopUpdater() {
   const updateState = useState<NexusUpdateState>('desktop-update-state', defaultState)
   const autoUpdateEnabled = useState('desktop-auto-update-enabled', () => true)
@@ -60,11 +73,11 @@ export function useDesktopUpdater() {
       const state = await window.nexusDesktop.checkForUpdates()
       applyState(state)
       if (state.status === 'not-available' && state.error) {
-        showToast(state.error)
+        showToast(friendlyUpdateError(state.error))
       } else if (state.status === 'not-available') {
         showToast('已是最新版本')
       } else if (state.status === 'error' && state.error) {
-        showToast(state.error)
+        showToast(friendlyUpdateError(state.error))
       } else if (state.status === 'available' && state.latestVersion) {
         showToast(`发现新版本 ${state.latestVersion}`)
       }
@@ -108,7 +121,7 @@ export function useDesktopUpdater() {
       case 'downloaded':
         return '已下载，可安装'
       case 'error':
-        return s.error ?? '更新失败'
+        return friendlyUpdateError(s.error ?? '更新失败')
       default:
         return ''
     }

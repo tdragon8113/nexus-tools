@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.13] - 2026-06-05
+
+### 修复（web-tools 桌面端）
+
+- **设置页检查更新报错**：修复发现新版本后下载时未先调用 `checkForUpdates()`，导致提示 `Please check update first` /「无法检查」的问题
+- 更新相关错误提示改为中文（如 GitHub 连接失败）
+
 ## [0.2.12] - 2026-06-05
 
 ### 修复（web-tools 桌面端）

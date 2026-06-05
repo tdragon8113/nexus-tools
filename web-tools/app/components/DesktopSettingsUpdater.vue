@@ -23,8 +23,8 @@ const actionBtnSuccess = `${actionBtn} border-emerald-200/90 bg-emerald-50 text-
 
 const compactStatus = computed(() => {
   const s = statusText.value
-  if (updateState.value.status === 'error' && updateState.value.error) {
-    return updateState.value.error.length > 12 ? '无法检查' : updateState.value.error
+  if (updateState.value.status === 'error') {
+    return s.length > 12 ? '无法检查' : s
   }
   if (s === '尚未检查') return ''
   return s

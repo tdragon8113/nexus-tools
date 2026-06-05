@@ -222,7 +222,16 @@ export class AppUpdaterService {
     this.patchState({ status: 'downloading', percent: 0, error: undefined })
 
     try {
-      await autoUpdater.downloadUpdate()
+      const checkResult = await autoUpdater.checkForUpdates()
+      if (!checkResult?.updateInfo) {
+        this.patchState({ status: 'not-available' })
+        return this.getState()
+      }
+      if (checkResult.downloadPromise) {
+        await checkResult.downloadPromise
+      } else {
+        await autoUpdater.downloadUpdate()
+      }
       return this.getState()
     } catch (err) {
       const message = err instanceof Error ? err.message : '下载更新失败'
