@@ -2,16 +2,7 @@ import { MAX_CLIPBOARD_TEXT_CHARS, stripWrappingDoubleQuotes } from '~~/utils/ut
 import { getToolPinyinAliases } from './pinyin'
 import { siteTools, type SiteTool } from './tools'
 
-export type ContentHintKind =
-  | 'json'
-  | 'url'
-  | 'timestamp'
-  | 'uuid'
-  | 'base64'
-  | 'hash'
-  | 'calculator'
-  | 'text'
-  | 'totp'
+export type ContentHintKind = 'json' | 'base64' | 'calculator' | 'totp'
 
 export interface ContentHint {
   kind: ContentHintKind
@@ -19,23 +10,11 @@ export interface ContentHint {
   label: string
 }
 
-/** 无内容类型、无工具名匹配时的默认兜底 */
-export const TEXT_FALLBACK_HINT: ContentHint = {
-  kind: 'text',
-  toolId: 'text',
-  label: '文本编辑'
-}
-
 export interface ScoredTool {
   tool: SiteTool
   score: number
 }
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-const MD5_RE = /^[a-f0-9]{32}$/i
-const SHA256_RE = /^[a-f0-9]{64}$/i
 const BASE64_RE = /^[A-Za-z0-9+/]+=*$/
 const DATA_URI_BASE64_RE = /^data:[^;\s]+;base64,/i
 
@@ -102,38 +81,12 @@ function queryTokensForToolSearch(q: string): string[] {
   return tokenizeQuery(firstLine.slice(0, TOOL_KEYWORD_PROBE_MAX))
 }
 
-/** 是否像用户粘贴的多行/长文（优先文本编辑，除非有强工具名意图） */
+/** 是否像用户粘贴的多行/长文（智能剪贴板模式下不自动填入） */
 export function looksLikePlainDocument(raw: string): boolean {
   const t = raw.trim()
   if (t.length < 48) return false
   const lines = t.split(/\r?\n/).filter((l) => l.trim())
   return lines.length >= 2 || t.length >= 160
-}
-
-/** 工具名/关键词强匹配阈值（高于此才认为「用户想找某个工具」） */
-const STRONG_TOOL_MATCH_SCORE = 72
-
-function hasStrongToolKeywordMatch(query: string): boolean {
-  const tokens = queryTokensForToolSearch(query)
-  if (!tokens.length) return false
-
-  let best = 0
-  let bestId = ''
-  for (const tool of siteTools) {
-    if (tool.id === 'more' || !tool.path) continue
-    const score = scoreTool(tool, tokens)
-    if (score > best) {
-      best = score
-      bestId = tool.id
-    }
-  }
-  if (best < STRONG_TOOL_MATCH_SCORE) return false
-  const id = bestId.toLowerCase()
-  const explicitToolIntent = tokens.some(
-    (t) => t === id || (t.length >= 2 && (id.startsWith(t) || t.startsWith(id)))
-  )
-  if (explicitToolIntent) return true
-  return best >= 95
 }
 
 /**
@@ -189,16 +142,7 @@ function calculatorHintFor(value: string): ContentHint | null {
 }
 
 function scoreTool(tool: SiteTool, tokens: string[]): number {
-  if (!tokens.length) return tool.id === 'more' ? 0 : 1
-
-  if (tool.id === 'more' && !tool.path) {
-    const hit = tokens.some(
-      (t) =>
-        fieldIncludes(tool.name, t) ||
-        tool.keywords?.some((k) => fieldIncludes(k, t))
-    )
-    return hit ? 5 : -1
-  }
+  if (!tokens.length) return 1
 
   let score = 0
   const name = tool.name.toLowerCase()
@@ -247,13 +191,8 @@ function scoreTool(tool: SiteTool, tokens: string[]): number {
 
     if (fieldIncludes(desc, token)) tokenScore = Math.max(tokenScore, 25)
 
-    if (isCalculatorLike(token)) {
-      if (tool.id === 'calculator') {
-        tokenScore = Math.max(tokenScore, isUnixTimestampDigits(token) ? 0 : 88)
-      }
-      if (tool.id === 'timestamp' && isUnixTimestampDigits(token)) {
-        tokenScore = Math.max(tokenScore, 95)
-      }
+    if (isCalculatorLike(token) && tool.id === 'calculator') {
+      tokenScore = Math.max(tokenScore, isUnixTimestampDigits(token) ? 0 : 88)
     }
 
     if (tokenScore === 0) continue
@@ -310,7 +249,6 @@ export function detectContentHint(raw: string): ContentHint | null {
 
   const unquoted = stripWrappingDoubleQuotes(t)
 
-  // 引号包裹的 Base64 是合法 JSON 字符串，须在 JSON.parse 之前识别
   const base64Hint = base64ContentHintFromText(t)
   if (base64Hint) return base64Hint
 
@@ -322,11 +260,7 @@ export function detectContentHint(raw: string): ContentHint | null {
       return null
     }
     if (typeof parsed === 'number' && Number.isFinite(parsed)) {
-      const digits = String(Math.trunc(parsed))
-      if (isUnixTimestampDigits(digits)) {
-        return { kind: 'timestamp', toolId: 'timestamp', label: 'Unix 时间戳' }
-      }
-      return calculatorHintFor(digits)
+      return calculatorHintFor(String(Math.trunc(parsed)))
     }
     if (parsed === null || typeof parsed === 'boolean') {
       return null
@@ -345,65 +279,25 @@ export function detectContentHint(raw: string): ContentHint | null {
     return { kind: 'totp', toolId: 'totp', label: '2FA / TOTP' }
   }
 
-  if (/^https?:\/\//i.test(firstToken) || /^[a-z][a-z0-9+.-]*:\/\//i.test(firstToken)) {
-    try {
-      new URL(firstToken)
-      return { kind: 'url', toolId: 'url', label: 'URL 链接' }
-    } catch {
-      /* ignore */
-    }
-  }
-
-  if (isUnixTimestampDigits(unquoted)) {
-    return { kind: 'timestamp', toolId: 'timestamp', label: 'Unix 时间戳' }
-  }
-
   const calcHint = calculatorHintFor(unquoted)
   if (calcHint) return calcHint
 
-  if (UUID_RE.test(unquoted)) {
-    return { kind: 'uuid', toolId: 'uuid', label: 'UUID' }
-  }
-
-  if (SHA256_RE.test(unquoted) || MD5_RE.test(unquoted)) {
-    return { kind: 'hash', toolId: 'hash', label: '哈希值' }
-  }
-
   return null
 }
 
-/**
- * 内容识别 + 可选文本编辑兜底。
- * 先判断 JSON / Base64 / URL 等类型；若无类型且未命中任何工具关键词，则归入文本编辑。
- */
-export function resolveSearchContentHint(
-  query: string,
-  enableTextFallback = false
-): ContentHint | null {
-  const typed = detectContentHint(query)
-  if (typed) return typed
-  if (!enableTextFallback || !query.trim()) return null
-
-  if (looksLikePlainDocument(query) && !hasStrongToolKeywordMatch(query)) {
-    return TEXT_FALLBACK_HINT
-  }
-  if (!hasStrongToolKeywordMatch(query)) {
-    return TEXT_FALLBACK_HINT
-  }
-  return null
+export function resolveSearchContentHint(query: string): ContentHint | null {
+  return detectContentHint(query)
 }
 
-/** 剪贴板 / 全文粘贴：启用文本编辑兜底 */
+/** 剪贴板 / 全文粘贴：仅按内容格式识别 */
 export function detectClipboardContentHint(raw: string): ContentHint | null {
-  return resolveSearchContentHint(raw, true)
+  return detectContentHint(raw)
 }
 
 export function searchTools(query: string): ScoredTool[] {
   const q = query.trim()
   if (!q) {
-    return siteTools
-      .filter((t) => t.id !== 'more')
-      .map((tool) => ({ tool, score: 1 }))
+    return siteTools.map((tool) => ({ tool, score: 1 }))
   }
 
   const hint = detectContentHint(q)
@@ -436,12 +330,6 @@ export interface ToolSearchResolveOptions {
   limit?: number
   /** 仅含已上线（有 path）的工具 */
   pathOnly?: boolean
-  /** 剪贴板 / payload：无其它识别时兜底到文本编辑工具 */
-  fallbackText?: boolean
-}
-
-function resolveContentHint(query: string, fallbackText: boolean): ContentHint | null {
-  return resolveSearchContentHint(query, fallbackText)
 }
 
 function rankToolsWithHint(query: string, hint: ContentHint | null, pathOnly: boolean): SiteTool[] {
@@ -476,7 +364,7 @@ export function resolveToolSearchResults(
     return { hint: null, tools: [], totalCount: 0, showEmpty: false }
   }
 
-  const hint = resolveContentHint(trimmed, options.fallbackText ?? false)
+  const hint = detectContentHint(trimmed)
   const all = rankToolsWithHint(trimmed, hint, pathOnly)
   const totalCount = all.length
   const tools = limit != null ? all.slice(0, limit) : all
@@ -504,10 +392,9 @@ export function resolveToolSearchResults(
 /** 桌面搜索：仅已上线工具，默认最多 6 条（名称 + 内容混合，Web 等场景） */
 export function resolveDisplayToolsForQuery(
   query: string,
-  limit = 6,
-  options?: Pick<ToolSearchResolveOptions, 'fallbackText'>
+  limit = 6
 ): ToolSearchResolveResult {
-  return resolveToolSearchResults(query, { limit, pathOnly: true, fallbackText: options?.fallbackText })
+  return resolveToolSearchResults(query, { limit, pathOnly: true })
 }
 
 /** 桌面 Command：仅按工具名 / 关键词 / 拼音匹配，不做内容格式识别 */
@@ -520,7 +407,7 @@ export function resolveToolsByName(query: string, limit = 6): ToolSearchResolveR
   const tokens = queryTokensForToolSearch(trimmed)
   const scored = siteTools
     .map((tool) => ({ tool, score: scoreTool(tool, tokens) }))
-    .filter((item) => item.score > 0 && item.tool.path && item.tool.id !== 'more')
+    .filter((item) => item.score > 0 && item.tool.path)
     .sort((a, b) => b.score - a.score)
 
   const tools = scored.map((item) => item.tool).slice(0, limit)
@@ -533,17 +420,13 @@ export function resolveToolsByName(query: string, limit = 6): ToolSearchResolveR
 }
 
 /** 桌面 Query：按粘贴内容格式匹配工具（可无 Command 搜索词） */
-export function resolveToolsByContent(
-  query: string,
-  limit = 6,
-  options?: Pick<ToolSearchResolveOptions, 'fallbackText'>
-): ToolSearchResolveResult {
+export function resolveToolsByContent(query: string, limit = 6): ToolSearchResolveResult {
   const trimmed = query.trim()
   if (!trimmed) {
     return { hint: null, tools: [], totalCount: 0, showEmpty: false }
   }
 
-  const hint = resolveContentHint(trimmed, options?.fallbackText ?? true)
+  const hint = detectContentHint(trimmed)
   const tools: SiteTool[] = []
 
   if (hint) {
@@ -570,6 +453,5 @@ export function resolveToolsByContent(
 export function toolMatchesQuery(tool: SiteTool, query: string): boolean {
   const q = query.trim()
   if (!q) return true
-  if (tool.id === 'more') return false
   return scoreTool(tool, queryTokensForToolSearch(q)) > 0
 }

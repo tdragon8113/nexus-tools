@@ -1,5 +1,4 @@
 import { evaluateArithmetic, formatCalcResult } from '~~/utils/calcExpression'
-import { parseTimestampFlexible } from '~~/utils/timestampParse'
 import {
   formatTotpCode,
   storedToTotpConfig,
@@ -31,19 +30,6 @@ export interface SearchPreviewModel {
   error?: string
   emptyHint?: string
   copyText?: string
-}
-
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-function formatTimestamp(ms: number): SearchPreviewLine[] {
-  const date = new Date(ms)
-  return [
-    { label: '毫秒', value: String(ms), mono: true },
-    { label: '秒', value: String(Math.floor(ms / 1000)), mono: true },
-    { label: '本地时间', value: date.toLocaleString(), mono: true },
-    { label: 'ISO', value: date.toISOString(), mono: true }
-  ]
 }
 
 function previewJson(raw: string): SearchPreviewModel {
@@ -100,23 +86,6 @@ function previewBase64(raw: string): SearchPreviewModel {
   }
 }
 
-function previewUrl(raw: string): SearchPreviewModel {
-  try {
-    const url = new URL(raw.trim())
-    return {
-      title: 'URL 解析',
-      lines: [
-        { label: '协议', value: url.protocol, mono: true },
-        { label: '主机', value: url.host, mono: true },
-        { label: '路径', value: url.pathname + url.search + url.hash, mono: true }
-      ],
-      copyText: url.toString()
-    }
-  } catch {
-    return { title: 'URL 解析', error: '无效的 URL' }
-  }
-}
-
 function previewCalculator(raw: string): SearchPreviewModel {
   const result = evaluateArithmetic(raw)
   if (!result.ok) {
@@ -130,53 +99,25 @@ function previewCalculator(raw: string): SearchPreviewModel {
   }
 }
 
-function previewTimestamp(raw: string): SearchPreviewModel {
-  const parsed = parseTimestampFlexible(raw)
-  if (!parsed.ok) {
-    return { title: '时间戳', error: parsed.error }
-  }
-  return {
-    title: '时间戳转换',
-    lines: formatTimestamp(parsed.ms),
-    copyText: String(parsed.ms)
-  }
-}
-
 function previewByHint(hint: ContentHint, raw: string): SearchPreviewModel {
   switch (hint.kind) {
     case 'json':
       return previewJson(raw)
     case 'base64':
       return previewBase64(raw)
-    case 'url':
-      return previewUrl(raw)
     case 'calculator':
       return previewCalculator(raw)
-    case 'timestamp':
-      return previewTimestamp(raw)
-    case 'uuid':
-      if (UUID_RE.test(raw.trim())) {
-        return {
-          title: 'UUID',
-          lines: [{ value: raw.trim().toLowerCase(), mono: true }],
-          copyText: raw.trim().toLowerCase()
-        }
-      }
-      return { title: 'UUID', error: '格式无效' }
-    case 'hash':
-      return {
-        title: '哈希值',
-        lines: [{ value: raw.trim(), mono: true }],
-        copyText: raw.trim()
-      }
     case 'totp':
       return {
         title: '2FA / TOTP',
         emptyHint: '识别为 TOTP 链接，正在生成验证码…'
       }
-    case 'text':
     default:
-      return previewPlainText(raw)
+      return {
+        title: '预览',
+        lines: [{ value: raw.length > 800 ? `${raw.slice(0, 800)}…` : raw, mono: true }],
+        copyText: raw
+      }
   }
 }
 
@@ -282,19 +223,6 @@ export function buildTotpConfigSearchPreview(
   }
 }
 
-function previewPlainText(raw: string): SearchPreviewModel {
-  const t = raw.trim()
-  if (!t) {
-    return { title: '文本', lines: [], emptyHint: '在 Query 中粘贴或输入内容' }
-  }
-  const clipped = t.length > 1200 ? `${t.slice(0, 1200)}…` : t
-  return {
-    title: '文本预览',
-    lines: [{ value: clipped, mono: true }],
-    copyText: t
-  }
-}
-
 export function buildToolSearchPreview(
   toolId: string,
   queryText: string,
@@ -310,7 +238,6 @@ export function buildToolSearchPreview(
         emptyHint: '正在加载账户…'
       }
     }
-    // 无 Query 内容时不占预览位，由右侧详情面板展示工具信息
     return null
   }
 
@@ -324,18 +251,8 @@ export function buildToolSearchPreview(
       return previewJson(raw)
     case 'base64':
       return previewBase64(raw)
-    case 'url':
-      return previewUrl(raw)
     case 'calculator':
       return previewCalculator(raw)
-    case 'timestamp':
-      return previewTimestamp(raw)
-    case 'uuid':
-      return previewByHint({ kind: 'uuid', toolId: 'uuid', label: 'UUID' }, raw)
-    case 'hash':
-      return previewByHint({ kind: 'hash', toolId: 'hash', label: '哈希' }, raw)
-    case 'text':
-      return previewPlainText(raw)
     case 'totp':
       return {
         title: '2FA / TOTP',

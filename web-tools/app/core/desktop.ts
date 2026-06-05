@@ -15,16 +15,6 @@ export function desktopScreenFromPath(path: string): DesktopScreen {
 /** 堆叠式工具页：面板 main 区域纵向滚动（相对路径，与 definePageMeta 双保险） */
 const DESKTOP_PANEL_SCROLL_PATHS = new Set<string>([
   DESKTOP_ROUTES.settings,
-  '/tools/hash',
-  '/tools/url',
-  '/tools/uuid',
-  '/tools/password',
-  '/tools/qrcode',
-  '/tools/color',
-  '/tools/timestamp',
-  '/tools/http',
-  '/tools/regex',
-  '/tools/code',
   '/tools/calculator'
 ])
 

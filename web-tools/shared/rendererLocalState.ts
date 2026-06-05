@@ -3,15 +3,7 @@ export const RENDERER_LOCAL_STATE_KEYS = {
   searchRecents: 'nexus-search-recents-v1',
   searchFavorites: 'nexus-search-favorites-v1',
   toolOrder: 'nexus-tool-order-v1',
-  jsPlaygroundCode: 'nexus-js-playground-code',
-  jsPlaygroundWrap: 'nexus-js-playground-wrap',
-  calculatorTape: 'nexus-calculator-tape-v1',
-  textEditorLanguage: 'nexus-text-editor-language',
-  textEditorWrap: 'nexus-text-editor-wrap',
-  textEditorMdView: 'nexus-text-editor-md-view',
-  textDiffLanguage: 'nexus-text-diff-language',
-  textDiffWrap: 'nexus-text-diff-wrap',
-  textDiffOptions: 'nexus-text-diff-options'
+  calculatorTape: 'nexus-calculator-tape-v1'
 } as const
 
 export type RendererLocalStateMap = Record<string, string>

@@ -54,23 +54,10 @@ export default defineNuxtConfig({
       routes: [
         '/desktop/search',
         '/desktop/settings',
+        '/tools/totp',
         '/tools/json',
         '/tools/base64',
-        '/tools/timestamp',
-        '/tools/url',
-        '/tools/uuid',
-        '/tools/password',
-        '/tools/calculator',
-        '/tools/qrcode',
-        '/tools/color',
-        '/tools/regex',
-        '/tools/http',
-        '/tools/hash',
-        '/tools/code',
-        '/tools/text',
-        '/tools/text-diff',
-        '/tools/js-playground',
-        '/tools/totp'
+        '/tools/calculator'
       ]
     },
     compressPublicAssets: true
@@ -88,14 +75,6 @@ export default defineNuxtConfig({
         '@vue/devtools-kit',
         'codemirror',
         '@codemirror/lang-json',
-        '@codemirror/lang-javascript',
-        '@codemirror/lang-html',
-        '@codemirror/lang-css',
-        '@codemirror/lang-python',
-        '@codemirror/lang-sql',
-        '@codemirror/lang-markdown',
-        '@codemirror/lang-xml',
-        '@codemirror/lang-yaml',
         '@codemirror/commands',
         '@codemirror/language',
         '@codemirror/lint',
@@ -104,13 +83,8 @@ export default defineNuxtConfig({
         '@codemirror/autocomplete',
         '@codemirror/search',
         'jsonc-parser',
-        'diff',
         'qrcode',
-        'jsqr',
-        'spark-md5',
-        'prettier',
-        'prettier/standalone',
-        'markdown-it'
+        'jsqr'
       ]
     }
   },

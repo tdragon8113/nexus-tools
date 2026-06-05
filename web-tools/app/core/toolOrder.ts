@@ -3,7 +3,7 @@ import { siteTools } from '~/core/tools'
 export const TOOL_ORDER_STATE_KEY = 'nexus-tool-order-state'
 
 export function defaultToolIds(): string[] {
-  return siteTools.filter((t) => t.id !== 'more').map((t) => t.id)
+  return siteTools.map((t) => t.id)
 }
 
 /** 合并已保存顺序与新增工具，丢弃无效 id */

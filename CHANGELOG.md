@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.18] - 2026-06-05
+
+### 变更（web-tools 桌面端）
+
+- **工具精简**：仅保留 2FA/TOTP、JSON 格式化、Base64、计算器；移除时间戳、二维码、颜色、正则、文本编辑、文本对比、HTTP、UUID、密码、哈希、URL、代码格式化、JS 运行等工具
+- **搜索**：内容识别与预览同步收窄至上述四类；移除文本编辑兜底
+- **依赖**：清理 diff、Prettier、markdown-it、spark-md5 及多余 CodeMirror 语言包
+
 ## [0.2.17] - 2026-06-05
 
 ### 修复（web-tools 桌面端）

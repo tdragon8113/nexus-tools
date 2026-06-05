@@ -232,43 +232,4 @@ html[data-nexus-desktop='1'] .json-tool-page .json-cm-wrap {
   min-height: 0;
   height: 100%;
 }
-
-html[data-nexus-desktop='1'] .text-tool-page .text-editor-shell {
-  flex: 1 1 auto;
-  min-height: 28rem;
-}
-
-html[data-nexus-desktop='1'] .text-diff-tool-page .text-diff-workspace {
-  flex: 1 1 auto;
-  min-height: 28rem;
-}
-
-html[data-nexus-desktop='1'] .js-playground-page .js-playground-workspace {
-  flex: 1 1 auto;
-  min-height: 28rem;
-}
-
-html[data-nexus-desktop='1'] .text-tool-page .text-editor-shell--md-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-html[data-nexus-desktop='1'] .text-tool-page .text-editor-shell--md-split > div {
-  flex: unset;
-  min-height: 0;
-  height: 100%;
-}
-
-html[data-nexus-desktop='1'] .text-tool-page .text-editor-shell > div,
-html[data-nexus-desktop='1'] .text-tool-page .text-diff-cm-wrap,
-html[data-nexus-desktop='1'] .text-diff-tool-page .text-diff-pane__editor,
-html[data-nexus-desktop='1'] .text-diff-tool-page .text-diff-cm-wrap,
-html[data-nexus-desktop='1'] .js-playground-page .js-playground-pane__editor,
-html[data-nexus-desktop='1'] .js-playground-page .js-playground-pane .text-diff-cm-wrap {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-}
 </style>

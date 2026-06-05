@@ -64,7 +64,7 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
 
   const nameResolved = computed(() => resolveToolsByName(commandTrimmed.value, limit))
   const contentResolved = computed(() =>
-    resolveToolsByContent(queryTrimmed.value, limit, { fallbackText: true })
+    resolveToolsByContent(queryTrimmed.value, limit)
   )
   const hint = computed(() => contentResolved.value.hint)
 
