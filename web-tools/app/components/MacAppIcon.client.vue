@@ -66,7 +66,7 @@ function onImgError() {
       alt=""
       class="h-full w-full object-contain"
       draggable="false"
-      loading="eager"
+      loading="lazy"
       @error="onImgError"
     />
     <van-icon v-else name="apps-o" :size="size === 'md' ? 28 : 18" />

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.14] - 2026-06-05
+
+### 修复（web-tools 桌面端）
+
+- **Mac 应用图标导致崩溃**：移除 `app.getFileIcon()`（在 macOS 上经 ThreadPoolForegroundWorker 加载 NSImage 时易 SIGTRAP）；改为仅通过 `sips` 读取 `.icns`，串行加载并缓存失败路径，限制预取数量与并发
+
 ## [0.2.13] - 2026-06-05
 
 ### 修复（web-tools 桌面端）
