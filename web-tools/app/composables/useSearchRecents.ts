@@ -1,18 +1,14 @@
 import { macAppToSearchResult, toolToSearchResult, type SearchResultItem } from '~/core/searchResults'
 import { getToolById } from '~/core/tools'
+import { persistRendererLocalStateKeyFireAndForget } from '~/core/rendererLocalState'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 import type { MacAppEntry } from '~~/shared/macApps'
+import type { SearchRecentEntry } from '~~/shared/searchState'
 
-const STORAGE_KEY = 'nexus-search-recents-v1'
+const STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.searchRecents
 const MAX_RECENTS = 3
 
-export interface SearchRecentEntry {
-  id: string
-  kind: 'tool' | 'mac-app'
-  title: string
-  toolId?: string
-  appId?: string
-  lastUsed: number
-}
+export type { SearchRecentEntry }
 
 function readStorage(): SearchRecentEntry[] {
   if (!import.meta.client) return []
@@ -27,12 +23,7 @@ function readStorage(): SearchRecentEntry[] {
 }
 
 function writeStorage(entries: SearchRecentEntry[]) {
-  if (!import.meta.client) return
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
-  } catch {
-    /* ignore quota */
-  }
+  persistRendererLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries))
 }
 
 export function useSearchRecents() {

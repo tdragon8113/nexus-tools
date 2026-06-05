@@ -35,7 +35,9 @@ export const IPC = {
   totpSetShortcutCapture: 'desktop:totp-set-shortcut-capture',
   totpOpenAccessibility: 'desktop:totp-open-accessibility',
   totpOpenAccessibilitySettings: 'desktop:totp-open-accessibility-settings',
-  totpGetAccessibility: 'desktop:totp-get-accessibility'
+  totpGetAccessibility: 'desktop:totp-get-accessibility',
+  rendererLocalStateGet: 'desktop:renderer-local-state-get',
+  rendererLocalStatePatch: 'desktop:renderer-local-state-patch'
 } as const
 
 export type ClipboardOpenSource = 'hotkey' | 'navigation'

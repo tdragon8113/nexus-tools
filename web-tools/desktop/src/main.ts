@@ -20,6 +20,7 @@ import {
   requestAccessibilityPermission,
   warmUpKeyboardAutomation
 } from './totpAutofill'
+import { RendererLocalStateStore } from './rendererLocalStateStore'
 import { TotpShortcutManager } from './totpShortcutManager'
 import { WindowManager } from './windowManager'
 import { IPC } from './types'
@@ -55,6 +56,7 @@ const desktopPrefs = new DesktopPrefsStore()
 let appUpdater: AppUpdaterService | null = null
 let appTray: ReturnType<typeof setupAppTray> = null
 const totpAccountStore = new TotpAccountStore()
+const rendererLocalStateStore = new RendererLocalStateStore()
 let totpShortcuts: TotpShortcutManager | null = null
 
 function syncTotpShortcutAccounts() {
@@ -201,6 +203,12 @@ app.whenReady().then(async () => {
     return getAccessibilityStatus()
   })
   ipcMain.handle(IPC.totpGetAccessibility, () => getAccessibilityStatus())
+
+  ipcMain.handle(IPC.rendererLocalStateGet, () => rendererLocalStateStore.read())
+  ipcMain.handle(IPC.rendererLocalStatePatch, (_e, patch: unknown) => {
+    if (!patch || typeof patch !== 'object') return rendererLocalStateStore.read()
+    return rendererLocalStateStore.patch(patch as Record<string, string>)
+  })
 
   if (process.platform === 'darwin') {
     void listMacApplications()

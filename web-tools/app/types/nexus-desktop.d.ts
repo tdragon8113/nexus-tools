@@ -110,6 +110,10 @@ export interface NexusDesktopBridge {
     authStatus?: string
     launchHost?: string | null
   }>
+  getRendererLocalState?(): Promise<import('~~/shared/rendererLocalState').RendererLocalStateMap>
+  patchRendererLocalState?(
+    patch: import('~~/shared/rendererLocalState').RendererLocalStateMap
+  ): Promise<import('~~/shared/rendererLocalState').RendererLocalStateMap>
 }
 
 declare global {

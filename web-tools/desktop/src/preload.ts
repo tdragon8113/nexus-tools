@@ -172,5 +172,15 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       isDev: boolean
       hint: string
     }>
+  },
+  getRendererLocalState() {
+    return ipcRenderer.invoke(IPC.rendererLocalStateGet) as Promise<
+      import('../../shared/rendererLocalState').RendererLocalStateMap
+    >
+  },
+  patchRendererLocalState(patch: import('../../shared/rendererLocalState').RendererLocalStateMap) {
+    return ipcRenderer.invoke(IPC.rendererLocalStatePatch, patch) as Promise<
+      import('../../shared/rendererLocalState').RendererLocalStateMap
+    >
   }
 })

@@ -11,6 +11,7 @@ import {
   resolveDesktopTheme
 } from '~/core/desktopTheme'
 import { hydrateTotpStorageFromMain } from '~/core/totpStorage'
+import { hydrateRendererLocalStateFromMain } from '~/core/rendererLocalState'
 
 export default defineNuxtPlugin(async (nuxtApp) => {
   const { registerElectronBridge, syncWindowChrome, syncPinnedFromMain } = useDesktop()
@@ -21,12 +22,13 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     if (import.meta.client) {
     document.documentElement.dataset.nexusDesktop = '1'
+    await hydrateRendererLocalStateFromMain()
+    await hydrateTotpStorageFromMain()
     const stored = readThemePreferenceFromStorage() ?? 'system'
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     document.documentElement.dataset.nexusTheme = resolveDesktopTheme(stored, prefersDark)
     unbindSystemTheme = bindSystemThemeListener()
     void syncThemeFromMain()
-    await hydrateTotpStorageFromMain()
     purgeNuxtDevtools()
     const observer = new MutationObserver(purgeNuxtDevtools)
     observer.observe(document.documentElement, { childList: true, subtree: true })

@@ -1,6 +1,8 @@
 import { siteTools, type SiteTool } from '~/core/tools'
+import { persistRendererLocalStateKeyFireAndForget } from '~/core/rendererLocalState'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 
-const STORAGE_KEY = 'nexus-tool-order-v1'
+const STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.toolOrder
 const ORDER_STATE_KEY = 'nexus-tool-order-state'
 
 function defaultToolIds(): string[] {
@@ -47,7 +49,7 @@ export function useToolOrder() {
   function persist(next: string[]) {
     order.value = next
     if (import.meta.client) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      persistRendererLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(next))
     }
   }
 

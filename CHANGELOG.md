@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.15] - 2026-06-05
+
+### 修复（web-tools 桌面端）
+
+- **重启后最近使用/收藏丢失**：桌面端 renderer 数据（最近使用、收藏、工具排序、主题偏好）统一写入 `~/Library/Application Support/Nexus Tools/renderer-local-state.json`；启动时从主进程同步到 `localStorage`，写入时双写磁盘
+- **localStorage 跨重启失效**：打包版静态服务改用固定端口，避免每次启动 origin 变化导致浏览器存储隔离
+
 ## [0.2.14] - 2026-06-05
 
 ### 修复（web-tools 桌面端）

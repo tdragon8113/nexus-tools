@@ -1,3 +1,6 @@
+import { persistRendererLocalStateKeyFireAndForget } from '~/core/rendererLocalState'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
+
 export type DesktopThemePreference = 'light' | 'dark' | 'system'
 export type DesktopThemeResolved = 'light' | 'dark'
 
@@ -23,7 +26,7 @@ export function resolveDesktopTheme(
   return preference
 }
 
-const STORAGE_KEY = 'nexus-desktop-theme-preference'
+const STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.themePreference
 
 export function readThemePreferenceFromStorage(): DesktopThemePreference | null {
   if (!import.meta.client) return null
@@ -37,9 +40,5 @@ export function readThemePreferenceFromStorage(): DesktopThemePreference | null 
 
 export function writeThemePreferenceToStorage(preference: DesktopThemePreference) {
   if (!import.meta.client) return
-  try {
-    localStorage.setItem(STORAGE_KEY, preference)
-  } catch {
-    /* ignore */
-  }
+  persistRendererLocalStateKeyFireAndForget(STORAGE_KEY, preference)
 }

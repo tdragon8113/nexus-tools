@@ -1,17 +1,13 @@
 import { macAppToSearchResult, toolToSearchResult, type SearchResultItem } from '~/core/searchResults'
 import { getToolById } from '~/core/tools'
+import { persistRendererLocalStateKeyFireAndForget } from '~/core/rendererLocalState'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 import type { MacAppEntry } from '~~/shared/macApps'
+import type { SearchFavoriteEntry } from '~~/shared/searchState'
 
-const STORAGE_KEY = 'nexus-search-favorites-v1'
+const STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.searchFavorites
 
-export interface SearchFavoriteEntry {
-  id: string
-  kind: 'tool' | 'mac-app'
-  title: string
-  toolId?: string
-  appId?: string
-  addedAt: number
-}
+export type { SearchFavoriteEntry }
 
 function readStorage(): SearchFavoriteEntry[] {
   if (!import.meta.client) return []
@@ -26,12 +22,7 @@ function readStorage(): SearchFavoriteEntry[] {
 }
 
 function writeStorage(entries: SearchFavoriteEntry[]) {
-  if (!import.meta.client) return
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
-  } catch {
-    /* ignore quota */
-  }
+  persistRendererLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries))
 }
 
 function entryFromItem(item: SearchResultItem): SearchFavoriteEntry {
