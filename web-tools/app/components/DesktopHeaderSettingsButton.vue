@@ -2,7 +2,7 @@
 const { goSettings } = useDesktop()
 
 const btnClass =
-  'nexus-shell-settings-btn flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors'
+  'nexus-shell-settings-btn flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors'
 </script>
 
 <template>

@@ -2,10 +2,10 @@ import {
   applyPrefillForTool,
   buildRouterPrefillState,
   clearLastSearchTransferText,
-  clearPendingToolOpenPrefill,
   stageToolOpenPrefill
 } from '~/core/prefill'
 import { triggerDesktopSearchApply } from '~/composables/desktopSearchApply'
+import { resetDesktopSearchQueryState } from '~/composables/useSearchQueryPayload'
 import { DESKTOP_ROUTES, desktopScreenFromPath, isElectronShell, type DesktopScreen } from '~/core/desktop'
 import { getToolById, getToolByPath, type SiteTool } from '~/core/tools'
 import type { ClipboardOpenSource } from '~/core/desktopClipboardPolicy'
@@ -21,7 +21,6 @@ export function useDesktop() {
 
   const screen = computed<DesktopScreen>(() => desktopScreenFromPath(route.path))
   const isSearchScreen = computed(() => screen.value === 'search')
-  const isHubScreen = computed(() => screen.value === 'hub')
   const isToolScreen = computed(() => screen.value === 'tool')
   const isSettingsScreen = computed(() => screen.value === 'settings')
 
@@ -37,7 +36,13 @@ export function useDesktop() {
     const clip = opts?.clipboard ?? ''
     const qParam = opts?.q ?? ''
     const source = opts?.source ?? 'navigation'
-    if (clip.trim() || qParam.trim()) {
+    const hasExplicitInput = Boolean(clip.trim() || qParam.trim())
+
+    if (source === 'navigation' && !hasExplicitInput) {
+      resetDesktopSearchQueryState()
+    }
+
+    if (hasExplicitInput) {
       stageDesktopSearchInput({
         ...(clip.trim() ? { clipboard: clip } : {}),
         ...(qParam.trim() ? { q: qParam } : {}),
@@ -48,14 +53,6 @@ export function useDesktop() {
     await nextTick()
     await syncWindowChrome()
     triggerDesktopSearchApply()
-  }
-
-  async function goHub() {
-    clearLastSearchTransferText()
-    clearPendingToolOpenPrefill()
-    await router.push({ path: DESKTOP_ROUTES.hub })
-    await nextTick()
-    await syncWindowChrome()
   }
 
   async function goSettings() {
@@ -160,11 +157,9 @@ export function useDesktop() {
     togglePin,
     screen,
     isSearchScreen,
-    isHubScreen,
     isToolScreen,
     isSettingsScreen,
     goSearch,
-    goHub,
     goSettings,
     leaveSettings,
     goTool,

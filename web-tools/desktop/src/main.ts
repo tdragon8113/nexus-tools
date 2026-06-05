@@ -57,6 +57,12 @@ let appTray: ReturnType<typeof setupAppTray> = null
 const totpAccountStore = new TotpAccountStore()
 let totpShortcuts: TotpShortcutManager | null = null
 
+function syncTotpShortcutAccounts() {
+  if (!totpShortcuts) return
+  totpShortcuts.pruneOrphanShortcuts(new Set(totpAccountStore.list().map((row) => row.id)))
+  totpShortcuts.reload()
+}
+
 function allBrowserWindows(): BrowserWindow[] {
   return BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed())
 }
@@ -98,7 +104,7 @@ app.whenReady().then(async () => {
     hideWindow: () => windows?.hide(),
     mainSearchHotkey: HOTKEY
   })
-  totpShortcuts.reload()
+  syncTotpShortcutAccounts()
   warmUpKeyboardAutomation()
 
   const ok = globalShortcut.register(HOTKEY, () => {
@@ -162,9 +168,12 @@ app.whenReady().then(async () => {
     return err === ''
   })
 
+  ipcMain.handle(IPC.totpGetAccounts, () => totpAccountStore.list())
   ipcMain.handle(IPC.totpSyncAccounts, (_e, accounts: unknown) => {
     if (!Array.isArray(accounts)) return totpAccountStore.list()
-    return totpAccountStore.saveAccounts(accounts as StoredTotpAccount[])
+    const saved = totpAccountStore.saveAccounts(accounts as StoredTotpAccount[])
+    syncTotpShortcutAccounts()
+    return saved
   })
   ipcMain.handle(IPC.totpGetShortcuts, () => totpShortcuts?.getShortcuts() ?? {})
   ipcMain.handle(IPC.totpSetShortcut, (_e, payload: unknown) => {

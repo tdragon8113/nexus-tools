@@ -11,9 +11,9 @@ const {
   payloadSize,
   hint,
   searchItems,
-  selectedItem,
-  preview,
   showEmpty,
+  reorderEnabled,
+  scheduleRemeasure,
   activeIndex,
   hasClipboardOffer,
   clipboardOfferLabel,
@@ -45,7 +45,7 @@ function focusCommandField() {
 </script>
 
 <template>
-  <div ref="rootRef" class="nexus-raycast-search flex min-h-0 flex-1 flex-col">
+  <div ref="rootRef" class="nexus-raycast-search flex flex-col">
     <SearchHeader
       ref="headerRef"
       v-model:command="commandQuery"
@@ -89,28 +89,25 @@ function focusCommandField() {
       </button>
     </div>
 
-    <div class="nexus-raycast-body flex min-h-[17rem] flex-1">
-      <div class="flex min-w-0 flex-[0_0_34%] flex-col overflow-hidden" style="-webkit-app-region: no-drag">
-        <p v-if="hint && !commandQuery.trim()" class="nexus-raycast-border-b nexus-raycast-hint nexus-raycast-type-secondary px-3 py-2">
-          内容识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>
-        </p>
-        <p v-else-if="showEmpty" class="nexus-raycast-border-b nexus-raycast-text-tertiary nexus-raycast-type-secondary px-3 py-2">
-          {{ commandQuery.trim() ? '无匹配工具或应用' : '未识别到可用工具' }}
-        </p>
+    <div class="nexus-raycast-body flex flex-col overflow-hidden" style="-webkit-app-region: no-drag">
+      <p v-if="hint && !commandQuery.trim()" class="nexus-raycast-border-b nexus-raycast-hint nexus-raycast-type-secondary px-3 py-2">
+        内容识别为 {{ hint.label }}<template v-if="hasPayload && payloadSize"> · {{ payloadSize }}</template>
+      </p>
+      <p v-else-if="showEmpty" class="nexus-raycast-border-b nexus-raycast-text-tertiary nexus-raycast-type-secondary px-3 py-2">
+        {{ commandQuery.trim() ? '无匹配工具或应用' : '未识别到可用工具' }}
+      </p>
 
-        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <SearchResultList
-            :items="searchItems"
-            :active-index="activeIndex"
-            :is-favorite="isFavorite"
-            @update:active-index="activeIndex = $event"
-            @pick="pickItem"
-            @context-menu="openResultContextMenu($event.item, $event.event)"
-          />
-        </div>
+      <div class="nexus-raycast-list-scroll">
+        <SearchResultList
+          :items="searchItems"
+          :active-index="activeIndex"
+          :reorder-enabled="reorderEnabled"
+          @update:active-index="activeIndex = $event"
+          @pick="pickItem"
+          @context-menu="openResultContextMenu($event.item, $event.event)"
+          @order-committed="scheduleRemeasure"
+        />
       </div>
-
-      <SearchPreviewPanel :preview="preview" :item="selectedItem" class="min-w-0 flex-1" />
     </div>
 
     <SearchResultContextMenu

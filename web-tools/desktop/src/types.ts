@@ -29,6 +29,7 @@ export const IPC = {
   macAppOpen: 'desktop:mac-app-open',
   windowThemeSync: 'desktop:window-theme-sync',
   totpSyncAccounts: 'desktop:totp-sync-accounts',
+  totpGetAccounts: 'desktop:totp-get-accounts',
   totpGetShortcuts: 'desktop:totp-get-shortcuts',
   totpSetShortcut: 'desktop:totp-set-shortcut',
   totpSetShortcutCapture: 'desktop:totp-set-shortcut-capture',
@@ -45,16 +46,23 @@ export type ShowSearchPayload = {
   source?: ClipboardOpenSource
 }
 
-/** 搜索窗 / 工具集 / 工具页统一外框宽度（与白色圆角面板一致） */
-export const DESKTOP_FRAME_WIDTH = 800
+/** 搜索窗 / 工具集 / 工具页统一外框宽度（Raycast 主窗约 860px） */
+export const DESKTOP_FRAME_WIDTH = 860
 
 export const LAUNCHER_WIDTH = DESKTOP_FRAME_WIDTH
-/** 搜索窗可缩放下限（须能容纳顶栏 + 输入框；实际高度以内容测量为准） */
-export const LAUNCHER_MIN_HEIGHT = 320
 
-/** 工具集与所有工具页统一窗口尺寸 */
+/** 工具页统一窗口尺寸（搜索窗满载时与之对齐） */
 export const PANEL_WIDTH = DESKTOP_FRAME_WIDTH
-export const PANEL_HEIGHT = 600
+export const PANEL_HEIGHT = 680
 
-export const PANEL_MIN_WIDTH = 480
-export const PANEL_MIN_HEIGHT = 360
+/** 搜索窗可缩放下限（顶栏 + 搜索框；须小于实际内容高度，避免窗体比壳体大一圈留白） */
+export const LAUNCHER_MIN_HEIGHT = 236
+
+/** 搜索窗可缩放上限：与工具页 PANEL_HEIGHT 一致，列表超出时在内部滚动 */
+export const LAUNCHER_MAX_HEIGHT = PANEL_HEIGHT
+
+/** 搜索窗手动拖动后，该时长内再次唤起保留位置；超时未再移动则恢复默认居中 */
+export const SEARCH_POSITION_TTL_MS = 60 * 60 * 1000
+
+export const PANEL_MIN_WIDTH = 520
+export const PANEL_MIN_HEIGHT = 400

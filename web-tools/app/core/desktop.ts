@@ -1,15 +1,13 @@
 /** Electron 桌面壳路由 */
 export const DESKTOP_ROUTES = {
   search: '/desktop/search',
-  hub: '/desktop/hub',
   settings: '/desktop/settings'
 } as const
 
-export type DesktopScreen = 'search' | 'hub' | 'tool' | 'settings'
+export type DesktopScreen = 'search' | 'tool' | 'settings'
 
 export function desktopScreenFromPath(path: string): DesktopScreen {
   if (path === DESKTOP_ROUTES.search) return 'search'
-  if (path === DESKTOP_ROUTES.hub) return 'hub'
   if (path === DESKTOP_ROUTES.settings) return 'settings'
   return 'tool'
 }

@@ -140,7 +140,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
       tag="div"
       name="tool-grid"
       role="listbox"
-      class="grid gap-2"
+      class="grid gap-2.5"
       :class="[
         iconGridClass,
         reorderEnabled ? 'tool-grid--sortable' : '',
@@ -156,7 +156,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
       :aria-selected="activeIndex === i"
       :tabindex="tool.path ? 0 : -1"
       :title="reorderEnabled ? `${tool.name} — 长按拖动排序` : tool.desc"
-      class="tool-grid-item flex flex-col items-center gap-1 rounded-2xl border px-1 py-2 transition-[transform,opacity,box-shadow,border-color,background-color] outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
+      class="tool-grid-item flex flex-col items-center gap-1.5 rounded-2xl border px-1.5 py-2.5 transition-[transform,opacity,box-shadow,border-color,background-color] outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
       :class="itemButtonClass(tool, i)"
       @pointerdown="onItemPointerDown($event, i, tool)"
       @click="pick(tool)"
@@ -164,10 +164,10 @@ function itemButtonClass(tool: SiteTool, i: number) {
       @keydown.space.prevent="pick(tool)"
     >
       <div
-        class="flex h-9 w-9 items-center justify-center rounded-lg"
+        class="flex h-11 w-11 items-center justify-center rounded-xl"
         :class="tool.bgColor"
       >
-        <van-icon :name="tool.icon" size="20" :class="tool.iconColor" />
+        <van-icon :name="tool.icon" size="24" :class="tool.iconColor" />
       </div>
       <span class="nexus-tile-label w-full truncate text-center leading-tight">
         {{ tool.name }}
@@ -245,7 +245,7 @@ function itemButtonClass(tool: SiteTool, i: number) {
   <Teleport to="body">
     <div
       v-if="ghostBox && dragItem"
-      class="tool-grid-ghost nexus-tile--active flex flex-col items-center gap-1 rounded-2xl border px-1 py-2 shadow-lg"
+      class="tool-grid-ghost nexus-tile--active flex flex-col items-center gap-1.5 rounded-2xl border px-1.5 py-2.5 shadow-lg"
       :style="{
         left: `${ghostBox.left}px`,
         top: `${ghostBox.top}px`,
@@ -254,10 +254,10 @@ function itemButtonClass(tool: SiteTool, i: number) {
       }"
     >
       <div
-        class="flex h-9 w-9 items-center justify-center rounded-lg"
+        class="flex h-11 w-11 items-center justify-center rounded-xl"
         :class="dragItem.bgColor"
       >
-        <van-icon :name="dragItem.icon" size="20" :class="dragItem.iconColor" />
+        <van-icon :name="dragItem.icon" size="24" :class="dragItem.iconColor" />
       </div>
       <span class="nexus-tile-label w-full truncate text-center leading-tight">
         {{ dragItem.name }}

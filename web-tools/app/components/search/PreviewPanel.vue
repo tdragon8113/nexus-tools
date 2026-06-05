@@ -20,6 +20,13 @@ const lineViews = computed((): SearchPreviewLineView[] =>
   props.preview ? buildSearchPreviewLineViews(props.preview) : []
 )
 
+const previewHasBody = computed(
+  () =>
+    Boolean(props.preview?.error) ||
+    lineViews.value.length > 0 ||
+    Boolean(props.preview?.emptyHint)
+)
+
 const showCopyHint = computed(
   () => props.preview != null && searchPreviewHasCopyableLines(props.preview)
 )
@@ -36,17 +43,34 @@ function onLineClick(row: SearchPreviewLineView) {
 
 <template>
   <aside
-    class="nexus-raycast-detail flex min-h-0 flex-col nexus-raycast-border-l"
+    class="nexus-raycast-detail flex min-h-0 flex-1 flex-col nexus-raycast-border-l"
     style="-webkit-app-region: no-drag"
   >
-    <template v-if="preview">
-      <div class="nexus-raycast-border-b px-4 py-3">
-        <p class="nexus-raycast-text-secondary nexus-raycast-type-caption font-semibold">{{ preview.title }}</p>
+    <!-- 有 Query 预览内容 -->
+    <template v-if="preview && previewHasBody">
+      <div class="nexus-raycast-border-b flex shrink-0 items-center gap-3 px-4 py-3">
+        <div
+          v-if="item && item.kind === 'tool'"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+          :class="item.bgColor"
+        >
+          <van-icon :name="item.icon" size="18" :class="item.iconColor" />
+        </div>
+        <MacAppIcon
+          v-else-if="item?.kind === 'mac-app' && item.app"
+          :app-path="item.app.path"
+          size="sm"
+        />
+        <p class="nexus-raycast-text-primary nexus-raycast-type-body min-w-0 flex-1 truncate font-semibold">
+          {{ preview.title }}
+        </p>
       </div>
 
-      <div class="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3">
         <p v-if="preview.error" class="nexus-raycast-type-secondary text-red-500">{{ preview.error }}</p>
-        <p v-else-if="preview.emptyHint" class="nexus-raycast-text-secondary nexus-raycast-type-secondary">{{ preview.emptyHint }}</p>
+        <p v-else-if="preview.emptyHint" class="nexus-raycast-text-secondary nexus-raycast-type-secondary">
+          {{ preview.emptyHint }}
+        </p>
 
         <div v-else class="space-y-3">
           <div v-for="(row, index) in lineViews" :key="index" class="min-w-0">
@@ -68,29 +92,49 @@ function onLineClick(row: SearchPreviewLineView) {
       </div>
     </template>
 
+    <!-- 选中列表项、尚无 Query 预览 -->
     <template v-else-if="item">
-      <div class="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-8 text-center">
+      <div class="nexus-raycast-border-b flex shrink-0 items-center gap-3 px-4 py-3">
         <MacAppIcon
           v-if="item.kind === 'mac-app' && item.app"
           :app-path="item.app.path"
-          size="md"
+          size="sm"
         />
-        <div v-else class="flex h-12 w-12 items-center justify-center rounded-xl" :class="item.bgColor">
-          <van-icon :name="item.icon" size="22" :class="item.iconColor" />
+        <div
+          v-else
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+          :class="item.bgColor"
+        >
+          <van-icon :name="item.icon" size="18" :class="item.iconColor" />
         </div>
-        <div>
-          <p class="nexus-raycast-text-primary nexus-raycast-type-body font-semibold">{{ item.title }}</p>
-          <p class="nexus-raycast-text-secondary nexus-raycast-type-secondary mt-1">{{ item.subtitle }}</p>
+        <div class="min-w-0 flex-1">
+          <p class="nexus-raycast-text-primary nexus-raycast-type-body truncate font-semibold">{{ item.title }}</p>
+          <p class="nexus-raycast-text-secondary nexus-raycast-type-secondary truncate">{{ item.subtitle }}</p>
         </div>
-        <p class="nexus-raycast-text-tertiary nexus-raycast-type-caption">按 ↵ 打开</p>
+        <span class="nexus-raycast-text-tertiary nexus-raycast-type-caption shrink-0">{{ item.badge }}</span>
+      </div>
+
+      <div class="shrink-0 px-4 py-3">
+        <p class="nexus-raycast-text-tertiary nexus-raycast-type-caption leading-relaxed">
+          <template v-if="item.kind === 'mac-app'">按 ↵ 打开应用</template>
+          <template v-else>在 Query 中粘贴内容可即时预览；按 ↵ 打开工具</template>
+        </p>
       </div>
     </template>
 
     <div
       v-else
-      class="nexus-raycast-text-tertiary nexus-raycast-type-secondary flex flex-1 items-center justify-center px-6 text-center"
+      class="nexus-raycast-text-tertiary nexus-raycast-type-secondary shrink-0 px-4 py-3 leading-relaxed"
     >
       在 Query 中粘贴或输入内容以匹配工具，或选择列表项查看详情
+    </div>
+
+    <div
+      v-if="item"
+      class="nexus-raycast-footer mt-auto flex shrink-0 items-center justify-end gap-1.5 border-t border-[var(--nexus-raycast-border)] px-4 py-2"
+    >
+      <span class="nexus-raycast-text-secondary nexus-raycast-type-caption">打开</span>
+      <kbd class="nexus-raycast-kbd">↵</kbd>
     </div>
   </aside>
 </template>

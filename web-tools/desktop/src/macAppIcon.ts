@@ -6,8 +6,11 @@ import path from 'node:path'
 import { app, nativeImage } from 'electron'
 
 const APP_ROOTS = ['/Applications', '/System/Applications', path.join(os.homedir(), 'Applications')]
+const ICON_LOAD_CONCURRENCY = 2
 
 const pngCache = new Map<string, Buffer>()
+let iconLoadsInFlight = 0
+const iconLoadWaiters: Array<() => void> = []
 
 function readBundleIconFileName(appPath: string): string | null {
   const plistPath = path.join(appPath, 'Contents', 'Info.plist')
@@ -56,10 +59,14 @@ function icnsFileToPngBuffer(icnsPath: string): Buffer | null {
   if (process.platform !== 'darwin') return null
   const out = path.join(app.getPath('temp'), `nexus-icns-${randomBytes(8).toString('hex')}.png`)
   try {
-    execFileSync('sips', ['-s', 'format', 'png', icnsPath, '--out', out], {
-      timeout: 5000,
-      stdio: ['ignore', 'pipe', 'ignore']
-    })
+    execFileSync(
+      'sips',
+      ['-z', '64', '64', '-s', 'format', 'png', icnsPath, '--out', out],
+      {
+        timeout: 5000,
+        stdio: ['ignore', 'pipe', 'ignore']
+      }
+    )
     const buf = fs.readFileSync(out)
     return buf.length ? buf : null
   } catch {
@@ -76,6 +83,8 @@ function icnsFileToPngBuffer(icnsPath: string): Buffer | null {
 function normalizeIconImage(image: Electron.NativeImage): Electron.NativeImage | null {
   if (image.isEmpty()) return null
   const { width, height } = image.getSize()
+  if (width <= 0 || height <= 0) return null
+  if (width > 128 || height > 128) return image.resize({ width: 64, height: 64 })
   if (width > 72 || height > 72) return image.resize({ width: 64, height: 64 })
   return image
 }
@@ -89,23 +98,55 @@ function resolveMacAppPath(appPath: string): string | null {
   }
 }
 
+async function acquireIconLoadSlot(): Promise<void> {
+  if (iconLoadsInFlight < ICON_LOAD_CONCURRENCY) {
+    iconLoadsInFlight += 1
+    return
+  }
+  await new Promise<void>((resolve) => {
+    iconLoadWaiters.push(resolve)
+  })
+  iconLoadsInFlight += 1
+}
+
+function releaseIconLoadSlot(): void {
+  iconLoadsInFlight = Math.max(0, iconLoadsInFlight - 1)
+  const next = iconLoadWaiters.shift()
+  if (next) next()
+}
+
+async function withIconLoadSlot<T>(fn: () => Promise<T>): Promise<T> {
+  await acquireIconLoadSlot()
+  try {
+    return await fn()
+  } finally {
+    releaseIconLoadSlot()
+  }
+}
+
 async function loadMacAppIconImage(appPath: string): Promise<Electron.NativeImage | null> {
   const resolved = resolveMacAppPath(appPath) ?? appPath
-  let image = await app.getFileIcon(resolved, { size: 'normal' })
-  let normalized = normalizeIconImage(image)
-  if (normalized) return normalized
 
   const iconPath = findBundleIconPath(resolved)
-  if (!iconPath) return null
+  if (iconPath) {
+    const pngBuf = icnsFileToPngBuffer(iconPath)
+    if (pngBuf?.length) {
+      try {
+        const image = nativeImage.createFromBuffer(pngBuf)
+        const normalized = normalizeIconImage(image)
+        if (normalized) return normalized
+      } catch {
+        /* fall through */
+      }
+    }
+  }
 
-  image = nativeImage.createFromPath(iconPath)
-  normalized = normalizeIconImage(image)
-  if (normalized) return normalized
-
-  const pngBuf = icnsFileToPngBuffer(iconPath)
-  if (!pngBuf?.length) return null
-  image = nativeImage.createFromBuffer(pngBuf)
-  return normalizeIconImage(image)
+  try {
+    const image = await app.getFileIcon(resolved, { size: 'large' })
+    return normalizeIconImage(image)
+  } catch {
+    return null
+  }
 }
 
 /** 仅允许 Applications 目录下的 .app，防止被滥用读取任意路径 */
@@ -139,17 +180,22 @@ export async function getMacAppIconPngBuffer(appPath: string): Promise<Buffer | 
   const cached = pngCache.get(resolved)
   if (cached) return cached
 
-  try {
-    const image = await loadMacAppIconImage(appPath)
-    if (!image) return null
-    const png = image.toPNG()
-    if (!png.length) return null
-    pngCache.set(resolved, png)
-    return png
-  } catch (err) {
-    console.warn('[Nexus Tools] 读取应用图标失败', appPath, err)
-    return null
-  }
+  return withIconLoadSlot(async () => {
+    const cachedAgain = pngCache.get(resolved)
+    if (cachedAgain) return cachedAgain
+
+    try {
+      const image = await loadMacAppIconImage(appPath)
+      if (!image) return null
+      const png = image.toPNG()
+      if (!png.length) return null
+      pngCache.set(resolved, png)
+      return png
+    } catch (err) {
+      console.warn('[Nexus Tools] 读取应用图标失败', appPath, err)
+      return null
+    }
+  })
 }
 
 /** 渲染进程 <img src> 用（IPC data URL） */

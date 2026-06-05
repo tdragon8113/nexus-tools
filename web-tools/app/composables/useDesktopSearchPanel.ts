@@ -6,29 +6,20 @@ import { useMacAppIconCache } from '~/composables/useMacAppIconCache'
 import { useSearchClipboardOffer } from '~/composables/useSearchClipboardOffer'
 import { useSearchFavorites } from '~/composables/useSearchFavorites'
 import { useSearchRecents } from '~/composables/useSearchRecents'
-import { useSearchTotpLivePreview } from '~/composables/useSearchTotpLivePreview'
+import { useToolOrder } from '~/composables/useToolOrder'
 import { useLastSearchTransferText } from '~/core/prefill'
 import { buildDesktopSearchItems } from '~/core/desktopSearchList'
-import {
-  buildMacAppSearchPreview,
-  buildToolSearchPreview,
-  type SearchPreviewModel
-} from '~/core/searchPreview'
 import type { SearchResultItem } from '~/core/searchResults'
 import { resolveToolsByContent, resolveToolsByName } from '~/core/search'
-import { siteTools, type SiteTool } from '~/core/tools'
+import type { SiteTool } from '~/core/tools'
 import type { NexusOpenToolPayload } from '~/types/nexus-desktop'
 import { showToast } from 'vant'
 
 const DEFAULT_LIMIT = 8
 
-function defaultSuggestions(): SiteTool[] {
-  return siteTools.filter((tool) => tool.path && tool.id !== 'more').slice(0, 6)
-}
-
 export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   const route = useRoute()
-  const { goHub, goTool, closeDesktop } = useDesktop()
+  const { goTool, closeDesktop } = useDesktop()
   const remeasureDesktopSearch = inject<() => void>('remeasureDesktopSearch', () => {})
   const { syncFromStorage, recordItem, resolveRecentItems } = useSearchRecents()
   const {
@@ -40,6 +31,7 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   } = useSearchFavorites()
 
   const lastSearchTransfer = useLastSearchTransferText()
+  const { orderedTools } = useToolOrder()
   const commandQuery = useState('desktop-search-command', () => '')
   const {
     query: queryEditor,
@@ -76,10 +68,14 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   )
   const hint = computed(() => contentResolved.value.hint)
 
+  const allBrowsableTools = computed(() =>
+    orderedTools.value.filter((tool) => Boolean(tool.path))
+  )
+
   const displayTools = computed(() => {
     if (commandTrimmed.value) return nameResolved.value.tools
     if (queryTrimmed.value) return contentResolved.value.tools
-    return defaultSuggestions()
+    return allBrowsableTools.value
   })
 
   const displayMacApps = computed(() => {
@@ -104,6 +100,7 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
 
   const clipboard = useSearchClipboardOffer({
     commandQuery,
+    getExistingQueryText: () => queryText.value,
     ingestFullText,
     focusQuery: () => headerRef.value?.focusQuery(),
     scheduleRemeasure
@@ -131,6 +128,13 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   })
   const selectableCount = computed(() => searchItems.value.length)
 
+  const reorderEnabled = computed(
+    () =>
+      !commandTrimmed.value &&
+      !queryTrimmed.value &&
+      allBrowsableTools.value.length > 1
+  )
+
   const selectedItem = computed<SearchResultItem | null>(() => {
     if (!searchItems.value.length) return null
     const idx = Math.min(activeIndex.value, searchItems.value.length - 1)
@@ -138,49 +142,6 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   })
 
   const showQueryEditor = computed(() => true)
-
-  const totpPreview = useSearchTotpLivePreview({
-    selectedItem,
-    commandTrimmed,
-    queryTrimmed,
-    hint,
-    onUpdated: scheduleRemeasure
-  })
-
-  const staticPreview = computed((): SearchPreviewModel | null => {
-    const item = selectedItem.value
-    const q = queryTrimmed.value
-
-    if (item?.kind === 'mac-app' && item.app) {
-      return buildMacAppSearchPreview(item.app.name, item.app.path)
-    }
-
-    const toolId =
-      item?.kind === 'tool' && item.tool
-        ? item.tool.id
-        : displayTools.value[0]?.id ?? hint.value?.toolId
-
-    if (toolId && q) {
-      return buildToolSearchPreview(toolId, q, hint.value)
-    }
-
-    if (item?.kind === 'tool' && item.tool) {
-      return buildToolSearchPreview(item.tool.id, q, hint.value)
-    }
-
-    return null
-  })
-
-  const preview = computed(() => {
-    if (totpPreview.shouldUseLivePreview() && totpPreview.livePreview.value) {
-      return totpPreview.livePreview.value
-    }
-    return staticPreview.value
-  })
-
-  watch([selectedItem, queryText, commandQuery, hint], () => totpPreview.restartTicker(), {
-    immediate: true
-  })
 
   function resolveTransferTextForOpen(): string {
     const fromQuery = transferText().trim()
@@ -205,7 +166,10 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   async function openTool(tool: SiteTool) {
     if (!tool.path) return
     const payload = payloadFor(tool)
-    if (payload?.prefill) clipboard.clearOffer()
+    if (payload?.prefill) {
+      clipboard.clearOffer()
+      await clipboard.markQueryTextAsApplied(payload.prefill)
+    }
     await goTool(tool, payload)
   }
 
@@ -320,7 +284,7 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     scheduleRemeasure()
   })
   watch(
-    [preview, showEmpty, clipboard.hasOffer, commandQuery, queryText, showQueryEditor],
+    [showEmpty, clipboard.hasOffer, commandQuery, queryText, showQueryEditor],
     scheduleRemeasure
   )
   watch(clipboard.pendingSearchInput, () => void clipboard.applyPendingInput(), { deep: true })
@@ -341,7 +305,6 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
   })
 
   onUnmounted(() => {
-    totpPreview.stopTimer()
     unregisterDesktopSearchApply(runApplySearchInput)
   })
 
@@ -358,15 +321,14 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     clearQuery,
     hint,
     searchItems,
-    selectedItem,
-    preview,
     showEmpty,
+    reorderEnabled,
+    scheduleRemeasure,
     activeIndex,
     hasClipboardOffer: clipboard.hasOffer,
     clipboardOfferLabel: clipboard.offerLabel,
     acceptClipboardOffer: clipboard.acceptOffer,
     dismissClipboardOffer: clipboard.dismissOffer,
-    goHub,
     closeDesktop,
     pickItem,
     onEnter,

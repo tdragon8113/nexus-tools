@@ -2,7 +2,7 @@
 const { pinned, togglePin, closeDesktop, hasElectronBridge } = useDesktop()
 
 const chromeBtn =
-  'desktop-chrome-btn flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-indigo-50 hover:text-indigo-700'
+  'desktop-chrome-btn flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-indigo-50 hover:text-indigo-700'
 
 async function onPinDown() {
   await togglePin()

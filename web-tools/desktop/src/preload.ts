@@ -127,6 +127,11 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
       import('../../utils/totp').StoredTotpAccount[]
     >
   },
+  getTotpAccounts() {
+    return ipcRenderer.invoke(IPC.totpGetAccounts) as Promise<
+      import('../../utils/totp').StoredTotpAccount[]
+    >
+  },
   getTotpShortcuts() {
     return ipcRenderer.invoke(IPC.totpGetShortcuts) as Promise<Record<string, string>>
   },

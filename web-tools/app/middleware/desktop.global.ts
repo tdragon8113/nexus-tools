@@ -6,8 +6,8 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo({ path: DESKTOP_ROUTES.search })
   }
 
-  if (to.path === '/tools') {
-    return navigateTo({ path: DESKTOP_ROUTES.hub })
+  if (to.path === '/tools' || to.path === '/desktop/hub') {
+    return navigateTo({ path: DESKTOP_ROUTES.search })
   }
 
   setPageLayout('desktop')

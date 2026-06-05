@@ -927,7 +927,7 @@ function downloadShareQr() {
 useConsumeToolPrefill('totp', applyPrefill)
 
 onMounted(() => {
-  loadAccounts()
+  void loadAccounts()
   void refreshShortcuts()
 })
 </script>

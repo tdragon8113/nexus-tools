@@ -42,7 +42,7 @@ export function buildDesktopSearchItems(input: BuildDesktopSearchItemsInput): Se
   if (favorites.length) out.push(...tagSection(favorites, '收藏'))
   if (suggestions.length) {
     const hasPrior = recents.length > 0 || favorites.length > 0
-    out.push(...tagSection(suggestions, hasPrior ? '建议' : undefined))
+    out.push(...tagSection(suggestions, hasPrior ? '所有工具' : undefined))
   }
   return out
 }

@@ -1,5 +1,7 @@
 import { isElectronShell } from '~/core/desktop'
 
+const PREFETCH_CONCURRENCY = 3
+
 export function useMacAppIconCache() {
   const cache = useState<Record<string, string>>('mac-app-icon-cache', () => ({}))
   const inflight = new Map<string, Promise<string | null>>()
@@ -28,8 +30,21 @@ export function useMacAppIconCache() {
   }
 
   function prefetch(appPaths: string[]) {
-    for (const appPath of appPaths) {
-      if (!cache.value[appPath]) void fetchIcon(appPath)
+    const missing = appPaths.filter((appPath) => !cache.value[appPath] && !inflight.has(appPath))
+    if (!missing.length) return
+
+    let cursor = 0
+    async function worker() {
+      while (cursor < missing.length) {
+        const appPath = missing[cursor]
+        cursor += 1
+        await fetchIcon(appPath)
+      }
+    }
+
+    const workers = Math.min(PREFETCH_CONCURRENCY, missing.length)
+    for (let i = 0; i < workers; i += 1) {
+      void worker()
     }
   }
 

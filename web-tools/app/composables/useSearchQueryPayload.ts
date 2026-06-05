@@ -3,13 +3,31 @@ import {
   formatSearchPayloadSize,
   shouldHoldSearchPayload
 } from '~/core/search'
-import { useLastSearchTransferText } from '~/core/prefill'
+import { clearLastSearchTransferText, useLastSearchTransferText } from '~/core/prefill'
 import { useDesktopSearchInput } from '~/composables/useDesktopSearchInput'
+
+export const DESKTOP_QUERY_DISPLAY_KEY = 'desktop-search-query'
+export const DESKTOP_QUERY_PAYLOAD_KEY = 'desktop-search-query-payload'
+
+/** 应用内点击「搜索」返回启动器时清空 Query（不携带上次打开工具的内容） */
+export function resetDesktopSearchQueryState() {
+  if (!import.meta.client) return
+  const display = useState<string>(DESKTOP_QUERY_DISPLAY_KEY, () => '')
+  const payload = useState<string>(DESKTOP_QUERY_PAYLOAD_KEY, () => '')
+  const fromClipboard = useState<boolean>(`${DESKTOP_QUERY_PAYLOAD_KEY}-from-clipboard`, () => false)
+  display.value = ''
+  payload.value = ''
+  fromClipboard.value = false
+  clearLastSearchTransferText()
+}
 
 /**
  * 搜索框：与剪贴板同上限（约 14M 字符）全文展示；超出才截断。
  */
-export function useSearchQueryPayload(displayKey: string, payloadKey: string) {
+export function useSearchQueryPayload(
+  displayKey: string = DESKTOP_QUERY_DISPLAY_KEY,
+  payloadKey: string = DESKTOP_QUERY_PAYLOAD_KEY
+) {
   const display = useState<string>(displayKey, () => '')
   const payload = useState<string>(payloadKey, () => '')
   const fromClipboard = useState<boolean>(`${payloadKey}-from-clipboard`, () => false)

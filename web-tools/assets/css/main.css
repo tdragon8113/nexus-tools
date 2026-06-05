@@ -101,7 +101,7 @@
   }
 
   .nexus-shell-header {
-    @apply flex h-9 shrink-0 items-center gap-1.5 border-b border-slate-200/80 bg-white/95 px-2.5 backdrop-blur-sm;
+    @apply flex h-10 shrink-0 items-center gap-1.5 border-b border-slate-200/80 bg-white/95 px-3 backdrop-blur-sm;
   }
 
 html[data-nexus-desktop='1'] .nexus-chrome-link {
@@ -224,6 +224,15 @@ body.nexus-desktop-body--search #__nuxt {
   overflow: hidden;
 }
 
+html[data-nexus-desktop='1']:not(.nexus-desktop-html--panel) {
+  height: auto;
+}
+
+body.nexus-desktop-body--search .nexus-desktop-root {
+  flex: 0 0 auto;
+  height: auto;
+}
+
 html[data-nexus-desktop='1'] #__nuxt {
   display: flex;
   flex-direction: column;
@@ -235,15 +244,19 @@ html[data-nexus-desktop='1'] .nexus-desktop-root {
   width: 100%;
 }
 
-html[data-nexus-desktop='1'] .nexus-desktop-search,
-html[data-nexus-desktop='1'] .nexus-desktop-panel {
+html[data-nexus-desktop='1'] .nexus-desktop-search {
   width: 100%;
-  max-width: 800px;
+  max-width: 100%;
   min-height: 0;
   box-sizing: border-box;
+  height: auto;
 }
 
 html[data-nexus-desktop='1'] .nexus-desktop-panel {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
   height: 100%;
   max-height: 100%;
 }
@@ -326,11 +339,18 @@ html[data-nexus-desktop='1'] .nexus-raycast-search {
   min-height: 0;
   width: 100%;
   color: var(--nexus-raycast-text);
-  --nexus-raycast-font-body: 0.8125rem;
-  --nexus-raycast-font-secondary: 0.75rem;
-  --nexus-raycast-font-caption: 0.6875rem;
+  --nexus-raycast-font-body: 0.9375rem;
+  --nexus-raycast-font-secondary: 0.8125rem;
+  --nexus-raycast-font-caption: 0.75rem;
   font-size: var(--nexus-raycast-font-body);
   line-height: 1.35;
+}
+
+/** 列表区：内容少时随高度收缩；接近工具页高度上限时在内部滚动 */
+html[data-nexus-desktop='1'] .nexus-raycast-list-scroll {
+  max-height: min(520px, calc(680px - 10rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 html[data-nexus-desktop='1'] .nexus-raycast-type-body {

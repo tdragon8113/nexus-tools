@@ -285,7 +285,7 @@ export function buildTotpConfigSearchPreview(
 function previewPlainText(raw: string): SearchPreviewModel {
   const t = raw.trim()
   if (!t) {
-    return { title: '文本', emptyHint: '在 Query 中粘贴或输入内容' }
+    return { title: '文本', lines: [], emptyHint: '在 Query 中粘贴或输入内容' }
   }
   const clipped = t.length > 1200 ? `${t.slice(0, 1200)}…` : t
   return {
@@ -299,20 +299,19 @@ export function buildToolSearchPreview(
   toolId: string,
   queryText: string,
   hint?: ContentHint | null
-): SearchPreviewModel {
+): SearchPreviewModel | null {
   const tool = getToolById(toolId)
   const raw = queryText.trim()
   if (!raw) {
     if (toolId === 'totp') {
       return {
         title: '2FA / TOTP',
+        lines: [],
         emptyHint: '正在加载账户…'
       }
     }
-    return {
-      title: tool?.name ?? '预览',
-      emptyHint: '在 Query 中粘贴或输入内容，将自动匹配工具并预览'
-    }
+    // 无 Query 内容时不占预览位，由右侧详情面板展示工具信息
+    return null
   }
 
   const detected = hint ?? detectContentHint(raw)
@@ -355,7 +354,6 @@ export function buildToolSearchPreview(
 export function buildMacAppSearchPreview(appName: string, appPath: string): SearchPreviewModel {
   return {
     title: appName,
-    lines: [{ label: '路径', value: appPath, mono: true }],
-    emptyHint: '按 ↵ 打开应用'
+    lines: [{ label: '路径', value: appPath, mono: true }]
   }
 }

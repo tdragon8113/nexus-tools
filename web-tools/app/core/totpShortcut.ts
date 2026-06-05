@@ -67,6 +67,8 @@ export function totpShortcutErrorMessage(error: string | undefined): string {
       return '该快捷键已被其他账户使用'
     case 'reserved':
       return '该快捷键已被应用保留'
+    case 'account_not_found':
+      return '账户尚未同步到桌面端，请重新打开 2FA 页面后再试'
     default:
       return '设置快捷键失败'
   }

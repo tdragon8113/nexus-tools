@@ -1,10 +1,8 @@
 import { searchMacApps } from '~/core/macAppSearch'
 import { isElectronShell } from '~/core/desktop'
-import { useMacAppIconCache } from '~/composables/useMacAppIconCache'
 import type { MacAppEntry } from '~~/shared/macApps'
 
 export function useMacApps() {
-  const { prefetch: prefetchMacAppIcons } = useMacAppIconCache()
   const apps = useState<MacAppEntry[]>('desktop-mac-apps', () => [])
   const loaded = useState('desktop-mac-apps-loaded', () => false)
 
@@ -27,7 +25,6 @@ export function useMacApps() {
       apps.value = []
     } finally {
       loaded.value = true
-      if (apps.value.length) prefetchMacAppIcons(apps.value.map((a) => a.path))
     }
   }
 

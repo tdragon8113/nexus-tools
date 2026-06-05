@@ -55,9 +55,9 @@ function onQueryKeydown(event: KeyboardEvent) {
 <template>
   <div class="nexus-raycast-header nexus-raycast-header--embedded mb-2 shrink-0" style="-webkit-app-region: no-drag">
     <div
-      class="nexus-raycast-header-input flex min-w-0 flex-1 items-center gap-2 rounded-xl border px-3 py-1.5"
+      class="nexus-raycast-header-input flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border px-3.5 py-2"
     >
-      <van-icon name="search" class="nexus-raycast-icon-muted pointer-events-none shrink-0" size="16" />
+      <van-icon name="search" class="nexus-raycast-icon-muted pointer-events-none shrink-0" size="18" />
 
       <div
         class="relative min-w-0 flex-1"

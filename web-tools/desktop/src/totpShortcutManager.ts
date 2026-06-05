@@ -1,4 +1,4 @@
-import { globalShortcut } from 'electron'
+import { globalShortcut, Notification } from 'electron'
 import { generateTotp, storedToTotpConfig } from '../../utils/totp'
 import type { DesktopPrefsStore } from './prefs'
 import type { TotpAccountStore } from './totpAccountStore'
@@ -6,7 +6,7 @@ import { autofillTotpCode, FOCUS_HANDOFF_MS } from './totpAutofill'
 
 export type TotpShortcutPatchResult =
   | { ok: true }
-  | { ok: false; error: 'invalid' | 'register_failed' | 'shortcut_in_use' | 'reserved' }
+  | { ok: false; error: 'invalid' | 'register_failed' | 'shortcut_in_use' | 'reserved' | 'account_not_found' }
 
 const RESERVED = new Set(['Alt+Space'])
 
@@ -17,6 +17,11 @@ function sleep(ms: number) {
   return new Promise<void>((resolve) => {
     setTimeout(resolve, ms)
   })
+}
+
+function notifyTotpShortcutIssue(body: string) {
+  if (!Notification.isSupported()) return
+  new Notification({ title: 'Nexus Tools · 2FA 快捷键', body }).show()
 }
 
 function normalizeAccelerator(raw: string): string | null {
@@ -55,10 +60,17 @@ export class TotpShortcutManager {
   }
 
   unregisterAllTotpShortcuts() {
-    for (const accelerator of this.acceleratorToAccount.keys()) {
+    for (const accelerator of [...this.acceleratorToAccount.keys()]) {
       globalShortcut.unregister(accelerator)
     }
     this.acceleratorToAccount.clear()
+  }
+
+  private unregisterAccelerator(raw: string) {
+    const normalized = normalizeAccelerator(raw)
+    if (!normalized) return
+    globalShortcut.unregister(normalized)
+    this.acceleratorToAccount.delete(normalized)
   }
 
   setCaptureActive(active: boolean) {
@@ -73,15 +85,39 @@ export class TotpShortcutManager {
     this.reload()
   }
 
+  pruneOrphanShortcuts(validAccountIds: ReadonlySet<string>) {
+    const shortcuts = this.getShortcuts()
+    let changed = false
+    for (const accountId of Object.keys(shortcuts)) {
+      if (validAccountIds.has(accountId)) continue
+      const accelerator = shortcuts[accountId]
+      if (accelerator) {
+        this.unregisterAccelerator(accelerator)
+      }
+      delete shortcuts[accountId]
+      changed = true
+    }
+    if (changed) {
+      this.deps.prefs.write({ totpShortcuts: shortcuts })
+    }
+  }
+
   reload() {
     if (this.captureSuspended) return
     this.unregisterAllTotpShortcuts()
     const shortcuts = this.getShortcuts()
     for (const [accountId, accelerator] of Object.entries(shortcuts)) {
       if (!accelerator) continue
+      if (!this.deps.accountStore.getById(accountId)) {
+        console.warn('[Nexus Tools] 跳过无效 TOTP 快捷键绑定', accountId, accelerator)
+        continue
+      }
       const normalized = normalizeAccelerator(accelerator)
       if (!normalized || this.acceleratorToAccount.has(normalized)) continue
-      this.registerInternal(accountId, normalized, { persist: false })
+      const result = this.registerInternal(accountId, normalized, { persist: false })
+      if (!result.ok) {
+        console.warn('[Nexus Tools] TOTP 快捷键注册失败', normalized, result.error)
+      }
     }
   }
 
@@ -93,14 +129,17 @@ export class TotpShortcutManager {
     const shortcuts = this.getShortcuts()
     const previous = shortcuts[accountId]
     if (previous) {
-      globalShortcut.unregister(previous)
-      this.acceleratorToAccount.delete(previous)
+      this.unregisterAccelerator(previous)
     }
 
     if (!accelerator) {
       delete shortcuts[accountId]
       this.deps.prefs.write({ totpShortcuts: shortcuts })
       return { ok: true }
+    }
+
+    if (!this.deps.accountStore.getById(accountId)) {
+      return { ok: false, error: 'account_not_found' }
     }
 
     const normalized = normalizeAccelerator(accelerator)
@@ -151,7 +190,11 @@ export class TotpShortcutManager {
     }
 
     const account = this.deps.accountStore.getById(accountId)
-    if (!account) return
+    if (!account) {
+      console.warn('[Nexus Tools] TOTP 快捷键绑定的账户不存在', accountId)
+      notifyTotpShortcutIssue('绑定的账户不存在，请重新打开 2FA 页面同步账户后再试。')
+      return
+    }
 
     this.autofillInFlight = true
     this.lastTriggerAt = now

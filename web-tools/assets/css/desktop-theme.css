@@ -10,8 +10,8 @@ html[data-nexus-desktop='1'] .nexus-tool-input {
   border: 1px solid var(--nexus-tool-input-border);
   background-color: var(--nexus-tool-input-bg);
   color: var(--nexus-tool-text);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.35rem;
   outline: none;
   transition:
     border-color 0.15s ease,
@@ -162,11 +162,11 @@ html[data-nexus-desktop='1'] .desktop-settings-page {
 
 /* 工具集：与搜索窗一致的三级字号，避免卡片/筛选条显得过大 */
 html[data-nexus-desktop='1'] .desktop-hub-page {
-  --nexus-hub-font-body: 0.8125rem;
-  --nexus-hub-font-secondary: 0.75rem;
-  --nexus-hub-font-caption: 0.6875rem;
+  --nexus-hub-font-body: 0.9375rem;
+  --nexus-hub-font-secondary: 0.8125rem;
+  --nexus-hub-font-caption: 0.75rem;
   font-size: var(--nexus-hub-font-secondary);
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 html[data-nexus-desktop='1'] .desktop-hub-page .nexus-tool-input {
@@ -186,11 +186,11 @@ html[data-nexus-desktop='1'] .nexus-hub-type-caption {
 }
 
 html[data-nexus-desktop='1'] .nexus-shell-header {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 html[data-nexus-desktop='1'] .nexus-shell-header .nexus-shell-drag-region {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -206,9 +206,8 @@ html[data-nexus-desktop='1'] .nexus-shell-settings-btn:hover {
 html[data-nexus-desktop='1'] .nexus-desktop-search__body {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  flex: 1 1 auto;
-  padding: 8px 10px;
+  flex: 0 0 auto;
+  padding: 10px 12px;
   box-sizing: border-box;
 }
 

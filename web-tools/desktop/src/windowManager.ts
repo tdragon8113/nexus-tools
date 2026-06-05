@@ -3,12 +3,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   IPC,
+  LAUNCHER_MAX_HEIGHT,
   LAUNCHER_MIN_HEIGHT,
   LAUNCHER_WIDTH,
   PANEL_HEIGHT,
   PANEL_MIN_HEIGHT,
   PANEL_MIN_WIDTH,
   PANEL_WIDTH,
+  SEARCH_POSITION_TTL_MS,
   type ShowSearchPayload
 } from './types'
 import { getAppIcon } from './appIcon'
@@ -18,10 +20,14 @@ type PreloadFn = (file: string) => string
 
 type SavedPanelBounds = { x: number; y: number; width: number; height: number }
 
+type SavedSearchBounds = { x: number; y: number; movedAt: number }
+
 type WindowStore = {
   pinned?: boolean
   /** 按显示器 id 记住工具窗位置；进入搜索页时清空 */
   panelByDisplay?: Record<string, SavedPanelBounds>
+  /** 按显示器 id 记住搜索窗位置；movedAt=0 表示未手动拖动 */
+  searchByDisplay?: Record<string, SavedSearchBounds>
 }
 
 /** URL 中 q 参数上限；剪贴板一律走 IPC，避免 base64 图片等撑爆 URL */
@@ -98,6 +104,108 @@ export class WindowManager {
     if (![x, y, width, height].every((n) => Number.isFinite(n))) return null
     if (height < PANEL_HEIGHT - 8) return null
     return saved
+  }
+
+  private getSavedSearchBounds(displayId: number): SavedSearchBounds | null {
+    const saved = this.readWindowStore().searchByDisplay?.[String(displayId)]
+    if (!saved) return null
+    const { x, y, movedAt } = saved
+    if (![x, y, movedAt].every((n) => Number.isFinite(n))) return null
+    return saved
+  }
+
+  private isSearchPositionFresh(saved: SavedSearchBounds): boolean {
+    if (saved.movedAt <= 0) return true
+    return Date.now() - saved.movedAt <= SEARCH_POSITION_TTL_MS
+  }
+
+  private defaultSearchBounds(height: number, area: Rectangle): Rectangle {
+    return {
+      x: Math.round(area.x + (area.width - LAUNCHER_WIDTH) / 2),
+      y: Math.round(area.y + area.height * 0.18),
+      width: LAUNCHER_WIDTH,
+      height
+    }
+  }
+
+  private clampSearchBounds(bounds: Rectangle, area: Rectangle): Rectangle {
+    const w = LAUNCHER_WIDTH
+    const h = Math.min(
+      Math.max(bounds.height, LAUNCHER_MIN_HEIGHT),
+      Math.min(LAUNCHER_MAX_HEIGHT, Math.round(area.height * 0.72))
+    )
+    const x = Math.min(Math.max(bounds.x, area.x), area.x + area.width - w)
+    const y = Math.min(Math.max(bounds.y, area.y), area.y + area.height - h)
+    return { x: Math.round(x), y: Math.round(y), width: w, height: Math.round(h) }
+  }
+
+  private isSearchRoute(url: string): boolean {
+    return this.pathnameFromUrl(url).includes('/desktop/search')
+  }
+
+  private saveSearchBounds(movedByUser: boolean) {
+    const win = this.shell
+    if (!win || win.isDestroyed()) return
+    if (!this.isSearchRoute(win.webContents.getURL())) return
+    const bounds = win.getBounds()
+    const displayId = this.displayIdForBounds(bounds)
+    const store = this.readWindowStore()
+    const searchByDisplay = { ...(store.searchByDisplay ?? {}) }
+    const existing = searchByDisplay[String(displayId)]
+    searchByDisplay[String(displayId)] = {
+      x: bounds.x,
+      y: bounds.y,
+      movedAt: movedByUser ? Date.now() : (existing?.movedAt ?? 0)
+    }
+    this.writeWindowStore({ searchByDisplay })
+  }
+
+  private scheduleSaveSearchBounds = (() => {
+    let timer: ReturnType<typeof setTimeout> | null = null
+    return () => {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        timer = null
+        this.saveSearchBounds(true)
+      }, 200)
+    }
+  })()
+
+  private resolveSearchBounds(
+    win: BrowserWindow,
+    height: number,
+    opts?: { moveToActiveDisplay?: boolean; reopening?: boolean }
+  ): Rectangle {
+    const area = this.workArea()
+    const displayId = this.activeDisplay().id
+    const current = win.getBounds()
+    const onActiveDisplay = this.isBoundsCenterInArea(current, area)
+    const saved = this.getSavedSearchBounds(displayId)
+
+    if (opts?.moveToActiveDisplay && !onActiveDisplay) {
+      if (saved && saved.movedAt > 0 && this.isSearchPositionFresh(saved)) {
+        return this.clampSearchBounds({ ...saved, width: LAUNCHER_WIDTH, height }, area)
+      }
+      return this.defaultSearchBounds(height, area)
+    }
+
+    if (opts?.reopening) {
+      if (saved && saved.movedAt > 0) {
+        if (this.isSearchPositionFresh(saved)) {
+          return this.clampSearchBounds({ ...saved, width: LAUNCHER_WIDTH, height }, area)
+        }
+        return this.defaultSearchBounds(height, area)
+      }
+      if (onActiveDisplay) {
+        return this.clampSearchBounds({ x: current.x, y: current.y, width: LAUNCHER_WIDTH, height }, area)
+      }
+      return this.defaultSearchBounds(height, area)
+    }
+
+    if (onActiveDisplay) {
+      return this.clampSearchBounds({ x: current.x, y: current.y, width: LAUNCHER_WIDTH, height }, area)
+    }
+    return this.defaultSearchBounds(height, area)
   }
 
   private clearSavedPanelBounds() {
@@ -185,9 +293,10 @@ export class WindowManager {
     return this.activeDisplay().workArea
   }
 
-  /** 搜索窗高度：以内容测量为准，仅做上下限裁剪（避免 LAUNCHER_MIN 撑出底部空白条） */
+  /** 搜索窗高度：以渲染层实测为准，上下限与工具页 PANEL_HEIGHT 对齐 */
   private searchHeightFromContent(measured: number): number {
-    const maxH = Math.round(this.workArea().height * 0.72)
+    const viewportCap = Math.round(this.workArea().height * 0.72)
+    const maxH = Math.min(LAUNCHER_MAX_HEIGHT, viewportCap)
     const h = Number.isFinite(measured) ? Math.round(measured) : LAUNCHER_MIN_HEIGHT
     return Math.min(maxH, Math.max(LAUNCHER_MIN_HEIGHT, h))
   }
@@ -200,25 +309,21 @@ export class WindowManager {
   private applySearchBounds(
     win: BrowserWindow,
     preferredHeight?: number,
-    opts?: { keepPosition?: boolean }
+    opts?: { moveToActiveDisplay?: boolean; reopening?: boolean; keepCurrentPosition?: boolean }
   ) {
     const area = this.workArea()
-    const maxH = Math.round(area.height * 0.65)
+    const maxH = Math.min(LAUNCHER_MAX_HEIGHT, Math.round(area.height * 0.72))
     const height = this.searchHeight(win, preferredHeight)
     const current = win.getBounds()
 
-    // 宽高上下限一致，避免从可调整大小的工具面板切回时仍保持过宽尺寸
     win.setMinimumSize(LAUNCHER_WIDTH, LAUNCHER_MIN_HEIGHT)
     win.setMaximumSize(LAUNCHER_WIDTH, maxH)
     win.setResizable(false)
-    const next = opts?.keepPosition
-      ? { x: current.x, y: current.y, width: LAUNCHER_WIDTH, height }
-      : {
-          x: Math.round(area.x + (area.width - LAUNCHER_WIDTH) / 2),
-          y: Math.round(area.y + area.height * 0.18),
-          width: LAUNCHER_WIDTH,
-          height
-        }
+
+    const next = opts?.keepCurrentPosition
+      ? this.clampSearchBounds({ x: current.x, y: current.y, width: LAUNCHER_WIDTH, height }, area)
+      : this.resolveSearchBounds(win, height, opts)
+
     if (!this.boundsApproximatelyEqual(current, next)) {
       win.setBounds(next, false)
     }
@@ -243,6 +348,7 @@ export class WindowManager {
     if (this.pinned) return
 
     this.savePanelBounds()
+    this.saveSearchBounds(false)
 
     if (this.isAutoHideOnBlurEnabled()) {
       this.hide()
@@ -307,7 +413,10 @@ export class WindowManager {
       }
     })
 
-    this.shell.on('moved', () => this.scheduleSavePanelBounds())
+    this.shell.on('moved', () => {
+      this.scheduleSavePanelBounds()
+      this.scheduleSaveSearchBounds()
+    })
     this.shell.on('resized', () => this.scheduleSavePanelBounds())
 
     this.shell.on('closed', () => {
@@ -359,7 +468,7 @@ export class WindowManager {
     return url.toString()
   }
 
-  applySearchChrome() {
+  applySearchChrome(opts?: { moveToActiveDisplay?: boolean; reopening?: boolean }) {
     const win = this.shell
     if (!win || win.isDestroyed()) return
     this.clearSavedPanelBounds()
@@ -369,8 +478,7 @@ export class WindowManager {
     const height = fromPanel
       ? this.lastSearchHeight
       : this.searchHeight(win, current.height)
-    const keepPosition = fromPanel || win.isVisible()
-    this.applySearchBounds(win, height, { keepPosition })
+    this.applySearchBounds(win, height, opts)
   }
 
   /** 窗口中心是否落在指定工作区内（用于判断是否需要按当前屏重新居中） */
@@ -509,7 +617,7 @@ export class WindowManager {
     if (!Number.isFinite(contentHeight)) return
     const height = this.searchHeightFromContent(contentHeight)
     this.lastSearchHeight = height
-    this.applySearchBounds(win, height, { keepPosition: true })
+    this.applySearchBounds(win, height, { keepCurrentPosition: true })
     if (!this.shellLayoutReady) {
       this.shellLayoutReady = true
       this.finishAwaitingReveal(win)
@@ -545,14 +653,14 @@ export class WindowManager {
   showSearch(input: ShowSearchPayload = {}) {
     const { clipboard = '', q = '', source = 'hotkey' } = input
     const win = this.ensureShell()
-    this.applySearchChrome()
+    this.applySearchChrome({ moveToActiveDisplay: true, reopening: true })
 
     const target = this.searchUrl(q)
     const current = win.webContents.getURL()
     const onSearchPage = current.includes('/desktop/search')
 
     const reveal = () => {
-      this.applySearchChrome()
+      this.applySearchChrome({ moveToActiveDisplay: true, reopening: true })
       this.revealSearchWindow(win)
       win.webContents.send('desktop:show-search', { clipboard, q, source })
     }
@@ -569,6 +677,7 @@ export class WindowManager {
     const win = this.shell
     if (!win || win.isDestroyed()) return
     this.savePanelBounds()
+    this.saveSearchBounds(false)
     if (process.platform === 'darwin') {
       app.hide()
       return
@@ -588,11 +697,7 @@ export class WindowManager {
   /** 工具页 / 工具集：不重新加载，仅恢复窗口尺寸与焦点 */
   private isPanelRoute(url: string): boolean {
     const path = this.pathnameFromUrl(url)
-    return (
-      path.startsWith('/tools/') ||
-      path === '/desktop/hub' ||
-      path === '/desktop/settings'
-    )
+    return path.startsWith('/tools/') || path === '/desktop/settings'
   }
 
   revealPanel() {
@@ -659,26 +764,13 @@ export class WindowManager {
     this.revealWhenHidden(clipboard)
   }
 
-  panelSizeForPath(_path: string) {
+  panelSizeForPath(path: string) {
     return { width: PANEL_WIDTH, height: PANEL_HEIGHT }
   }
 
   setPanelMode(path: string, opts?: { centerOnActiveDisplay?: boolean }) {
     const size = this.panelSizeForPath(path)
-    const win = this.shell
-    let height = size.height
-    if (win && !win.isDestroyed()) {
-      const currentH = win.getBounds().height
-      // 从搜索窗进入工具集时保留当前窗高，避免顶栏对齐后仍被强行拉到 600px 产生跳动
-      if (
-        currentH >= LAUNCHER_MIN_HEIGHT &&
-        currentH < PANEL_HEIGHT - 8 &&
-        currentH > height * 0.45
-      ) {
-        height = currentH
-      }
-    }
-    this.applyPanelChrome(size.width, height, opts)
+    this.applyPanelChrome(size.width, size.height, opts)
   }
 
   closeFromRenderer() {

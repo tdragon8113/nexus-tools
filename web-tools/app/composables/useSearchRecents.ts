@@ -3,7 +3,7 @@ import { getToolById } from '~/core/tools'
 import type { MacAppEntry } from '~~/shared/macApps'
 
 const STORAGE_KEY = 'nexus-search-recents-v1'
-const MAX_RECENTS = 8
+const MAX_RECENTS = 3
 
 export interface SearchRecentEntry {
   id: string
@@ -39,7 +39,7 @@ export function useSearchRecents() {
   const entries = useState<SearchRecentEntry[]>('search-recents', () => [])
 
   function syncFromStorage() {
-    entries.value = readStorage()
+    entries.value = readStorage().slice(0, MAX_RECENTS)
   }
 
   function recordItem(item: SearchResultItem) {
@@ -69,7 +69,7 @@ export function useSearchRecents() {
         if (app) items.push(macAppToSearchResult(app))
       }
     }
-    return items
+    return items.slice(0, MAX_RECENTS)
   }
 
   return {

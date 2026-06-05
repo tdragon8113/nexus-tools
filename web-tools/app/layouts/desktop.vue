@@ -5,10 +5,8 @@ import { getToolByPath } from '~/core/tools'
 const route = useRoute()
 const {
   goSearch,
-  goHub,
   leaveSettings,
   isSearchScreen,
-  isHubScreen,
   isToolScreen,
   isSettingsScreen,
   resizeSearchPanel,
@@ -17,9 +15,14 @@ const {
 
 const searchShellRef = ref<HTMLElement | null>(null)
 
-/** 以整块面板实际占位为准，避免最小窗高在底部留出「空分区」 */
+/** 以壳体真实内容高度为准（避免 flex 拉伸后的 offsetHeight 把 Electron 窗体撑大） */
 function measureSearchShell(el: HTMLElement): number {
-  return Math.ceil(el.offsetHeight)
+  const header = el.querySelector<HTMLElement>('.nexus-shell-header')
+  const body = el.querySelector<HTMLElement>('.nexus-desktop-search__body')
+  if (header && body) {
+    return Math.ceil(header.getBoundingClientRect().height + body.scrollHeight)
+  }
+  return Math.ceil(el.scrollHeight)
 }
 
 function remeasureSearchShell() {
@@ -60,8 +63,8 @@ const toolTitle = computed(() => getToolByPath(route.path)?.name ?? '工具')
 
 const barTitle = computed(() => {
   if (isSettingsScreen.value) return '设置'
-  if (isHubScreen.value) return '工具集'
-  return toolTitle.value
+  if (isToolScreen.value) return toolTitle.value
+  return '搜索'
 })
 
 /** 表格式工具（Base64 等）：面板内层 __scroll 滚动 */
@@ -70,7 +73,7 @@ const panelBodyScroll = computed(
 )
 
 const panelBodyIsToolLayout = computed(
-  () => (isHubScreen.value || isToolScreen.value) && !panelBodyScroll.value
+  () => isToolScreen.value && !panelBodyScroll.value
 )
 
 function syncBodyShellClass() {
@@ -92,20 +95,21 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="nexus-desktop-root flex h-full min-h-0 w-full flex-col">
+  <div
+    class="nexus-desktop-root flex min-h-0 w-full flex-col"
+    :class="isSearchScreen ? '' : 'h-full'"
+  >
     <!-- 搜索：窗体高度随内容；不透明窗口与面板同宽 -->
     <div
       v-if="isSearchScreen"
       ref="searchShellRef"
-      class="nexus-desktop-search nexus-shell nexus-shell--search flex w-full shrink-0 flex-col overflow-hidden"
+      class="nexus-desktop-search nexus-shell nexus-shell--search flex h-auto w-full shrink-0 flex-col overflow-hidden"
     >
       <DesktopShellHeader
-        primary-label="工具集"
         title="搜索"
         :show-settings="true"
-        @primary="goHub"
       />
-      <main class="nexus-desktop-search__body flex min-h-0 flex-1 flex-col overflow-hidden">
+      <main class="nexus-desktop-search__body flex flex-col overflow-hidden">
         <slot />
       </main>
     </div>
@@ -117,11 +121,9 @@ onUnmounted(() => {
     >
       <DesktopShellHeader
         :primary-label="isSettingsScreen ? '返回' : '搜索'"
-        :secondary-label="!isSettingsScreen && !isHubScreen ? '工具集' : undefined"
         :title="barTitle"
         :show-settings="!isSettingsScreen"
         @primary="isSettingsScreen ? leaveSettings() : goSearch()"
-        @secondary="goHub"
       />
       <main
         class="nexus-desktop-panel__body min-h-0 flex-1"
@@ -154,7 +156,7 @@ html[data-nexus-desktop='1']
   )
   > div {
   max-width: none !important;
-  padding: 12px 14px !important;
+  padding: 14px 16px !important;
 }
 
 html[data-nexus-desktop='1'] .nexus-desktop-panel__body .py-8,
@@ -167,7 +169,7 @@ html[data-nexus-desktop='1'] .nexus-desktop-panel__body .md\:py-10 {
 html[data-nexus-desktop='1'] .nexus-desktop-panel__body--tool {
   display: flex;
   flex-direction: column;
-  padding: 8px 10px !important;
+  padding: 10px 12px !important;
 }
 
 html[data-nexus-desktop='1'] .nexus-desktop-panel__body--tool .nexus-desktop-panel__inner {

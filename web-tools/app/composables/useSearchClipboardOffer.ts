@@ -8,6 +8,7 @@ import {
 
 export function useSearchClipboardOffer(deps: {
   commandQuery: Ref<string>
+  getExistingQueryText: () => string
   ingestFullText: (text: string, options: { fromClipboard: boolean }) => void
   focusQuery: () => void
   scheduleRemeasure: () => void
@@ -59,6 +60,8 @@ export function useSearchClipboardOffer(deps: {
   async function applyPendingInput() {
     if (!clipboardPrefs.loaded.value) await clipboardPrefs.syncFromMain()
 
+    const existingQuery = deps.getExistingQueryText().trim()
+
     const pending = takeDesktopSearchInput()
     if (pending) {
       const clip = pending.clipboard?.trim()
@@ -66,12 +69,21 @@ export function useSearchClipboardOffer(deps: {
       const source = pending.source ?? 'hotkey'
 
       if (clip) {
+        const clipHash = hashClipboardText(clip)
+        if (existingQuery && hashClipboardText(existingQuery) === clipHash) {
+          await markApplied(clip)
+          clearOffer()
+          if (q) deps.commandQuery.value = q
+          return
+        }
+
         const decision = decideClipboardIngest({
           policy: clipboardPrefs.policy.value,
           source,
           text: clip,
           lastAppliedHash: clipboardPrefs.lastAppliedHash.value,
-          dismissedHash: clipboardPrefs.dismissedHash.value
+          dismissedHash: clipboardPrefs.dismissedHash.value,
+          existingQueryText: existingQuery
         })
         if (decision.action === 'autofill') {
           await ingest(clip)
@@ -105,6 +117,12 @@ export function useSearchClipboardOffer(deps: {
     void ingest(text)
   }
 
+  async function markQueryTextAsApplied(text: string) {
+    const t = text.trim()
+    if (!t) return
+    await markApplied(t)
+  }
+
   return {
     clipboardPrefs,
     pendingSearchInput,
@@ -116,6 +134,7 @@ export function useSearchClipboardOffer(deps: {
     acceptOffer,
     dismissOffer,
     applyPendingInput,
+    markQueryTextAsApplied,
     onQueryPaste
   }
 }

@@ -279,7 +279,7 @@ export function useDragSortList<T extends SortableListItem>(options: {
   }
 
   function shouldIgnoreClick() {
-    return suppressClick || isDragging.value || options.enabled.value
+    return suppressClick || isDragging.value
   }
 
   onUnmounted(() => {

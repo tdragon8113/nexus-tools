@@ -10,35 +10,45 @@ const props = withDefaults(
 )
 
 const failed = ref(false)
-const iconSrc = ref<string | null>(null)
-const { fetchIcon } = useMacAppIconCache()
+const { cache, fetchIcon } = useMacAppIconCache()
 let loadGen = 0
+
+const iconSrc = computed(() => cache.value[props.appPath] ?? null)
 
 const boxClass = computed(() =>
   props.size === 'md' ? 'h-16 w-16 rounded-2xl' : 'h-8 w-8 rounded-lg'
 )
 
-async function loadIcon(appPath: string) {
+async function ensureIcon(appPath: string) {
+  if (!appPath || cache.value[appPath]) return
+
   const gen = ++loadGen
-  iconSrc.value = null
   failed.value = false
 
-  const url = await fetchIcon(appPath)
-  if (gen !== loadGen) return
-  if (url) iconSrc.value = url
-  else failed.value = true
+  try {
+    const url = await fetchIcon(appPath)
+    if (gen !== loadGen) return
+    if (!url) failed.value = true
+  } catch {
+    if (gen === loadGen) failed.value = true
+  }
 }
 
 onMounted(() => {
-  void loadIcon(props.appPath)
+  void ensureIcon(props.appPath)
 })
 
 watch(
   () => props.appPath,
   (path) => {
-    void loadIcon(path)
+    failed.value = false
+    void ensureIcon(path)
   }
 )
+
+watch(iconSrc, (url) => {
+  if (url) failed.value = false
+})
 
 function onImgError() {
   failed.value = true
@@ -56,6 +66,7 @@ function onImgError() {
       alt=""
       class="h-full w-full object-contain"
       draggable="false"
+      loading="eager"
       @error="onImgError"
     />
     <van-icon v-else name="apps-o" :size="size === 'md' ? 28 : 18" />

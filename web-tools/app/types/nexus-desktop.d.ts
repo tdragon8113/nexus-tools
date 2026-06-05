@@ -74,6 +74,7 @@ export interface NexusDesktopBridge {
   syncTotpAccounts?(accounts: import('~~/utils/totp').StoredTotpAccount[]): Promise<
     import('~~/utils/totp').StoredTotpAccount[]
   >
+  getTotpAccounts?(): Promise<import('~~/utils/totp').StoredTotpAccount[]>
   getTotpShortcuts?(): Promise<Record<string, string>>
   setTotpShortcut?(
     accountId: string,

@@ -70,6 +70,20 @@ export function useSearchFavorites() {
     return true
   }
 
+  function setFavoriteOrder(itemIds: string[]) {
+    const map = new Map(entries.value.map((row) => [row.id, row]))
+    const next: SearchFavoriteEntry[] = []
+    for (const id of itemIds) {
+      const entry = map.get(id)
+      if (entry) next.push(entry)
+    }
+    for (const entry of entries.value) {
+      if (!itemIds.includes(entry.id)) next.push(entry)
+    }
+    entries.value = next
+    writeStorage(entries.value)
+  }
+
   function resolveFavoriteItems(macApps: MacAppEntry[]): SearchResultItem[] {
     const items: SearchResultItem[] = []
     for (const entry of entries.value) {
@@ -103,6 +117,7 @@ export function useSearchFavorites() {
     syncFromStorage,
     isFavorite,
     toggleFavorite,
+    setFavoriteOrder,
     resolveFavoriteItems,
     prioritizeFavorites
   }

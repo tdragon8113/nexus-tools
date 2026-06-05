@@ -50,12 +50,16 @@ export function decideClipboardIngest(opts: {
   text: string
   lastAppliedHash: string
   dismissedHash: string
+  /** 搜索 Query 已有内容时，与剪贴板相同则不再填入/提示 */
+  existingQueryText?: string
 }): ClipboardIngestDecision {
   const text = opts.text.trim()
   if (!text || opts.source !== 'hotkey') return { action: 'ignore' }
   if (opts.policy === 'never') return { action: 'ignore' }
 
   const hash = hashClipboardText(text)
+  const existing = opts.existingQueryText?.trim()
+  if (existing && hashClipboardText(existing) === hash) return { action: 'ignore' }
   if (hash === opts.dismissedHash) return { action: 'ignore' }
   if (hash === opts.lastAppliedHash) return { action: 'ignore' }
 

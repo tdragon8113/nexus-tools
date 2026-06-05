@@ -28,7 +28,8 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': { redirect: '/desktop/search' },
-    '/tools': { redirect: '/desktop/hub' }
+    '/tools': { redirect: '/desktop/search' },
+    '/desktop/hub': { redirect: '/desktop/search' }
   },
 
   app: {
@@ -52,7 +53,6 @@ export default defineNuxtConfig({
       crawlLinks: true,
       routes: [
         '/desktop/search',
-        '/desktop/hub',
         '/desktop/settings',
         '/tools/json',
         '/tools/base64',

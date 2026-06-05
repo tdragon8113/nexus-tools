@@ -1,6 +1,6 @@
 import type { TotpPreviewRow } from '~/core/searchPreview'
 import { buildTotpPreviewRows } from '~/core/searchTotpPreview'
-import { loadStoredTotpAccounts, TOTP_STORAGE_KEY } from '~/core/totpStorage'
+import { hydrateTotpStorageFromMain, loadStoredTotpAccounts, persistStoredTotpAccounts } from '~/core/totpStorage'
 import {
   totpConfigToStored,
   totpSecretFingerprint,
@@ -11,8 +11,7 @@ import {
 export type TotpAccountLive = TotpPreviewRow
 
 function persistAccounts(accounts: StoredTotpAccount[]) {
-  if (!import.meta.client) return
-  localStorage.setItem(TOTP_STORAGE_KEY, JSON.stringify(accounts))
+  persistStoredTotpAccounts(accounts)
 }
 
 export function useTotpAccounts() {
@@ -41,17 +40,33 @@ export function useTotpAccounts() {
     }, 1000)
   }
 
-  function syncAccounts(next: StoredTotpAccount[]) {
+  async function syncAccounts(next: StoredTotpAccount[]) {
     accounts.value = next
     persistAccounts(next)
     void refreshLiveRows()
     if (import.meta.client && window.nexusDesktop?.syncTotpAccounts) {
-      void window.nexusDesktop.syncTotpAccounts(next)
+      try {
+        const synced = await window.nexusDesktop.syncTotpAccounts(next)
+        accounts.value = synced
+        persistAccounts(synced)
+        void refreshLiveRows()
+      } catch (err) {
+        console.error('[Nexus Tools] 同步 TOTP 账户到主进程失败', err)
+      }
     }
   }
 
-  function loadAccounts() {
-    accounts.value = loadStoredTotpAccounts()
+  async function loadAccounts() {
+    const rows = await hydrateTotpStorageFromMain()
+    accounts.value = rows.length ? rows : loadStoredTotpAccounts()
+    if (import.meta.client && window.nexusDesktop?.syncTotpAccounts && accounts.value.length > 0) {
+      try {
+        accounts.value = await window.nexusDesktop.syncTotpAccounts(accounts.value)
+        persistStoredTotpAccounts(accounts.value)
+      } catch (err) {
+        console.error('[Nexus Tools] 打开 2FA 时同步账户到主进程失败', err)
+      }
+    }
     startTicker()
   }
 
@@ -80,6 +95,9 @@ export function useTotpAccounts() {
 
   function removeAccount(id: string) {
     syncAccounts(accounts.value.filter((item) => item.id !== id))
+    if (import.meta.client && window.nexusDesktop?.setTotpShortcut) {
+      void window.nexusDesktop.setTotpShortcut(id, null)
+    }
   }
 
   function setAccountOrder(ids: string[]) {

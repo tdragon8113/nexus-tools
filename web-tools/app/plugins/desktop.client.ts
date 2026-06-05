@@ -10,9 +10,9 @@ import {
   readThemePreferenceFromStorage,
   resolveDesktopTheme
 } from '~/core/desktopTheme'
-import { loadStoredTotpAccounts } from '~/core/totpStorage'
+import { hydrateTotpStorageFromMain } from '~/core/totpStorage'
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   const { registerElectronBridge, syncWindowChrome, syncPinnedFromMain } = useDesktop()
   const { syncFromMain: syncThemeFromMain, bindSystemThemeListener } = useDesktopTheme()
   registerElectronBridge()
@@ -26,10 +26,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     document.documentElement.dataset.nexusTheme = resolveDesktopTheme(stored, prefersDark)
     unbindSystemTheme = bindSystemThemeListener()
     void syncThemeFromMain()
-    const accounts = loadStoredTotpAccounts()
-    if (accounts.length && window.nexusDesktop?.syncTotpAccounts) {
-      void window.nexusDesktop.syncTotpAccounts(accounts)
-    }
+    await hydrateTotpStorageFromMain()
     purgeNuxtDevtools()
     const observer = new MutationObserver(purgeNuxtDevtools)
     observer.observe(document.documentElement, { childList: true, subtree: true })
