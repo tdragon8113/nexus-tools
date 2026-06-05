@@ -140,11 +140,16 @@
 </template>
 
 <script setup lang="ts">
+import {
+  getDesktopLocalStateValue,
+  persistDesktopLocalStateKeyFireAndForget
+} from '~/core/desktopLocalState'
 import { evaluateArithmetic, formatCalcResult } from '~~/utils/calcExpression'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 
 useHead({ title: '计算器 - Nexus Tools' })
 
-const STORAGE_KEY = 'nexus-calculator-tape-v1'
+const STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.calculatorTape
 
 interface CalcEntry {
   id: string
@@ -206,7 +211,7 @@ function schedulePersist() {
 function persist() {
   if (!import.meta.client) return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.value))
+    persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
   } catch {
     /* ignore quota */
   }
@@ -215,7 +220,7 @@ function persist() {
 function restore() {
   if (!import.meta.client) return
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = getDesktopLocalStateValue(STORAGE_KEY)
     if (!raw) return
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) return

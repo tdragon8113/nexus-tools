@@ -1,3 +1,9 @@
+import {
+  getDesktopLocalStateValue,
+  persistDesktopLocalStateKeyFireAndForget
+} from '~/core/desktopLocalState'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
+
 export type TextDiffCompareOptions = {
   /** 行尾空白不参与比较（展示仍为原文） */
   ignoreTrimWhitespace: boolean
@@ -16,7 +22,7 @@ export const defaultTextDiffCompareOptions = (): TextDiffCompareOptions => ({
   ignoreEmptyLines: false
 })
 
-export const TEXT_DIFF_OPTIONS_STORAGE_KEY = 'nexus-text-diff-options'
+export const TEXT_DIFF_OPTIONS_STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.textDiffOptions
 
 export function normalizeLineForCompare(
   line: string,
@@ -67,7 +73,7 @@ export function compareOptionsStatusSuffix(opts: TextDiffCompareOptions): string
 export function loadTextDiffCompareOptionsFromStorage(): TextDiffCompareOptions | null {
   if (!import.meta.client) return null
   try {
-    const raw = localStorage.getItem(TEXT_DIFF_OPTIONS_STORAGE_KEY)
+    const raw = getDesktopLocalStateValue(TEXT_DIFF_OPTIONS_STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as Partial<TextDiffCompareOptions>
     return mergeTextDiffCompareOptions(parsed)
@@ -78,5 +84,5 @@ export function loadTextDiffCompareOptionsFromStorage(): TextDiffCompareOptions 
 
 export function saveTextDiffCompareOptionsToStorage(opts: TextDiffCompareOptions): void {
   if (!import.meta.client) return
-  localStorage.setItem(TEXT_DIFF_OPTIONS_STORAGE_KEY, JSON.stringify(opts))
+  persistDesktopLocalStateKeyFireAndForget(TEXT_DIFF_OPTIONS_STORAGE_KEY, JSON.stringify(opts))
 }

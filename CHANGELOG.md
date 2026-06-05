@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.16] - 2026-06-05
+
+### 改进（web-tools 桌面端）
+
+- **持久化架构**：桌面端用户数据以 `~/Library/Application Support/Nexus Tools/` 为唯一来源；renderer 通过 IPC 读写内存（`useState`），不再依赖 `localStorage` 双写
+- **覆盖范围**：最近使用、收藏、工具排序、JS Playground、计算器记录、文本编辑/对比偏好、TOTP 账户、主题偏好均走主进程 JSON 文件
+- **迁移**：启动时一次性将旧 `localStorage` 数据迁入 userData 并清除 legacy 键
+- **静态服务**：恢复随机端口（`listen(0)`），数据不再绑定页面 origin
+
 ## [0.2.15] - 2026-06-05
 
 ### 修复（web-tools 桌面端）

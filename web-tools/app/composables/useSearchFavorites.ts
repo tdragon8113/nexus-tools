@@ -1,6 +1,6 @@
 import { macAppToSearchResult, toolToSearchResult, type SearchResultItem } from '~/core/searchResults'
 import { getToolById } from '~/core/tools'
-import { persistRendererLocalStateKeyFireAndForget } from '~/core/rendererLocalState'
+import { persistDesktopLocalStateKeyFireAndForget } from '~/core/desktopLocalState'
 import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 import type { MacAppEntry } from '~~/shared/macApps'
 import type { SearchFavoriteEntry } from '~~/shared/searchState'
@@ -8,22 +8,6 @@ import type { SearchFavoriteEntry } from '~~/shared/searchState'
 const STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.searchFavorites
 
 export type { SearchFavoriteEntry }
-
-function readStorage(): SearchFavoriteEntry[] {
-  if (!import.meta.client) return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as SearchFavoriteEntry[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function writeStorage(entries: SearchFavoriteEntry[]) {
-  persistRendererLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries))
-}
 
 function entryFromItem(item: SearchResultItem): SearchFavoriteEntry {
   return {
@@ -42,7 +26,7 @@ export function useSearchFavorites() {
   const favoriteIds = computed(() => new Set(entries.value.map((row) => row.id)))
 
   function syncFromStorage() {
-    entries.value = readStorage()
+    /* 由 hydrateDesktopLocalStateFromMain 在插件阶段灌入 useState */
   }
 
   function isFavorite(id: string): boolean {
@@ -53,11 +37,11 @@ export function useSearchFavorites() {
     const index = entries.value.findIndex((row) => row.id === item.id)
     if (index >= 0) {
       entries.value = entries.value.filter((row) => row.id !== item.id)
-      writeStorage(entries.value)
+      persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
       return false
     }
     entries.value = [...entries.value, entryFromItem(item)]
-    writeStorage(entries.value)
+    persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
     return true
   }
 
@@ -72,7 +56,7 @@ export function useSearchFavorites() {
       if (!itemIds.includes(entry.id)) next.push(entry)
     }
     entries.value = next
-    writeStorage(entries.value)
+    persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
   }
 
   function resolveFavoriteItems(macApps: MacAppEntry[]): SearchResultItem[] {

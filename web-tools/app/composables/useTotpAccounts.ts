@@ -1,6 +1,10 @@
 import type { TotpPreviewRow } from '~/core/searchPreview'
 import { buildTotpPreviewRows } from '~/core/searchTotpPreview'
-import { hydrateTotpStorageFromMain, loadStoredTotpAccounts, persistStoredTotpAccounts } from '~/core/totpStorage'
+import {
+  getTotpAccountsState,
+  hydrateTotpAccountsFromMain,
+  persistTotpAccountsState
+} from '~/core/totpAccountsState'
 import {
   totpConfigToStored,
   totpSecretFingerprint,
@@ -10,12 +14,8 @@ import {
 
 export type TotpAccountLive = TotpPreviewRow
 
-function persistAccounts(accounts: StoredTotpAccount[]) {
-  persistStoredTotpAccounts(accounts)
-}
-
 export function useTotpAccounts() {
-  const accounts = ref<StoredTotpAccount[]>([])
+  const accounts = useState<StoredTotpAccount[]>('totp-accounts-global', () => [])
   const liveRows = ref<TotpAccountLive[]>([])
 
   let tickTimer: ReturnType<typeof setInterval> | null = null
@@ -41,32 +41,13 @@ export function useTotpAccounts() {
   }
 
   async function syncAccounts(next: StoredTotpAccount[]) {
-    accounts.value = next
-    persistAccounts(next)
+    accounts.value = await persistTotpAccountsState(next)
     void refreshLiveRows()
-    if (import.meta.client && window.nexusDesktop?.syncTotpAccounts) {
-      try {
-        const synced = await window.nexusDesktop.syncTotpAccounts(next)
-        accounts.value = synced
-        persistAccounts(synced)
-        void refreshLiveRows()
-      } catch (err) {
-        console.error('[Nexus Tools] 同步 TOTP 账户到主进程失败', err)
-      }
-    }
   }
 
   async function loadAccounts() {
-    const rows = await hydrateTotpStorageFromMain()
-    accounts.value = rows.length ? rows : loadStoredTotpAccounts()
-    if (import.meta.client && window.nexusDesktop?.syncTotpAccounts && accounts.value.length > 0) {
-      try {
-        accounts.value = await window.nexusDesktop.syncTotpAccounts(accounts.value)
-        persistStoredTotpAccounts(accounts.value)
-      } catch (err) {
-        console.error('[Nexus Tools] 打开 2FA 时同步账户到主进程失败', err)
-      }
-    }
+    const rows = await hydrateTotpAccountsFromMain()
+    accounts.value = rows.length ? rows : getTotpAccountsState()
     startTicker()
   }
 
@@ -79,7 +60,7 @@ export function useTotpAccounts() {
 
   function addAccount(config: TotpConfig): boolean {
     if (hasDuplicate(config)) return false
-    syncAccounts([...accounts.value, totpConfigToStored(config)])
+    void syncAccounts([...accounts.value, totpConfigToStored(config)])
     return true
   }
 
@@ -89,12 +70,12 @@ export function useTotpAccounts() {
     if (index === -1) return false
     const next = [...accounts.value]
     next[index] = totpConfigToStored(config, id)
-    syncAccounts(next)
+    void syncAccounts(next)
     return true
   }
 
   function removeAccount(id: string) {
-    syncAccounts(accounts.value.filter((item) => item.id !== id))
+    void syncAccounts(accounts.value.filter((item) => item.id !== id))
     if (import.meta.client && window.nexusDesktop?.setTotpShortcut) {
       void window.nexusDesktop.setTotpShortcut(id, null)
     }
@@ -105,7 +86,7 @@ export function useTotpAccounts() {
     const map = new Map(accounts.value.map((item) => [item.id, item]))
     const ordered = ids.filter((id) => known.has(id)).map((id) => map.get(id)!)
     const missing = accounts.value.filter((item) => !ids.includes(item.id))
-    syncAccounts([...ordered, ...missing])
+    void syncAccounts([...ordered, ...missing])
   }
 
   function getAccount(id: string): StoredTotpAccount | undefined {

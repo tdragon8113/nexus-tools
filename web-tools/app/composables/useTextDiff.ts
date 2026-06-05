@@ -31,6 +31,10 @@ import {
   TEXT_DIFF_SOFT_WARN_LINES
 } from '~/utils/textDiffLimits'
 import {
+  getDesktopLocalStateValue,
+  persistDesktopLocalStateKeyFireAndForget
+} from '~/core/desktopLocalState'
+import {
   compareOptionsStatusSuffix,
   defaultTextDiffCompareOptions,
   loadTextDiffCompareOptionsFromStorage,
@@ -38,9 +42,10 @@ import {
   type TextDiffCompareOptions
 } from '~/utils/textDiffOptions'
 import { buildUnifiedDiffPatch } from '~/utils/textDiffUnified'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 
-const LANGUAGE_KEY = 'nexus-text-diff-language'
-const WRAP_KEY = 'nexus-text-diff-wrap'
+const LANGUAGE_KEY = RENDERER_LOCAL_STATE_KEYS.textDiffLanguage
+const WRAP_KEY = RENDERER_LOCAL_STATE_KEYS.textDiffWrap
 
 type DebouncedDiffInput = {
   left: string
@@ -95,9 +100,9 @@ export function useTextDiff() {
 
   onMounted(() => {
     if (!import.meta.client) return
-    const savedLang = localStorage.getItem(LANGUAGE_KEY)
+    const savedLang = getDesktopLocalStateValue(LANGUAGE_KEY)
     if (savedLang && isTextDiffLanguageId(savedLang)) diffLanguage.value = savedLang
-    const savedWrap = localStorage.getItem(WRAP_KEY)
+    const savedWrap = getDesktopLocalStateValue(WRAP_KEY)
     if (savedWrap === '0') wordWrap.value = false
     if (savedWrap === '1') wordWrap.value = true
     const savedOptions = loadTextDiffCompareOptionsFromStorage()
@@ -116,11 +121,13 @@ export function useTextDiff() {
   })
 
   watch(diffLanguage, (value) => {
-    if (import.meta.client) localStorage.setItem(LANGUAGE_KEY, value)
+    if (import.meta.client) persistDesktopLocalStateKeyFireAndForget(LANGUAGE_KEY, value)
   })
 
   watch(wordWrap, (value) => {
-    if (import.meta.client) localStorage.setItem(WRAP_KEY, value ? '1' : '0')
+    if (import.meta.client) {
+      persistDesktopLocalStateKeyFireAndForget(WRAP_KEY, value ? '1' : '0')
+    }
   })
 
   watch(

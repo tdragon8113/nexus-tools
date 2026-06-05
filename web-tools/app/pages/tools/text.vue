@@ -235,12 +235,17 @@ import {
   formatActionLabel,
   formatTextDiffSource
 } from '~/utils/textDiffFormat'
+import {
+  getDesktopLocalStateValue,
+  persistDesktopLocalStateKeyFireAndForget
+} from '~/core/desktopLocalState'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 
 useHead({ title: '文本编辑 - Nexus Tools' })
 
-const LANGUAGE_KEY = 'nexus-text-editor-language'
-const WRAP_KEY = 'nexus-text-editor-wrap'
-const MD_VIEW_KEY = 'nexus-text-editor-md-view'
+const LANGUAGE_KEY = RENDERER_LOCAL_STATE_KEYS.textEditorLanguage
+const WRAP_KEY = RENDERER_LOCAL_STATE_KEYS.textEditorWrap
+const MD_VIEW_KEY = RENDERER_LOCAL_STATE_KEYS.textEditorMdView
 
 type MarkdownViewMode = 'edit' | 'split' | 'preview'
 
@@ -311,25 +316,25 @@ function isMarkdownViewMode(value: string): value is MarkdownViewMode {
 
 onMounted(() => {
   if (!import.meta.client) return
-  const savedLang = localStorage.getItem(LANGUAGE_KEY)
+  const savedLang = getDesktopLocalStateValue(LANGUAGE_KEY)
   if (savedLang && isTextDiffLanguageId(savedLang)) language.value = savedLang
-  const savedWrap = localStorage.getItem(WRAP_KEY)
+  const savedWrap = getDesktopLocalStateValue(WRAP_KEY)
   if (savedWrap === '0') wordWrap.value = false
   if (savedWrap === '1') wordWrap.value = true
-  const savedMdView = localStorage.getItem(MD_VIEW_KEY)
+  const savedMdView = getDesktopLocalStateValue(MD_VIEW_KEY)
   if (savedMdView && isMarkdownViewMode(savedMdView)) markdownView.value = savedMdView
 })
 
 watch(language, (v) => {
-  if (import.meta.client) localStorage.setItem(LANGUAGE_KEY, v)
+  if (import.meta.client) persistDesktopLocalStateKeyFireAndForget(LANGUAGE_KEY, v)
 })
 
 watch(wordWrap, (v) => {
-  if (import.meta.client) localStorage.setItem(WRAP_KEY, v ? '1' : '0')
+  if (import.meta.client) persistDesktopLocalStateKeyFireAndForget(WRAP_KEY, v ? '1' : '0')
 })
 
 watch(markdownView, (v) => {
-  if (import.meta.client) localStorage.setItem(MD_VIEW_KEY, v)
+  if (import.meta.client) persistDesktopLocalStateKeyFireAndForget(MD_VIEW_KEY, v)
 })
 
 watch(language, (id, prev) => {

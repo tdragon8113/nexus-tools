@@ -1,6 +1,6 @@
 import { macAppToSearchResult, toolToSearchResult, type SearchResultItem } from '~/core/searchResults'
 import { getToolById } from '~/core/tools'
-import { persistRendererLocalStateKeyFireAndForget } from '~/core/rendererLocalState'
+import { persistDesktopLocalStateKeyFireAndForget } from '~/core/desktopLocalState'
 import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 import type { MacAppEntry } from '~~/shared/macApps'
 import type { SearchRecentEntry } from '~~/shared/searchState'
@@ -10,27 +10,11 @@ const MAX_RECENTS = 3
 
 export type { SearchRecentEntry }
 
-function readStorage(): SearchRecentEntry[] {
-  if (!import.meta.client) return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as SearchRecentEntry[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function writeStorage(entries: SearchRecentEntry[]) {
-  persistRendererLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries))
-}
-
 export function useSearchRecents() {
   const entries = useState<SearchRecentEntry[]>('search-recents', () => [])
 
   function syncFromStorage() {
-    entries.value = readStorage().slice(0, MAX_RECENTS)
+    /* 由 hydrateDesktopLocalStateFromMain 在插件阶段灌入 useState */
   }
 
   function recordItem(item: SearchResultItem) {
@@ -44,7 +28,7 @@ export function useSearchRecents() {
     }
     const rest = entries.value.filter((row) => row.id !== next.id)
     entries.value = [next, ...rest].slice(0, MAX_RECENTS)
-    writeStorage(entries.value)
+    persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
   }
 
   function resolveRecentItems(macApps: MacAppEntry[]): SearchResultItem[] {

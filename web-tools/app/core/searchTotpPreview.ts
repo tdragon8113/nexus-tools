@@ -1,5 +1,5 @@
-import { loadStoredTotpAccounts } from '~/core/totpStorage'
 import type { TotpPreviewRow } from '~/core/searchPreview'
+import { getTotpAccountsState } from '~/core/totpAccountsState'
 import {
   generateTotp,
   storedToTotpConfig,
@@ -9,7 +9,7 @@ import {
 
 /** 为搜索预览或 TOTP 工具页生成带验证码的账户行 */
 export async function buildTotpPreviewRows(
-  accounts: StoredTotpAccount[] = loadStoredTotpAccounts()
+  accounts: StoredTotpAccount[] = getTotpAccountsState()
 ): Promise<TotpPreviewRow[]> {
   if (accounts.length === 0) return []
 

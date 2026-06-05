@@ -1,15 +1,20 @@
 import { showToast } from 'vant'
 import { copyWithToast } from '~/composables/useCopyText'
 import {
+  getDesktopLocalStateValue,
+  persistDesktopLocalStateKeyFireAndForget
+} from '~/core/desktopLocalState'
+import {
   formatJsPlaygroundLogLine,
   JS_PLAYGROUND_DEFAULT_TIMEOUT_MS,
   runJsPlaygroundCode,
   type JsPlaygroundLogEntry,
   type JsPlaygroundRunResult
 } from '~/utils/jsPlaygroundRun'
+import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 
-const CODE_STORAGE_KEY = 'nexus-js-playground-code'
-const WRAP_STORAGE_KEY = 'nexus-js-playground-wrap'
+const CODE_STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.jsPlaygroundCode
+const WRAP_STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.jsPlaygroundWrap
 
 const DEFAULT_CODE = `// 支持 top-level await 与 console.log
 const nums = [1, 2, 3, 4]
@@ -62,19 +67,21 @@ export function useJsPlayground() {
 
   onMounted(() => {
     if (!import.meta.client) return
-    const savedCode = localStorage.getItem(CODE_STORAGE_KEY)
+    const savedCode = getDesktopLocalStateValue(CODE_STORAGE_KEY)
     if (savedCode !== null) code.value = savedCode
-    const savedWrap = localStorage.getItem(WRAP_STORAGE_KEY)
+    const savedWrap = getDesktopLocalStateValue(WRAP_STORAGE_KEY)
     if (savedWrap === '0') wordWrap.value = false
     if (savedWrap === '1') wordWrap.value = true
   })
 
   watch(code, (value) => {
-    if (import.meta.client) localStorage.setItem(CODE_STORAGE_KEY, value)
+    if (import.meta.client) persistDesktopLocalStateKeyFireAndForget(CODE_STORAGE_KEY, value)
   })
 
   watch(wordWrap, (value) => {
-    if (import.meta.client) localStorage.setItem(WRAP_STORAGE_KEY, value ? '1' : '0')
+    if (import.meta.client) {
+      persistDesktopLocalStateKeyFireAndForget(WRAP_STORAGE_KEY, value ? '1' : '0')
+    }
   })
 
   const outputText = computed(() => buildOutputText(lastResult.value))

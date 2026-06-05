@@ -1,6 +1,3 @@
-import { persistRendererLocalStateKeyFireAndForget } from '~/core/rendererLocalState'
-import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
-
 export type DesktopThemePreference = 'light' | 'dark' | 'system'
 export type DesktopThemeResolved = 'light' | 'dark'
 
@@ -24,21 +21,4 @@ export function resolveDesktopTheme(
 ): DesktopThemeResolved {
   if (preference === 'system') return systemPrefersDark ? 'dark' : 'light'
   return preference
-}
-
-const STORAGE_KEY = RENDERER_LOCAL_STATE_KEYS.themePreference
-
-export function readThemePreferenceFromStorage(): DesktopThemePreference | null {
-  if (!import.meta.client) return null
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return isDesktopThemePreference(raw) ? raw : null
-  } catch {
-    return null
-  }
-}
-
-export function writeThemePreferenceToStorage(preference: DesktopThemePreference) {
-  if (!import.meta.client) return
-  persistRendererLocalStateKeyFireAndForget(STORAGE_KEY, preference)
 }

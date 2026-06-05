@@ -1,3 +1,6 @@
+import { hydrateDesktopLocalStateFromMain } from '~/core/desktopLocalState'
+import { hydrateTotpAccountsFromMain } from '~/core/totpAccountsState'
+
 const DEVTOOLS_NODES =
   '#nuxt-devtools-container,#nuxt-devtools-anchor,#nuxt-devtools-iframe,nuxt-devtools-frame,.nuxt-devtools-frame'
 
@@ -6,13 +9,6 @@ function purgeNuxtDevtools() {
   document.querySelectorAll(DEVTOOLS_NODES).forEach((el) => el.remove())
 }
 
-import {
-  readThemePreferenceFromStorage,
-  resolveDesktopTheme
-} from '~/core/desktopTheme'
-import { hydrateTotpStorageFromMain } from '~/core/totpStorage'
-import { hydrateRendererLocalStateFromMain } from '~/core/rendererLocalState'
-
 export default defineNuxtPlugin(async (nuxtApp) => {
   const { registerElectronBridge, syncWindowChrome, syncPinnedFromMain } = useDesktop()
   const { syncFromMain: syncThemeFromMain, bindSystemThemeListener } = useDesktopTheme()
@@ -20,15 +16,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   let unbindSystemTheme = () => {}
 
-    if (import.meta.client) {
+  if (import.meta.client) {
     document.documentElement.dataset.nexusDesktop = '1'
-    await hydrateRendererLocalStateFromMain()
-    await hydrateTotpStorageFromMain()
-    const stored = readThemePreferenceFromStorage() ?? 'system'
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.dataset.nexusTheme = resolveDesktopTheme(stored, prefersDark)
+    await hydrateDesktopLocalStateFromMain()
+    await hydrateTotpAccountsFromMain()
+    await syncThemeFromMain()
     unbindSystemTheme = bindSystemThemeListener()
-    void syncThemeFromMain()
     purgeNuxtDevtools()
     const observer = new MutationObserver(purgeNuxtDevtools)
     observer.observe(document.documentElement, { childList: true, subtree: true })

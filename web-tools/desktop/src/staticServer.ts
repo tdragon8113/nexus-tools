@@ -43,9 +43,6 @@ function resolveFile(root: string, urlPath: string): string | null {
   return fallback && fs.existsSync(fallback) ? fallback : null
 }
 
-/** 固定端口，保证 Electron localStorage 的 origin 在每次启动间一致 */
-export const NEXUS_STATIC_SERVER_PORT = 39281
-
 /** 为 Nuxt generate 产物提供本地 HTTP，避免 file:// 路由问题 */
 export function startStaticServer(root: string): Promise<{ port: number; close: () => void }> {
   return new Promise((resolve, reject) => {
@@ -76,30 +73,16 @@ export function startStaticServer(root: string): Promise<{ port: number; close: 
       })
     })
 
-    const bind = (port: number) => {
-      server.once('error', (err: NodeJS.ErrnoException) => {
-        if (err.code === 'EADDRINUSE' && port === NEXUS_STATIC_SERVER_PORT) {
-          console.warn(
-            `[Nexus Tools] 端口 ${NEXUS_STATIC_SERVER_PORT} 被占用，回退随机端口（localStorage 可能无法跨重启保留）`
-          )
-          bind(0)
-          return
-        }
-        reject(err)
+    server.listen(0, '127.0.0.1', () => {
+      const addr = server.address()
+      if (!addr || typeof addr === 'string') {
+        reject(new Error('Failed to bind static server'))
+        return
+      }
+      resolve({
+        port: addr.port,
+        close: () => server.close()
       })
-      server.listen(port, '127.0.0.1', () => {
-        const addr = server.address()
-        if (!addr || typeof addr === 'string') {
-          reject(new Error('Failed to bind static server'))
-          return
-        }
-        resolve({
-          port: addr.port,
-          close: () => server.close()
-        })
-      })
-    }
-
-    bind(NEXUS_STATIC_SERVER_PORT)
+    })
   })
 }

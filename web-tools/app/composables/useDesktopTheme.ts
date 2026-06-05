@@ -1,9 +1,7 @@
 import {
   DESKTOP_THEME_OPTIONS,
   isDesktopThemePreference,
-  readThemePreferenceFromStorage,
   resolveDesktopTheme,
-  writeThemePreferenceToStorage,
   type DesktopThemePreference,
   type DesktopThemeResolved
 } from '~/core/desktopTheme'
@@ -47,18 +45,10 @@ export function useDesktopTheme() {
         const prefs = await window.nexusDesktop.getClipboardPrefs()
         if (isDesktopThemePreference(prefs.theme)) {
           preference.value = prefs.theme
-        } else {
-          const stored = readThemePreferenceFromStorage()
-          if (stored) preference.value = stored
         }
       } catch (err) {
         console.error('[Nexus Tools] 读取主题偏好失败', err)
-        const stored = readThemePreferenceFromStorage()
-        if (stored) preference.value = stored
       }
-    } else {
-      const stored = readThemePreferenceFromStorage()
-      if (stored) preference.value = stored
     }
 
     loaded.value = true
@@ -67,7 +57,6 @@ export function useDesktopTheme() {
 
   async function setPreference(next: DesktopThemePreference) {
     preference.value = next
-    writeThemePreferenceToStorage(next)
     applyThemeToDocument()
 
     if (!window.nexusDesktop?.patchClipboardPrefs) return
