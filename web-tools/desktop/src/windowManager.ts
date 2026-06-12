@@ -584,7 +584,7 @@ export class WindowManager {
   private isShellVisible(): boolean {
     const win = this.shell
     if (!win || win.isDestroyed()) return false
-    if (process.platform === 'darwin') return !app.isHidden()
+    if (process.platform === 'darwin') return !app.isHidden() && win.isVisible()
     return win.isVisible()
   }
 

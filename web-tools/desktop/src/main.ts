@@ -1,11 +1,10 @@
 import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, nativeTheme, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
-import { applyDockIcon } from './appIcon'
 import { resolveDevWebUrl } from './resolveWebUrl'
 import { startStaticServer } from './staticServer'
 import { MAX_CLIPBOARD_TEXT_CHARS } from './clipboardLimits'
-import { applyOpenAtLogin, getOpenAtLoginFromSystem, wasOpenedAtLogin } from './loginItem'
+import { applyOpenAtLogin, getOpenAtLoginFromSystem } from './loginItem'
 import { applyPrefsPatch } from './prefsPatch'
 import { DesktopPrefsStore, type DesktopPrefs } from './prefs'
 import { clearMacAppQuarantine } from './macQuarantine'
@@ -212,8 +211,7 @@ app.whenReady().then(async () => {
 
   if (process.platform === 'darwin') {
     void listMacApplications()
-    app.dock?.show()
-    applyDockIcon()
+    app.dock?.hide()
   }
 
   appTray = setupAppTray({
@@ -231,9 +229,6 @@ app.whenReady().then(async () => {
   windows.prewarmSearchShell()
 
   console.log(`[Nexus Tools] 已启动 · ${webBaseUrl} · ${HOTKEY} 唤起搜索`)
-  if (!wasOpenedAtLogin()) {
-    windows.showSearch({ clipboard: readClipboardForSearch(), source: 'hotkey' })
-  }
 })
 
 if (process.platform === 'darwin') {
