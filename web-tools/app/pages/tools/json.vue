@@ -28,8 +28,54 @@
           type="button"
           class="json-tbar-tip"
           :class="jsonTbarBtnDefault"
-          data-tip="压缩为一行并复制"
-          aria-label="压缩为一行并复制"
+          data-tip="全部展开"
+          aria-label="全部展开"
+          @click="expandAll"
+        >
+          <svg
+            class="size-[18px] shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M7 17V13" />
+            <path d="M7 17H11" />
+            <path d="M17 7H13" />
+            <path d="M17 7V11" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="json-tbar-tip"
+          :class="jsonTbarBtnDefault"
+          data-tip="全部折叠"
+          aria-label="全部折叠"
+          @click="collapseAll"
+        >
+          <svg
+            class="size-[18px] shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M9 15V19" />
+            <path d="M9 15H5" />
+            <path d="M15 9H19" />
+            <path d="M15 9V5" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="json-tbar-tip"
+          :class="jsonTbarBtnDefault"
+          data-tip="压缩复制"
+          aria-label="压缩复制"
           @click="compressAndCopy"
         >
           <svg
@@ -46,37 +92,6 @@
             <path d="M5 10.5h14M5 13h14" />
             <path d="M12 18.75 12 16.25M9.25 17.5 12 15.25 14.75 17.5" />
           </svg>
-        </button>
-        <button
-          type="button"
-          class="json-tbar-tip"
-          :class="jsonTbarBtnDefault"
-          data-tip="复制"
-          aria-label="复制"
-          @click="copyText"
-        >
-          <van-icon name="description" size="18" />
-        </button>
-        <button
-          type="button"
-          class="json-tbar-tip"
-          :class="jsonTbarBtnDefault"
-          data-tip="导入文件"
-          aria-label="导入文件"
-          @click="triggerImport"
-        >
-          <van-icon name="upgrade" size="18" />
-        </button>
-        <button
-          type="button"
-          class="json-tbar-tip"
-          :class="[jsonTbarBtnDefault, jsonTbarBtnDisabled]"
-          data-tip="下载 JSON"
-          aria-label="下载 JSON"
-          :disabled="!jsonText.trim()"
-          @click="downloadJson"
-        >
-          <van-icon name="down" size="18" />
         </button>
         <button
           type="button"
@@ -100,7 +115,6 @@
         >
           <option value="2">2 空格</option>
           <option value="4">4 空格</option>
-          <option value="tab">Tab</option>
         </select>
       </label>
       <label class="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600">
@@ -109,14 +123,6 @@
       </label>
 
       <span class="ml-auto text-xs tabular-nums text-slate-400">{{ lineCount }} 行</span>
-
-      <input
-        ref="fileInputRef"
-        type="file"
-        accept=".json,application/json,text/json"
-        class="hidden"
-        @change="onFileSelected"
-      />
     </div>
 
     <section
@@ -138,6 +144,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { showToast } from 'vant'
+import { copyWithToast } from '~/composables/useCopyText'
 import {
   parseJson,
   sortKeysDeep,
@@ -162,12 +169,14 @@ const jsonTbarBtnCore =
   'relative inline-flex size-9 shrink-0 items-center justify-center rounded-full border-0 outline-none transition-[background-color,opacity,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-offset-2'
 const jsonTbarBtnDefault = `${jsonTbarBtnCore} bg-transparent text-slate-600 hover:bg-black/[0.055] active:bg-black/[0.08] focus-visible:ring-slate-300/60`
 const jsonTbarBtnDanger = `${jsonTbarBtnCore} bg-transparent text-red-600 hover:bg-red-500/[0.08] active:bg-red-500/[0.12] focus-visible:ring-red-300/50`
-const jsonTbarBtnDisabled = 'disabled:opacity-40 disabled:pointer-events-none'
 
 
 const jsonText = ref('')
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const jsonPaneRef = ref<{ syncDocFromModel?: () => void } | null>(null)
+const jsonPaneRef = ref<{
+  syncDocFromModel?: () => void
+  foldAll?: () => boolean
+  unfoldAll?: () => boolean
+} | null>(null)
 
 function jsonParseFailed(raw: string): boolean {
   if (!sliceForJsonParse(raw).slice) return false
@@ -176,6 +185,8 @@ function jsonParseFailed(raw: string): boolean {
 
 const indentMode = ref<IndentMode>('2')
 const sortKeys = ref(false)
+/** 勾选「键名排序」前的文本，用于取消排序时恢复键顺序 */
+const keyOrderBaseline = ref<string | null>(null)
 
 const lineCount = computed(() => lineCountFor(jsonText.value))
 const editorTabSize = computed(() => (indentMode.value === 'tab' ? 4 : Number(indentMode.value)))
@@ -188,7 +199,12 @@ type FormatJsonResult =
   | { ok: true; text: string }
   | { ok: false; message: string }
 
-function stringifyValue(v: unknown, minified: boolean, sourceForOrders: string): string {
+function stringifyValue(
+  v: unknown,
+  minified: boolean,
+  sourceForOrders: string,
+  orderSourceOverride?: string
+): string {
   let value = v
   if (sortKeys.value) value = sortKeysDeep(value)
 
@@ -198,7 +214,8 @@ function stringifyValue(v: unknown, minified: boolean, sourceForOrders: string):
       : JSON.stringify(value, null, getIndent(indentMode.value))
   }
 
-  const { slice } = sliceForJsonParse(sourceForOrders)
+  const orderText = orderSourceOverride ?? sourceForOrders
+  const { slice } = sliceForJsonParse(orderText)
   const orders = slice ? extractSourceKeyOrders(slice) : null
   if (!orders) {
     return minified
@@ -210,7 +227,11 @@ function stringifyValue(v: unknown, minified: boolean, sourceForOrders: string):
     : stringifyPrettyWithSourceOrder(value, orders, indentMode.value)
 }
 
-function formatRawJson(raw: string, minified: boolean): FormatJsonResult {
+function formatRawJson(
+  raw: string,
+  minified: boolean,
+  orderSourceOverride?: string
+): FormatJsonResult {
   raw = normalizeJsonInput(raw)
   if (!sliceForJsonParse(raw).slice) {
     return { ok: true, text: '' }
@@ -221,12 +242,12 @@ function formatRawJson(raw: string, minified: boolean): FormatJsonResult {
   }
   return {
     ok: true,
-    text: stringifyValue(result.value, minified, raw)
+    text: stringifyValue(result.value, minified, raw, orderSourceOverride)
   }
 }
 
-function applyFormat(minified: boolean) {
-  const out = formatRawJson(jsonText.value, minified)
+function applyFormat(minified: boolean, orderSourceOverride?: string) {
+  const out = formatRawJson(jsonText.value, minified, orderSourceOverride)
   if (!out.ok) {
     showToast(out.message)
     return
@@ -238,56 +259,33 @@ function formatJson() {
   applyFormat(false)
 }
 
-function compressAndCopy() {
-  applyFormat(true)
-  if (jsonParseFailed(jsonText.value)) return
-  void copyText()
+function collapseAll() {
+  if (!jsonText.value.trim()) return
+  if (!jsonPaneRef.value?.foldAll?.()) showToast('没有可折叠的内容')
 }
 
-async function copyText() {
-  if (!jsonText.value.trim()) {
+function expandAll() {
+  if (!jsonText.value.trim()) return
+  jsonPaneRef.value?.unfoldAll?.()
+}
+
+function compressAndCopy() {
+  const out = formatRawJson(jsonText.value, true)
+  if (!out.ok) {
+    showToast(out.message)
+    return
+  }
+  const compressed = trimTrailingBlankLines(out.text)
+  if (!compressed) {
     showToast('内容为空')
     return
   }
-  try {
-    await navigator.clipboard.writeText(jsonText.value)
-    showToast('已复制')
-  } catch {
-    showToast('复制失败')
-  }
-}
-
-function triggerImport() {
-  fileInputRef.value?.click()
-}
-
-function onFileSelected(e: Event) {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
-  input.value = ''
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    applyPrefillRaw(String(reader.result ?? ''))
-  }
-  reader.onerror = () => showToast('读取文件失败')
-  reader.readAsText(file, 'UTF-8')
-}
-
-function downloadJson() {
-  if (!jsonText.value.trim()) return
-  const blob = new Blob([jsonText.value], { type: 'application/json;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'formatted.json'
-  a.click()
-  URL.revokeObjectURL(url)
-  showToast('已开始下载')
+  void copyWithToast(compressed)
 }
 
 function clearAll() {
   jsonText.value = ''
+  keyOrderBaseline.value = null
 }
 
 function setJsonFromRaw(raw: string) {
@@ -298,15 +296,6 @@ function setJsonFromRaw(raw: string) {
     const out = formatRawJson(raw, false)
     jsonText.value = trimTrailingBlankLines(out.ok ? out.text || raw : raw)
   }
-}
-
-/** 文件导入等：写入后同步 CodeMirror */
-function applyPrefillRaw(raw: string) {
-  setJsonFromRaw(raw)
-  void nextTick(() => {
-    jsonPaneRef.value?.syncDocFromModel?.()
-    requestAnimationFrame(() => jsonPaneRef.value?.syncDocFromModel?.())
-  })
 }
 
 function onEditorPaste(raw: string) {
@@ -325,9 +314,15 @@ watch(indentMode, () => {
   applyFormat(false)
 })
 
-watch(sortKeys, () => {
+watch(sortKeys, (enabled) => {
   if (!jsonText.value.trim() || jsonParseFailed(jsonText.value)) return
-  applyFormat(false)
+  if (enabled) {
+    keyOrderBaseline.value = normalizeJsonInput(jsonText.value)
+    applyFormat(false)
+    return
+  }
+  applyFormat(false, keyOrderBaseline.value ?? undefined)
+  keyOrderBaseline.value = null
 })
 </script>
 

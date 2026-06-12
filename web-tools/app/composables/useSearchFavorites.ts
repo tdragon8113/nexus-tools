@@ -1,4 +1,9 @@
-import { macAppToSearchResult, toolToSearchResult, type SearchResultItem } from '~/core/searchResults'
+import {
+  canonicalSearchItemId,
+  macAppToSearchResult,
+  toolToSearchResult,
+  type SearchResultItem
+} from '~/core/searchResults'
 import { getToolById } from '~/core/tools'
 import { persistDesktopLocalStateKeyFireAndForget } from '~/core/desktopLocalState'
 import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
@@ -11,7 +16,7 @@ export type { SearchFavoriteEntry }
 
 function entryFromItem(item: SearchResultItem): SearchFavoriteEntry {
   return {
-    id: item.id,
+    id: canonicalSearchItemId(item.id),
     kind: item.kind,
     title: item.title,
     addedAt: Date.now(),
@@ -30,13 +35,14 @@ export function useSearchFavorites() {
   }
 
   function isFavorite(id: string): boolean {
-    return favoriteIds.value.has(id)
+    return favoriteIds.value.has(canonicalSearchItemId(id))
   }
 
   function toggleFavorite(item: SearchResultItem): boolean {
-    const index = entries.value.findIndex((row) => row.id === item.id)
+    const canonicalId = canonicalSearchItemId(item.id)
+    const index = entries.value.findIndex((row) => row.id === canonicalId)
     if (index >= 0) {
-      entries.value = entries.value.filter((row) => row.id !== item.id)
+      entries.value = entries.value.filter((row) => row.id !== canonicalId)
       persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
       return false
     }
@@ -80,7 +86,7 @@ export function useSearchFavorites() {
     const favs: SearchResultItem[] = []
     const rest: SearchResultItem[] = []
     for (const item of items) {
-      if (favoriteIds.value.has(item.id)) favs.push(item)
+      if (favoriteIds.value.has(canonicalSearchItemId(item.id))) favs.push(item)
       else rest.push(item)
     }
     return [...favs, ...rest]

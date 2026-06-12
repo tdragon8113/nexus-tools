@@ -49,3 +49,14 @@ export function macAppToSearchResult(app: MacAppEntry): SearchResultItem {
 export function mergeSearchResults(tools: SiteTool[], apps: MacAppEntry[]): SearchResultItem[] {
   return [...tools.map(toolToSearchResult), ...apps.map(macAppToSearchResult)]
 }
+
+/** 去掉分区后缀（如 tool:ip@catalog → tool:ip） */
+export function canonicalSearchItemId(id: string): string {
+  const at = id.indexOf('@')
+  return at >= 0 ? id.slice(0, at) : id
+}
+
+export function toolIdFromSearchItemId(id: string): string {
+  const base = canonicalSearchItemId(id)
+  return base.startsWith('tool:') ? base.slice(5) : base
+}

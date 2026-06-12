@@ -37,7 +37,10 @@ export const IPC = {
   totpOpenAccessibilitySettings: 'desktop:totp-open-accessibility-settings',
   totpGetAccessibility: 'desktop:totp-get-accessibility',
   rendererLocalStateGet: 'desktop:renderer-local-state-get',
-  rendererLocalStatePatch: 'desktop:renderer-local-state-patch'
+  rendererLocalStatePatch: 'desktop:renderer-local-state-patch',
+  ipLookup: 'desktop:ip-lookup',
+  ipProxyStatus: 'desktop:ip-proxy-status',
+  openExternal: 'desktop:open-external'
 } as const
 
 export type ClipboardOpenSource = 'hotkey' | 'navigation'

@@ -182,5 +182,19 @@ contextBridge.exposeInMainWorld('nexusDesktop', {
     return ipcRenderer.invoke(IPC.rendererLocalStatePatch, patch) as Promise<
       import('../../shared/rendererLocalState').RendererLocalStateMap
     >
+  },
+  lookupIp(request?: { ip?: string; useSystemProxy?: boolean }) {
+    return ipcRenderer.invoke(IPC.ipLookup, request ?? {}) as Promise<
+      import('../../utils/ipLookup').IpLookupResult
+    >
+  },
+  getIpProxyStatus() {
+    return ipcRenderer.invoke(IPC.ipProxyStatus) as Promise<{
+      enabled: boolean
+      summary: string
+    }>
+  },
+  openExternal(url: string) {
+    return ipcRenderer.invoke(IPC.openExternal, url) as Promise<boolean>
   }
 })

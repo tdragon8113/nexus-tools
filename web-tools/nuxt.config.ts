@@ -57,7 +57,9 @@ export default defineNuxtConfig({
         '/tools/totp',
         '/tools/json',
         '/tools/base64',
-        '/tools/calculator'
+        '/tools/calculator',
+        '/tools/ip',
+        '/tools/geo'
       ]
     },
     compressPublicAssets: true

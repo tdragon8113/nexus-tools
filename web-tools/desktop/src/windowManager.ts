@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, type Display, type Rectangle } from 'electron'
+import { app, BrowserWindow, screen, shell, type Display, type Rectangle } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
@@ -333,6 +333,22 @@ export class WindowManager {
     return this.desktopPrefs.read().autoHideOnBlur !== false
   }
 
+  /** 焦点在任意本应用窗口上时不应因失焦而隐藏（避免 window.open 子窗触发 app.hide） */
+  private isFocusedOnAppWindow(): boolean {
+    const focused = BrowserWindow.getFocusedWindow()
+    if (!focused || focused.isDestroyed()) return false
+    return BrowserWindow.getAllWindows().some((w) => !w.isDestroyed() && w.id === focused.id)
+  }
+
+  private attachExternalLinkHandler(win: BrowserWindow) {
+    win.webContents.setWindowOpenHandler(({ url }) => {
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        void shell.openExternal(url)
+      }
+      return { action: 'deny' }
+    })
+  }
+
   private restoreLauncherOnTop(win: BrowserWindow) {
     if (win.isDestroyed()) return
     win.setAlwaysOnTop(true, 'floating')
@@ -387,6 +403,8 @@ export class WindowManager {
       }
     })
 
+    this.attachExternalLinkHandler(this.shell)
+
     // 失焦：图钉保持置顶；自动隐藏开则收起；自动隐藏关则沉到其他窗口下方
     this.shell.on('blur', () => {
       if (process.env.NEXUS_KEEP_VISIBLE === '1' || this.pinned) return
@@ -395,6 +413,7 @@ export class WindowManager {
       setTimeout(() => {
         if (win.isDestroyed() || !this.isShellVisible()) return
         if (BrowserWindow.getFocusedWindow() === win) return
+        if (this.isFocusedOnAppWindow()) return
         this.handleFocusLoss()
       }, 50)
     })

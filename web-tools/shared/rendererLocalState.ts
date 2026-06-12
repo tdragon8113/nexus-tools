@@ -3,7 +3,8 @@ export const RENDERER_LOCAL_STATE_KEYS = {
   searchRecents: 'nexus-search-recents-v1',
   searchFavorites: 'nexus-search-favorites-v1',
   toolOrder: 'nexus-tool-order-v1',
-  calculatorTape: 'nexus-calculator-tape-v1'
+  calculatorTape: 'nexus-calculator-tape-v1',
+  ipLocalUseSystemProxy: 'nexus-ip-local-use-system-proxy-v1'
 } as const
 
 export type RendererLocalStateMap = Record<string, string>

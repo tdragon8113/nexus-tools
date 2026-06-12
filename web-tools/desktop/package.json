@@ -56,7 +56,8 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "extendInfo": {
-        "LSUIElement": true
+        "LSUIElement": true,
+        "NSLocationWhenInUseUsageDescription": "用于经纬度查询工具获取当前位置"
       },
       "icon": "icons/icon.icns",
       "artifactName": "NexusTools.${ext}",

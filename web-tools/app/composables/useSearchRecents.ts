@@ -1,4 +1,9 @@
-import { macAppToSearchResult, toolToSearchResult, type SearchResultItem } from '~/core/searchResults'
+import {
+  canonicalSearchItemId,
+  macAppToSearchResult,
+  toolToSearchResult,
+  type SearchResultItem
+} from '~/core/searchResults'
 import { getToolById } from '~/core/tools'
 import { persistDesktopLocalStateKeyFireAndForget } from '~/core/desktopLocalState'
 import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
@@ -18,15 +23,16 @@ export function useSearchRecents() {
   }
 
   function recordItem(item: SearchResultItem) {
+    const canonicalId = canonicalSearchItemId(item.id)
     const next: SearchRecentEntry = {
-      id: item.id,
+      id: canonicalId,
       kind: item.kind,
       title: item.title,
       lastUsed: Date.now(),
       ...(item.kind === 'tool' && item.tool ? { toolId: item.tool.id } : {}),
       ...(item.kind === 'mac-app' && item.app ? { appId: item.app.id } : {})
     }
-    const rest = entries.value.filter((row) => row.id !== next.id)
+    const rest = entries.value.filter((row) => row.id !== canonicalId)
     entries.value = [next, ...rest].slice(0, MAX_RECENTS)
     persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
   }

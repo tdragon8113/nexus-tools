@@ -1,8 +1,10 @@
+import { extractCoordinatesFromText } from '~~/utils/geoLookup'
+import { extractIpFromText, isIpAddress } from '~~/utils/ipLookup'
 import { MAX_CLIPBOARD_TEXT_CHARS, stripWrappingDoubleQuotes } from '~~/utils/utf8Base64'
 import { getToolPinyinAliases } from './pinyin'
 import { siteTools, type SiteTool } from './tools'
 
-export type ContentHintKind = 'json' | 'base64' | 'calculator' | 'totp'
+export type ContentHintKind = 'json' | 'base64' | 'calculator' | 'totp' | 'ip' | 'geo'
 
 export interface ContentHint {
   kind: ContentHintKind
@@ -141,6 +143,19 @@ function calculatorHintFor(value: string): ContentHint | null {
   return { kind: 'calculator', toolId: 'calculator', label: '数字' }
 }
 
+export function ipContentHintFromText(text: string): ContentHint | null {
+  const ip = extractIpFromText(text)
+  if (!ip) return null
+  const label = ip.includes(':') ? 'IPv6 地址' : 'IPv4 地址'
+  return { kind: 'ip', toolId: 'ip', label }
+}
+
+export function geoContentHintFromText(text: string): ContentHint | null {
+  const coords = extractCoordinatesFromText(text)
+  if (!coords) return null
+  return { kind: 'geo', toolId: 'geo', label: '经纬度坐标' }
+}
+
 function scoreTool(tool: SiteTool, tokens: string[]): number {
   if (!tokens.length) return 1
 
@@ -193,6 +208,14 @@ function scoreTool(tool: SiteTool, tokens: string[]): number {
 
     if (isCalculatorLike(token) && tool.id === 'calculator') {
       tokenScore = Math.max(tokenScore, isUnixTimestampDigits(token) ? 0 : 88)
+    }
+
+    if (tool.id === 'ip' && isIpAddress(token)) {
+      tokenScore = Math.max(tokenScore, 95)
+    }
+
+    if (tool.id === 'geo' && extractCoordinatesFromText(token)) {
+      tokenScore = Math.max(tokenScore, 95)
     }
 
     if (tokenScore === 0) continue
@@ -274,6 +297,12 @@ export function detectContentHint(raw: string): ContentHint | null {
 
   const firstLine = unquoted.split(/\r?\n/)[0]?.trim() ?? unquoted
   const firstToken = firstLine.split(/\s+/)[0] ?? firstLine
+
+  const ipHint = ipContentHintFromText(firstToken)
+  if (ipHint) return ipHint
+
+  const geoHint = geoContentHintFromText(unquoted)
+  if (geoHint) return geoHint
 
   if (/^otpauth:\/\/totp\//i.test(firstToken)) {
     return { kind: 'totp', toolId: 'totp', label: '2FA / TOTP' }

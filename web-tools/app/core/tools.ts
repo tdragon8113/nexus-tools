@@ -61,6 +61,56 @@ export const siteTools: SiteTool[] = [
     iconColor: 'text-sky-600',
     path: '/tools/calculator',
     keywords: ['计算器', '计算', 'calculator', '算术', '加减乘除', '幂', '乘方', '算式', '数字', '数值', '+', '-', '*', '/']
+  },
+  {
+    id: 'ip',
+    name: 'IP 查询',
+    desc: '归属地与运营商',
+    icon: 'location-o',
+    bgColor: 'bg-violet-100',
+    iconColor: 'text-violet-600',
+    path: '/tools/ip',
+    keywords: [
+      'ip',
+      'IP',
+      'ip地址',
+      'IP地址',
+      'ipv4',
+      'ipv6',
+      '归属地',
+      '地理位置',
+      'whois',
+      '运营商',
+      'asn',
+      '本机ip',
+      '公网ip'
+    ]
+  },
+  {
+    id: 'geo',
+    name: '经纬度查询',
+    desc: '坐标反查地址',
+    icon: 'aim',
+    bgColor: 'bg-rose-100',
+    iconColor: 'text-rose-600',
+    path: '/tools/geo',
+    keywords: [
+      '经纬度',
+      '坐标',
+      '纬度',
+      '经度',
+      '地理编码',
+      '反查',
+      'geocode',
+      'coordinates',
+      'coordinate',
+      'lat',
+      'lng',
+      'latitude',
+      'longitude',
+      'gps',
+      '定位'
+    ]
   }
 ]
 

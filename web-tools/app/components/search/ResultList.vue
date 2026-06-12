@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import MacAppIcon from '~/components/MacAppIcon.client.vue'
 import SortableResultRow from '~/components/search/SortableResultRow.vue'
-import type { SearchResultItem } from '~/core/searchResults'
+import {
+  canonicalSearchItemId,
+  toolIdFromSearchItemId,
+  type SearchResultItem
+} from '~/core/searchResults'
 import { mergeCatalogToolOrder, useToolOrder } from '~/composables/useToolOrder'
 import { useSearchFavorites } from '~/composables/useSearchFavorites'
 
@@ -68,7 +72,7 @@ const recentRenderItems = computed(() =>
 )
 
 function commitFavoriteOrder(itemIds: string[]) {
-  setFavoriteOrder(itemIds)
+  setFavoriteOrder(itemIds.map(canonicalSearchItemId))
   emit('orderCommitted')
 }
 
@@ -89,7 +93,7 @@ function commitCatalogOrder(searchItemIds: string[]) {
 }
 
 function toolIdFromItemId(id: string): string {
-  return id.startsWith('tool:') ? id.slice(5) : id
+  return toolIdFromSearchItemId(id)
 }
 
 const favoriteDrag = useDragSortList({

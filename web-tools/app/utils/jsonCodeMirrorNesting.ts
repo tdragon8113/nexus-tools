@@ -1,20 +1,9 @@
-import { RangeSetBuilder, type Extension } from '@codemirror/state'
+import { RangeSetBuilder, type Extension, type Text } from '@codemirror/state'
 import { Decoration, EditorView, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view'
 
-const DEPTH_CLASS = [
-  'json-indent-d1',
-  'json-indent-d2',
-  'json-indent-d3',
-  'json-indent-d4',
-  'json-indent-d5',
-  'json-indent-d6',
-  'json-indent-d7',
-  'json-indent-d8'
-] as const
-
-function leadingIndentColumns(line: string, tabSize: number): number {
+function leadingIndentColumns(lineText: string, tabSize: number): number {
   let cols = 0
-  for (const ch of line) {
+  for (const ch of lineText) {
     if (ch === ' ') cols += 1
     else if (ch === '\t') cols += tabSize
     else break
@@ -22,11 +11,56 @@ function leadingIndentColumns(line: string, tabSize: number): number {
   return cols
 }
 
-function buildIndentLayerDecorations(view: EditorView): DecorationSet {
+/** 每层缩进空白正中（2 空格时在 col 1、3、5…） */
+function guideColumnsForIndent(indent: number, tabSize: number): number[] {
+  if (indent <= 0 || tabSize <= 0) return []
+  const levels = Math.floor(indent / tabSize)
+  const half = tabSize / 2
+  const cols: number[] = []
+  for (let level = 1; level <= levels; level++) {
+    cols.push(level * tabSize - half)
+  }
+  return cols
+}
+
+/** 按行缩进绘制虚线引导（与 VS Code 缩进参考线一致） */
+function computeIndentGuides(doc: Text, tabSize: number): Map<number, number[]> {
+  const out = new Map<number, number[]>()
+  let carryIndent = 0
+
+  for (let n = 1; n <= doc.lines; n++) {
+    const text = doc.line(n).text
+    const trimmed = text.trim()
+    let indent = leadingIndentColumns(text, tabSize)
+
+    if (trimmed) carryIndent = indent
+    else indent = carryIndent
+
+    const cols = guideColumnsForIndent(indent, tabSize)
+    if (cols.length) out.set(n, cols)
+  }
+
+  return out
+}
+
+function guideLineBackground(cols: number[], charWidth: number): string {
+  return cols
+    .map((col) => {
+      const x = Math.round(col * charWidth)
+      return `linear-gradient(90deg,transparent ${x - 0.5}px,var(--json-cm-indent-guide) ${x - 0.5}px,var(--json-cm-indent-guide) ${x + 0.5}px,transparent ${x + 0.5}px)`
+    })
+    .join(',')
+}
+
+function buildScopeGuideDecorations(view: EditorView): DecorationSet {
   const doc = view.state.doc
   if (!doc.length) return Decoration.none
 
   const tabSize = view.state.tabSize
+  const charWidth = view.defaultCharacterWidth
+  if (!charWidth) return Decoration.none
+
+  const guideByLine = computeIndentGuides(doc, tabSize)
   const { from, to } = view.viewport
   const builder = new RangeSetBuilder<Decoration>()
 
@@ -34,32 +68,40 @@ function buildIndentLayerDecorations(view: EditorView): DecorationSet {
     const line = doc.line(n)
     if (line.to < from || line.from > to) continue
 
-    const text = line.text
-    if (!text.trim()) continue
+    const cols = guideByLine.get(n)
+    if (!cols?.length) continue
 
-    const depth = Math.floor(leadingIndentColumns(text, tabSize) / tabSize)
-    if (depth <= 0) continue
-
-    const cls = DEPTH_CLASS[Math.min(depth, DEPTH_CLASS.length) - 1]
-    builder.add(line.from, line.from, Decoration.line({ class: cls }))
+    builder.add(
+      line.from,
+      line.from,
+      Decoration.line({
+        class: 'json-cm-indent-guide-line',
+        attributes: { style: `background-image:${guideLineBackground(cols, charWidth)}` }
+      })
+    )
   }
 
   return builder.finish()
 }
 
-/** 按缩进层级给行加左侧色带，便于浏览嵌套结构 */
+/** 缩进实线引导（VS Code 风格） */
 export function jsonIndentLayerExtension(): Extension {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet = Decoration.none
 
       constructor(view: EditorView) {
-        this.decorations = buildIndentLayerDecorations(view)
+        this.decorations = buildScopeGuideDecorations(view)
       }
 
       update(update: ViewUpdate) {
-        if (update.docChanged || update.viewportChanged || update.geometryChanged) {
-          this.decorations = buildIndentLayerDecorations(update.view)
+        if (
+          update.docChanged ||
+          update.viewportChanged ||
+          update.geometryChanged ||
+          update.startState.tabSize !== update.state.tabSize
+        ) {
+          this.decorations = buildScopeGuideDecorations(update.view)
         }
       }
     },

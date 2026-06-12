@@ -1,4 +1,4 @@
-import { codeFolding } from '@codemirror/language'
+import { codeFolding, foldEffect, foldNodeProp, syntaxTree } from '@codemirror/language'
 import type { EditorState } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 
@@ -129,3 +129,40 @@ export const jsonFoldPlaceholderExtension = codeFolding({
   preparePlaceholder: (state, range) => encodeFoldSummary(summarizeFoldedRange(state, range)),
   placeholderDOM: jsonFoldPlaceholderDOM
 })
+
+/** 收集文档中所有可折叠区间（含嵌套 Object / Array），内层优先 */
+export function collectAllFoldRanges(state: EditorState): { from: number; to: number }[] {
+  const tree = syntaxTree(state)
+  if (!tree.length) return []
+
+  const ranges: { from: number; to: number }[] = []
+  tree.iterate({
+    enter(node) {
+      const foldProp = node.type.prop(foldNodeProp)
+      if (!foldProp) return
+      const range = foldProp(node.node, state)
+      if (range && range.from < range.to) {
+        ranges.push({ from: range.from, to: range.to })
+      }
+    }
+  })
+
+  ranges.sort((a, b) => a.to - a.from - (b.to - b.from))
+  const seen = new Set<string>()
+  return ranges.filter((range) => {
+    const key = `${range.from}:${range.to}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+/** 递归折叠全部层级（CodeMirror 自带 foldAll 仅折叠每层可见的最外层） */
+export function foldAllDeep(view: EditorView): boolean {
+  const ranges = collectAllFoldRanges(view.state)
+  if (!ranges.length) return false
+  view.dispatch({
+    effects: ranges.map((range) => foldEffect.of(range))
+  })
+  return true
+}

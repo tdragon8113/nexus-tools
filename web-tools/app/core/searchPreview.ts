@@ -1,4 +1,6 @@
 import { evaluateArithmetic, formatCalcResult } from '~~/utils/calcExpression'
+import { extractCoordinatesFromText, formatCoordinates } from '~~/utils/geoLookup'
+import { extractIpFromText } from '~~/utils/ipLookup'
 import {
   formatTotpCode,
   storedToTotpConfig,
@@ -99,6 +101,38 @@ function previewCalculator(raw: string): SearchPreviewModel {
   }
 }
 
+function previewGeo(raw: string): SearchPreviewModel {
+  const coords = extractCoordinatesFromText(raw)
+  if (!coords) {
+    return { title: '经纬度查询', emptyHint: '未识别为经纬度坐标' }
+  }
+  const value = formatCoordinates(coords.lat, coords.lng)
+  return {
+    title: '经纬度查询',
+    lines: [
+      { label: '坐标', value, mono: true },
+      { value: '打开工具反查该坐标对应地址。' }
+    ],
+    copyText: value
+  }
+}
+
+function previewIp(raw: string): SearchPreviewModel {
+  const ip = extractIpFromText(raw)
+  if (!ip) {
+    return { title: 'IP 查询', emptyHint: '未识别为 IP 地址' }
+  }
+  const label = ip.includes(':') ? 'IPv6' : 'IPv4'
+  return {
+    title: 'IP 查询',
+    lines: [
+      { label: '地址', value: ip, mono: true },
+      { value: `识别为 ${label}，打开工具查看归属地与运营商。` }
+    ],
+    copyText: ip
+  }
+}
+
 function previewByHint(hint: ContentHint, raw: string): SearchPreviewModel {
   switch (hint.kind) {
     case 'json':
@@ -107,6 +141,10 @@ function previewByHint(hint: ContentHint, raw: string): SearchPreviewModel {
       return previewBase64(raw)
     case 'calculator':
       return previewCalculator(raw)
+    case 'ip':
+      return previewIp(raw)
+    case 'geo':
+      return previewGeo(raw)
     case 'totp':
       return {
         title: '2FA / TOTP',
@@ -253,6 +291,10 @@ export function buildToolSearchPreview(
       return previewBase64(raw)
     case 'calculator':
       return previewCalculator(raw)
+    case 'ip':
+      return previewIp(raw)
+    case 'geo':
+      return previewGeo(raw)
     case 'totp':
       return {
         title: '2FA / TOTP',

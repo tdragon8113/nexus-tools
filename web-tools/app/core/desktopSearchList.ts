@@ -2,9 +2,22 @@ import { mergeSearchResults, type SearchResultItem } from '~/core/searchResults'
 import type { SiteTool } from '~/core/tools'
 import type { MacAppEntry } from '~~/shared/macApps'
 
+const SECTION_SUFFIX: Record<string, string> = {
+  最近使用: 'recent',
+  收藏: 'favorite',
+  所有工具: 'catalog',
+  内容匹配: 'match',
+  Results: 'results'
+}
+
 function tagSection(items: SearchResultItem[], section?: string): SearchResultItem[] {
   if (!section) return items
-  return items.map((item) => ({ ...item, section }))
+  const suffix = SECTION_SUFFIX[section] ?? 'section'
+  return items.map((item) => ({
+    ...item,
+    section,
+    id: `${item.id}@${suffix}`
+  }))
 }
 
 export type BuildDesktopSearchItemsInput = {
@@ -34,15 +47,14 @@ export function buildDesktopSearchItems(input: BuildDesktopSearchItemsInput): Se
   const favorites = input.resolveFavoriteItems(input.macApps)
   const favoriteIds = new Set(favorites.map((row) => row.id))
   const recents = input.resolveRecentItems(input.macApps).filter((row) => !favoriteIds.has(row.id))
-  const recentIds = new Set(recents.map((row) => row.id))
-  const suggestions = merged.filter((row) => !favoriteIds.has(row.id) && !recentIds.has(row.id))
+  const allTools = merged.filter((row) => row.kind === 'tool')
   const out: SearchResultItem[] = []
 
   if (recents.length) out.push(...tagSection(recents, '最近使用'))
   if (favorites.length) out.push(...tagSection(favorites, '收藏'))
-  if (suggestions.length) {
+  if (allTools.length) {
     const hasPrior = recents.length > 0 || favorites.length > 0
-    out.push(...tagSection(suggestions, hasPrior ? '所有工具' : undefined))
+    out.push(...tagSection(allTools, hasPrior ? '所有工具' : undefined))
   }
   return out
 }

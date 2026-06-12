@@ -22,6 +22,8 @@ import {
 import { RendererLocalStateStore } from './rendererLocalStateStore'
 import { TotpShortcutManager } from './totpShortcutManager'
 import { WindowManager } from './windowManager'
+import { setupGeolocationPermissions } from './geolocationSetup'
+import { fetchIpLookupWithOptions, getSystemProxyStatus } from './ipLookupProxy'
 import { IPC } from './types'
 import type { StoredTotpAccount } from '../../utils/totp'
 
@@ -31,6 +33,31 @@ const HOTKEY = process.env.NEXUS_HOTKEY ?? 'Alt+Space'
 if (process.platform === 'darwin') {
   app.setName('Nexus Tools')
 }
+
+function openExternalHttpUrl(raw: unknown): boolean {
+  if (typeof raw !== 'string' || !raw.trim()) return false
+  try {
+    const url = new URL(raw.trim())
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return false
+    void shell.openExternal(url.toString())
+    return true
+  } catch {
+    return false
+  }
+}
+
+ipcMain.handle(IPC.ipProxyStatus, () => getSystemProxyStatus())
+ipcMain.handle(IPC.openExternal, (_e, url: unknown) => openExternalHttpUrl(url))
+ipcMain.handle(IPC.ipLookup, (_e, payload: unknown) => {
+  if (!payload || typeof payload !== 'object') {
+    return fetchIpLookupWithOptions()
+  }
+  const body = payload as { ip?: unknown; useSystemProxy?: unknown }
+  return fetchIpLookupWithOptions({
+    ip: typeof body.ip === 'string' ? body.ip : undefined,
+    useSystemProxy: body.useSystemProxy === true
+  })
+})
 
 function readClipboardForSearch(): string {
   const raw = clipboard.readText().trim()
@@ -86,6 +113,7 @@ async function resolveWebBaseUrl(): Promise<string> {
 
 app.whenReady().then(async () => {
   await clearMacAppQuarantine()
+  setupGeolocationPermissions()
 
   try {
     webBaseUrl = await resolveWebBaseUrl()

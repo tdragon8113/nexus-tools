@@ -442,6 +442,7 @@ html[data-nexus-desktop='1']:not([data-nexus-theme]) {
   --json-cm-bracket-match-outline: rgb(59 130 246 / 0.55);
   --json-cm-bracket-mismatch: rgb(254 202 202 / 0.5);
   --json-cm-bracket-mismatch-outline: rgb(239 68 68 / 0.55);
+  --json-cm-indent-guide: rgb(148 163 184 / 0.45);
   --json-cm-placeholder: rgb(148 163 184);
   --nexus-tool-tile-hover-border: rgb(199 210 254);
   --nexus-tool-tile-hover-bg: rgb(238 242 255 / 0.95);
@@ -552,6 +553,7 @@ html[data-nexus-desktop='1'][data-nexus-theme='dark'] {
   --json-cm-bracket-match-outline: rgb(129 140 248 / 0.55);
   --json-cm-bracket-mismatch: rgb(248 113 113 / 0.22);
   --json-cm-bracket-mismatch-outline: rgb(248 113 113 / 0.55);
+  --json-cm-indent-guide: rgb(255 255 255 / 0.18);
   --json-cm-placeholder: rgb(255 255 255 / 0.32);
   --nexus-tool-tile-hover-border: rgb(129 140 248 / 0.45);
   --nexus-tool-tile-hover-bg: rgb(99 102 241 / 0.12);

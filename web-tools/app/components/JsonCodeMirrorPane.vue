@@ -19,6 +19,7 @@
 
 <script setup lang="ts">
 import { json } from '@codemirror/lang-json'
+import { unfoldAll } from '@codemirror/language'
 import { indentWithTab } from '@codemirror/commands'
 import { indentUnit as cmIndentUnit } from '@codemirror/language'
 import { Annotation, Compartment, EditorState, type Extension } from '@codemirror/state'
@@ -27,6 +28,7 @@ import { jsonSyntaxHighlightForTheme } from '~/utils/jsonCodeMirrorHighlight'
 import { jsonLiveLintExtension } from '~/utils/jsonCodeMirrorLint'
 import { jsonIndentLayerExtension } from '~/utils/jsonCodeMirrorNesting'
 import { jsonCodeMirrorBasicSetup } from '~/utils/jsonCodeMirrorSetup'
+import { foldAllDeep } from '~/utils/jsonCodeMirrorFold'
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 
 function afterLayout(fn: () => void) {
@@ -333,7 +335,17 @@ onUnmounted(() => {
   viewRef.value = null
 })
 
-defineExpose({ syncDocFromModel })
+defineExpose({
+  syncDocFromModel,
+  foldAll() {
+    const view = viewRef.value
+    return view ? foldAllDeep(view) : false
+  },
+  unfoldAll() {
+    const view = viewRef.value
+    return view ? unfoldAll(view) : false
+  }
+})
 </script>
 
 <style>
@@ -391,30 +403,7 @@ defineExpose({ syncDocFromModel })
   line-height: 1.45;
   padding: 0.35rem 0.5rem;
 }
-
-/* 缩进层级色带（与语法高亮配合，便于分辨嵌套） */
-.json-cm-wrap .cm-line.json-indent-d1 {
-  box-shadow: inset 3px 0 0 rgb(59 130 246 / 0.42);
-}
-.json-cm-wrap .cm-line.json-indent-d2 {
-  box-shadow: inset 3px 0 0 rgb(139 92 246 / 0.4);
-}
-.json-cm-wrap .cm-line.json-indent-d3 {
-  box-shadow: inset 3px 0 0 rgb(236 72 153 / 0.38);
-}
-.json-cm-wrap .cm-line.json-indent-d4 {
-  box-shadow: inset 3px 0 0 rgb(245 158 11 / 0.42);
-}
-.json-cm-wrap .cm-line.json-indent-d5 {
-  box-shadow: inset 3px 0 0 rgb(16 185 129 / 0.4);
-}
-.json-cm-wrap .cm-line.json-indent-d6 {
-  box-shadow: inset 3px 0 0 rgb(6 182 212 / 0.4);
-}
-.json-cm-wrap .cm-line.json-indent-d7 {
-  box-shadow: inset 3px 0 0 rgb(99 102 241 / 0.4);
-}
-.json-cm-wrap .cm-line.json-indent-d8 {
-  box-shadow: inset 3px 0 0 rgb(234 88 12 / 0.4);
+.json-cm-wrap .cm-line.json-cm-indent-guide-line {
+  background-repeat: no-repeat;
 }
 </style>

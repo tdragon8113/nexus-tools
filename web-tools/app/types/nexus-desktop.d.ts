@@ -114,6 +114,12 @@ export interface NexusDesktopBridge {
   patchRendererLocalState?(
     patch: import('~~/shared/rendererLocalState').RendererLocalStateMap
   ): Promise<import('~~/shared/rendererLocalState').RendererLocalStateMap>
+  lookupIp?(request?: {
+    ip?: string
+    useSystemProxy?: boolean
+  }): Promise<import('~~/utils/ipLookup').IpLookupResult>
+  getIpProxyStatus?(): Promise<{ enabled: boolean; summary: string }>
+  openExternal?(url: string): Promise<boolean>
 }
 
 declare global {
