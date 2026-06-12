@@ -1,6 +1,7 @@
 export type CalcResult = { ok: true; value: number } | { ok: false; error: string }
 
 const ALLOWED = /^[0-9+\-*/.%^()\s]+$/
+const ALLOWED_CHAR = /[0-9+\-*/.%^()\s]/
 
 function stripSpaces(s: string): string {
   return s.replace(/\s+/g, '')
@@ -138,6 +139,15 @@ class Parser {
     if (Number.isNaN(n)) throw new Error('无效数字')
     return n
   }
+}
+
+/** 过滤为计算器允许的字符（含全角运算符归一化）。 */
+export function sanitizeArithmeticInput(raw: string): string {
+  const normalized = normalizeOperators(raw)
+  return normalized
+    .split('')
+    .filter((ch) => ALLOWED_CHAR.test(ch))
+    .join('')
 }
 
 /**

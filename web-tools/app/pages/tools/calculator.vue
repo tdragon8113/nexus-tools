@@ -1,90 +1,98 @@
 <template>
-  <div class="desktop-tool-page flex h-full min-h-0 flex-col">
-<div class="mt-6 flex flex-wrap items-center gap-2 text-sm">
-      <span class="text-slate-500 tabular-nums">{{ entries.length }} 条记录</span>
-      <span class="text-slate-300">·</span>
-      <button
-        type="button"
-        class="text-slate-600 hover:text-slate-900 disabled:opacity-40"
-        :disabled="entries.length === 0"
-        @click="copyAll"
+  <div class="calculator-page desktop-tool-page flex h-full min-h-0 flex-col">
+    <div
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+    >
+      <header
+        class="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 px-3.5 py-2.5"
       >
-        复制全部
-      </button>
-      <button
-        type="button"
-        class="text-red-600 hover:text-red-700 disabled:opacity-40"
-        :disabled="entries.length === 0"
-        @click="clearHistory"
-      >
-        清空记录
-      </button>
-    </div>
+        <span class="text-xs tabular-nums text-slate-500">{{ entries.length }} 条记录</span>
+        <div class="flex items-center gap-2 text-xs">
+          <button
+            type="button"
+            class="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-40"
+            :disabled="entries.length === 0"
+            @click="copyAll"
+          >
+            复制全部
+          </button>
+          <button
+            type="button"
+            class="rounded-md px-2 py-1 text-red-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-40"
+            :disabled="entries.length === 0"
+            @click="clearHistory"
+          >
+            清空
+          </button>
+        </div>
+      </header>
 
-    <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       <ul
         v-if="entries.length > 0"
         role="list"
-        class="max-h-[min(52vh,28rem)] divide-y divide-slate-100 overflow-y-auto overscroll-contain"
+        class="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto overscroll-contain"
       >
         <li
-          v-for="(entry, index) in entries"
+          v-for="entry in entries"
           :key="entry.id"
-          class="group relative min-h-[4.25rem] px-4 py-3 transition-colors focus-within:bg-sky-50/40"
-          :class="index % 2 === 0 ? 'bg-white' : 'bg-slate-50/90'"
+          class="group grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 px-3.5 py-2 transition-colors focus-within:bg-sky-50/50 hover:bg-slate-50/80"
         >
           <input
             :ref="(el) => setEntryInputRef(entry.id, el)"
             v-model="entry.expr"
             type="text"
             inputmode="text"
-            class="w-full border-0 bg-transparent pr-16 font-mono text-sm leading-relaxed text-slate-800 outline-none placeholder:text-slate-400"
+            class="calculator-tape-input min-w-0 font-mono text-sm leading-snug text-slate-800 placeholder:text-slate-400"
             placeholder="计算公式"
             spellcheck="false"
             autocomplete="off"
             autocapitalize="off"
-            @input="recalcEntry(entry)"
+            @input="onEntryInput(entry)"
+            @paste.prevent="onEntryPaste(entry, $event)"
             @blur="onEntryBlur(entry)"
             @keydown.enter.prevent="focusDraft"
             @click.stop
           >
+
           <p
             v-if="entry.error"
-            class="mt-1 text-right text-sm text-red-600"
+            class="max-w-[11rem] truncate text-right text-sm text-red-600"
+            :title="entry.error"
           >
             {{ entry.error }}
           </p>
           <p
             v-else-if="entry.result != null"
-            class="mt-0.5 text-right font-mono text-xl font-semibold tabular-nums text-slate-900"
+            class="max-w-[11rem] truncate text-right font-mono text-base font-semibold tabular-nums text-slate-900"
+            :title="`= ${entry.result}`"
           >
             = {{ entry.result }}
           </p>
           <p
             v-else
-            class="mt-0.5 text-right font-mono text-xl font-semibold tabular-nums text-slate-300"
+            class="text-right font-mono text-base font-semibold tabular-nums text-slate-300"
           >
             =
           </p>
 
           <div
-            class="absolute right-2 top-2 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+            class="flex w-14 shrink-0 justify-end gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
           >
             <button
               type="button"
-              class="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700"
+              class="rounded-md p-1 text-slate-400 hover:bg-white hover:text-slate-700"
               title="复制"
               @click.stop="copyEntry(entry)"
             >
-              <van-icon name="description" size="16" />
+              <van-icon name="description" size="15" />
             </button>
             <button
               type="button"
-              class="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-red-600"
+              class="rounded-md p-1 text-slate-400 hover:bg-white hover:text-red-600"
               title="删除"
               @click.stop="removeEntry(entry.id)"
             >
-              <van-icon name="delete-o" size="16" />
+              <van-icon name="delete-o" size="15" />
             </button>
           </div>
         </li>
@@ -92,49 +100,57 @@
 
       <p
         v-else
-        class="border-b border-slate-100 px-4 py-8 text-center text-sm text-slate-400"
+        class="flex min-h-0 flex-1 items-center justify-center px-4 text-center text-sm text-slate-400"
       >
         在下方输入算式，按 Enter 添加记录
       </p>
 
-      <div
-        class="relative min-h-[5.25rem] bg-sky-50/60 px-4 py-3 ring-inset ring-sky-200/50 focus-within:bg-sky-50 focus-within:ring-2"
-      >
-        <input
-          ref="draftRef"
-          v-model="draft"
-          type="text"
-          inputmode="text"
-          class="w-full border-0 bg-transparent font-mono text-sm text-slate-800 outline-none placeholder:text-slate-400"
-          placeholder="新建计算公式"
-          spellcheck="false"
-          autocomplete="off"
-          autocapitalize="off"
-          @keydown.enter.prevent="commitDraft"
-          @keydown.esc.prevent="clearDraft"
-        >
-        <p
-          v-if="draftError"
-          class="mt-2 text-right text-xs text-red-600"
-        >
-          {{ draftError }}
+      <footer class="calculator-draft shrink-0 border-t border-slate-200/90 bg-slate-50/80 px-4 py-3.5">
+        <div class="flex items-stretch gap-3">
+          <label class="calculator-draft-field flex min-w-0 flex-1 items-center">
+            <input
+              ref="draftRef"
+              :value="draft"
+              type="text"
+              inputmode="decimal"
+              class="calculator-draft-input min-w-0 flex-1 font-mono text-2xl text-slate-900 placeholder:text-slate-400"
+              placeholder="1+2*3"
+              spellcheck="false"
+              autocomplete="off"
+              autocapitalize="off"
+              @input="onDraftInput"
+              @keydown.enter.prevent="commitDraft"
+              @keydown.esc.prevent="clearDraft"
+              @paste.prevent="onDraftPaste"
+            >
+          </label>
+          <div class="flex w-[9.5rem] shrink-0 items-center justify-end">
+            <p
+              v-if="draftError"
+              class="max-w-full truncate text-right text-sm text-red-600"
+              :title="draftError"
+            >
+              {{ draftError }}
+            </p>
+            <p
+              v-else-if="draftPreview != null"
+              class="max-w-full truncate text-right font-mono text-2xl font-semibold tabular-nums text-slate-900"
+              :title="`= ${draftPreview}`"
+            >
+              = {{ draftPreview }}
+            </p>
+            <p
+              v-else
+              class="text-right font-mono text-2xl font-semibold tabular-nums text-slate-300"
+            >
+              =
+            </p>
+          </div>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">
+          仅数字与 + - * / % ^ ( ) · Enter 添加 · Esc 清空
         </p>
-        <p
-          v-else-if="draftPreview != null"
-          class="mt-1 text-right font-mono text-xl font-semibold tabular-nums text-slate-900"
-        >
-          = {{ draftPreview }}
-        </p>
-        <p
-          v-else
-          class="mt-1 text-right font-mono text-xl font-semibold tabular-nums text-slate-300"
-        >
-          =
-        </p>
-        <p class="mt-2 text-[11px] text-slate-400">
-          Enter 追加新记录 · Esc 清空 · 记录内可直接修改算式
-        </p>
-      </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -144,7 +160,11 @@ import {
   getDesktopLocalStateValue,
   persistDesktopLocalStateKeyFireAndForget
 } from '~/core/desktopLocalState'
-import { evaluateArithmetic, formatCalcResult } from '~~/utils/calcExpression'
+import {
+  evaluateArithmetic,
+  formatCalcResult,
+  sanitizeArithmeticInput
+} from '~~/utils/calcExpression'
 import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 
 useHead({ title: '计算器 - Nexus Tools' })
@@ -199,6 +219,45 @@ function focusEntry(id: string) {
   entryInputRefs.get(id)?.focus()
 }
 
+function onDraftInput(event: Event) {
+  draft.value = sanitizeArithmeticInput((event.target as HTMLInputElement).value)
+}
+
+function onDraftPaste(event: ClipboardEvent) {
+  const pasted = event.clipboardData?.getData('text') ?? ''
+  const el = draftRef.value
+  if (!el) return
+  const start = el.selectionStart ?? draft.value.length
+  const end = el.selectionEnd ?? draft.value.length
+  const merged = draft.value.slice(0, start) + pasted + draft.value.slice(end)
+  draft.value = sanitizeArithmeticInput(merged)
+  void nextTick(() => {
+    const pos = sanitizeArithmeticInput(draft.value.slice(0, start) + pasted).length
+    el.setSelectionRange(pos, pos)
+  })
+}
+
+function onEntryInput(entry: CalcEntry) {
+  const next = sanitizeArithmeticInput(entry.expr)
+  if (next !== entry.expr) entry.expr = next
+  recalcEntry(entry)
+}
+
+function onEntryPaste(entry: CalcEntry, event: ClipboardEvent) {
+  const el = entryInputRefs.get(entry.id)
+  const pasted = event.clipboardData?.getData('text') ?? ''
+  if (!el) {
+    entry.expr = sanitizeArithmeticInput(entry.expr + pasted)
+    recalcEntry(entry)
+    return
+  }
+  const start = el.selectionStart ?? entry.expr.length
+  const end = el.selectionEnd ?? entry.expr.length
+  const merged = entry.expr.slice(0, start) + pasted + entry.expr.slice(end)
+  entry.expr = sanitizeArithmeticInput(merged)
+  recalcEntry(entry)
+}
+
 function schedulePersist() {
   if (!import.meta.client) return
   if (persistTimer) clearTimeout(persistTimer)
@@ -235,7 +294,7 @@ function restore() {
       .map((item) => {
         const entry: CalcEntry = {
           id: item.id,
-          expr: item.expr,
+          expr: sanitizeArithmeticInput(item.expr),
           result: item.result ?? null,
           error: item.error ?? null,
           createdAt: item.createdAt ?? Date.now()
@@ -280,6 +339,8 @@ function createEntry(expr: string): CalcEntry {
 function commitDraft() {
   const expr = draft.value.trim()
   if (!expr) return
+  const r = evaluateArithmetic(expr)
+  if (!r.ok) return
   const entry = createEntry(expr)
   entries.value = [...entries.value, entry]
   persist()
@@ -332,7 +393,7 @@ function copyAll() {
 const { drain: drainCalculatorPrefill } = useConsumeToolPrefill(
   'calculator',
   (text) => {
-    const entry = createEntry(text)
+    const entry = createEntry(sanitizeArithmeticInput(text))
     entries.value = [...entries.value, entry]
     persist()
     void nextTick(() => focusEntry(entry.id))
@@ -349,3 +410,65 @@ onMounted(() => {
   })
 })
 </script>
+
+<style>
+/* 记账条内联输入：勿套用桌面工具页默认的圆角边框 input 样式 */
+html[data-nexus-desktop='1'] .calculator-page input.calculator-tape-input {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  outline: none;
+}
+
+html[data-nexus-desktop='1'] .calculator-page input.calculator-tape-input:focus {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+html[data-nexus-desktop='1'] .calculator-page .calculator-draft-field {
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  padding: 0.625rem 1rem;
+  min-height: 3.25rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+html[data-nexus-desktop='1'] .calculator-page .calculator-draft-field:focus-within {
+  border-color: rgb(129 140 248);
+  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.18);
+}
+
+html[data-nexus-desktop='1'] .calculator-page input.calculator-draft-input {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  outline: none;
+  min-height: 2.75rem;
+  line-height: 2.75rem;
+  font-size: 1.5rem;
+}
+
+html[data-nexus-desktop='1'] .calculator-page input.calculator-draft-input:focus {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+html[data-nexus-desktop='1'] .calculator-page .calculator-draft:focus-within {
+  background: rgb(248 250 252);
+}
+</style>
