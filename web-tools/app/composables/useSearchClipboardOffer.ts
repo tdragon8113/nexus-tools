@@ -10,7 +10,6 @@ export function useSearchClipboardOffer(deps: {
   commandQuery: Ref<string>
   getExistingQueryText: () => string
   ingestFullText: (text: string, options: { fromClipboard: boolean }) => void
-  focusQuery: () => void
   scheduleRemeasure: () => void
 }) {
   const route = useRoute()
@@ -40,7 +39,6 @@ export function useSearchClipboardOffer(deps: {
     deps.ingestFullText(text, { fromClipboard: true })
     clearOffer()
     await markApplied(text)
-    deps.focusQuery()
   }
 
   async function acceptOffer() {

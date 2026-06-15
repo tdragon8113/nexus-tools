@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.20] - 2026-06-15
+
+### 修复（web-tools 桌面端）
+
+- **搜索面板**：打开时默认聚焦名称搜索框，剪贴板自动填入 Query 后不再抢焦点
+
 ## [0.2.19] - 2026-06-12
 
 ### 新增（web-tools 桌面端）

@@ -98,11 +98,15 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     })
   }
 
+  function focusCommandField() {
+    queryFocused.value = false
+    void nextTick(() => headerRef.value?.focusCommand())
+  }
+
   const clipboard = useSearchClipboardOffer({
     commandQuery,
     getExistingQueryText: () => queryText.value,
     ingestFullText,
-    focusQuery: () => headerRef.value?.focusQuery(),
     scheduleRemeasure
   })
 
@@ -287,11 +291,16 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     [showEmpty, clipboard.hasOffer, commandQuery, queryText, showQueryEditor],
     scheduleRemeasure
   )
-  watch(clipboard.pendingSearchInput, () => void clipboard.applyPendingInput(), { deep: true })
-  watch(() => route.query.q, () => void clipboard.applyPendingInput(), { immediate: true })
+  async function syncPendingSearchInput() {
+    await clipboard.applyPendingInput()
+    focusCommandField()
+  }
+
+  watch(clipboard.pendingSearchInput, () => void syncPendingSearchInput(), { deep: true })
+  watch(() => route.query.q, () => void syncPendingSearchInput(), { immediate: true })
 
   function runApplySearchInput() {
-    void clipboard.applyPendingInput()
+    void syncPendingSearchInput()
   }
 
   onMounted(() => {
@@ -300,7 +309,7 @@ export function useDesktopSearchPanel(limit = DEFAULT_LIMIT) {
     void loadMacApps()
     void clipboard.clipboardPrefs.syncFromMain().then(() => {
       registerDesktopSearchApply(runApplySearchInput)
-      void clipboard.applyPendingInput()
+      void syncPendingSearchInput()
     })
   })
 
