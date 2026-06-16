@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.22] - 2026-06-16
+
+### 新增（web-tools 桌面端）
+
+- **文本编辑**：恢复多语法高亮编辑器，支持 Markdown 预览、查找替换、大小写/行处理与导入导出
+- **表格转换**：粘贴/导入 CSV·TSV·JSON·Excel，在线编辑表格并导出为 CSV、JSON、Markdown、HTML、SQL 等格式
+
+### 改进（web-tools 桌面端）
+
+- **文本编辑**：切换 JSON/CSV 语法时自动格式化；JSON5 兼容 JS 对象字面量；CSV 支持 TSV/分号等分隔符识别
+- **表格转换**：表格区与预览区固定视口高度，内容过多时可滚动；JSON 导出选项紧凑布局且预览区不被挤压
+- **搜索**：长文本与剪贴板内容可兜底打开文本编辑
+
 ## [0.2.21] - 2026-06-16
 
 ### 改进（web-tools 桌面端）
