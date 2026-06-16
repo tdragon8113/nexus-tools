@@ -1,10 +1,10 @@
 <template>
   <div class="calculator-page desktop-tool-page flex h-full min-h-0 flex-col">
     <div
-      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+      class="calculator-tape-panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-md shadow-slate-900/5"
     >
       <header
-        class="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 px-3.5 py-2.5"
+        class="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-3.5 py-2.5"
       >
         <span class="text-xs tabular-nums text-slate-500">{{ entries.length }} 条记录</span>
         <div class="flex items-center gap-2 text-xs">
@@ -27,16 +27,16 @@
         </div>
       </header>
 
-      <ul
+      <div
         v-if="entries.length > 0"
-        role="list"
-        class="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto overscroll-contain"
+        class="calculator-tape-list min-h-0 flex-1 overflow-y-auto overscroll-contain"
       >
-        <li
-          v-for="entry in entries"
-          :key="entry.id"
-          class="group grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 px-3.5 py-2 transition-colors focus-within:bg-sky-50/50 hover:bg-slate-50/80"
-        >
+        <ul role="list">
+          <li
+            v-for="entry in entries"
+            :key="entry.id"
+            class="group grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-200 px-3.5 py-2 transition-colors focus-within:bg-sky-50/50 hover:bg-slate-50/80"
+          >
           <input
             :ref="(el) => setEntryInputRef(entry.id, el)"
             v-model="entry.expr"
@@ -96,7 +96,8 @@
             </button>
           </div>
         </li>
-      </ul>
+        </ul>
+      </div>
 
       <p
         v-else
@@ -105,7 +106,7 @@
         在下方输入算式，按 Enter 添加记录
       </p>
 
-      <footer class="calculator-draft shrink-0 border-t border-slate-200/90 bg-slate-50/80 px-4 py-3.5">
+      <footer class="calculator-draft shrink-0 border-t border-slate-200 bg-slate-50/80 px-4 py-3.5">
         <div class="flex items-stretch gap-3">
           <label class="calculator-draft-field flex min-w-0 flex-1 items-center">
             <input
@@ -148,7 +149,7 @@
           </div>
         </div>
         <p class="mt-2 text-xs text-slate-400">
-          仅数字与 + - * / % ^ ( ) · Enter 添加 · Esc 清空
+          支持 + - * / % ^ ( ) · 含非法字符时不计算 · Enter 添加 · Esc 清空
         </p>
       </footer>
     </div>
@@ -161,9 +162,12 @@ import {
   persistDesktopLocalStateKeyFireAndForget
 } from '~/core/desktopLocalState'
 import {
+  CALCULATOR_TAPE_RETENTION_HOURS,
+  filterEntriesWithinRetention
+} from '~/core/calculatorTapeRetention'
+import {
   evaluateArithmetic,
-  formatCalcResult,
-  sanitizeArithmeticInput
+  formatCalcResult
 } from '~~/utils/calcExpression'
 import { RENDERER_LOCAL_STATE_KEYS } from '~~/shared/rendererLocalState'
 
@@ -220,7 +224,7 @@ function focusEntry(id: string) {
 }
 
 function onDraftInput(event: Event) {
-  draft.value = sanitizeArithmeticInput((event.target as HTMLInputElement).value)
+  draft.value = (event.target as HTMLInputElement).value
 }
 
 function onDraftPaste(event: ClipboardEvent) {
@@ -229,17 +233,14 @@ function onDraftPaste(event: ClipboardEvent) {
   if (!el) return
   const start = el.selectionStart ?? draft.value.length
   const end = el.selectionEnd ?? draft.value.length
-  const merged = draft.value.slice(0, start) + pasted + draft.value.slice(end)
-  draft.value = sanitizeArithmeticInput(merged)
+  draft.value = draft.value.slice(0, start) + pasted + draft.value.slice(end)
   void nextTick(() => {
-    const pos = sanitizeArithmeticInput(draft.value.slice(0, start) + pasted).length
+    const pos = start + pasted.length
     el.setSelectionRange(pos, pos)
   })
 }
 
 function onEntryInput(entry: CalcEntry) {
-  const next = sanitizeArithmeticInput(entry.expr)
-  if (next !== entry.expr) entry.expr = next
   recalcEntry(entry)
 }
 
@@ -247,14 +248,13 @@ function onEntryPaste(entry: CalcEntry, event: ClipboardEvent) {
   const el = entryInputRefs.get(entry.id)
   const pasted = event.clipboardData?.getData('text') ?? ''
   if (!el) {
-    entry.expr = sanitizeArithmeticInput(entry.expr + pasted)
+    entry.expr += pasted
     recalcEntry(entry)
     return
   }
   const start = el.selectionStart ?? entry.expr.length
   const end = el.selectionEnd ?? entry.expr.length
-  const merged = entry.expr.slice(0, start) + pasted + entry.expr.slice(end)
-  entry.expr = sanitizeArithmeticInput(merged)
+  entry.expr = entry.expr.slice(0, start) + pasted + entry.expr.slice(end)
   recalcEntry(entry)
 }
 
@@ -267,9 +267,20 @@ function schedulePersist() {
   }, 280)
 }
 
+function pruneExpiredEntries(now = Date.now()) {
+  const next = filterEntriesWithinRetention(entries.value, CALCULATOR_TAPE_RETENTION_HOURS, now)
+  if (next.length === entries.value.length) return false
+  entries.value = next
+  for (const id of [...entryInputRefs.keys()]) {
+    if (!next.some((entry) => entry.id === id)) entryInputRefs.delete(id)
+  }
+  return true
+}
+
 function persist() {
   if (!import.meta.client) return
   try {
+    pruneExpiredEntries()
     persistDesktopLocalStateKeyFireAndForget(STORAGE_KEY, JSON.stringify(entries.value))
   } catch {
     /* ignore quota */
@@ -294,7 +305,7 @@ function restore() {
       .map((item) => {
         const entry: CalcEntry = {
           id: item.id,
-          expr: sanitizeArithmeticInput(item.expr),
+          expr: item.expr,
           result: item.result ?? null,
           error: item.error ?? null,
           createdAt: item.createdAt ?? Date.now()
@@ -393,7 +404,7 @@ function copyAll() {
 const { drain: drainCalculatorPrefill } = useConsumeToolPrefill(
   'calculator',
   (text) => {
-    const entry = createEntry(sanitizeArithmeticInput(text))
+    const entry = createEntry(text)
     entries.value = [...entries.value, entry]
     persist()
     void nextTick(() => focusEntry(entry.id))
@@ -403,6 +414,7 @@ const { drain: drainCalculatorPrefill } = useConsumeToolPrefill(
 
 onMounted(() => {
   restore()
+  persist()
   const before = entries.value.length
   drainCalculatorPrefill()
   void nextTick(() => {

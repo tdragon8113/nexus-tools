@@ -159,7 +159,7 @@ export function evaluateArithmetic(raw: string): CalcResult {
   const s = stripSpaces(normalized)
   if (!s) return { ok: false, error: '请输入表达式' }
   if (!ALLOWED.test(normalized)) {
-    return { ok: false, error: '仅允许数字与 + - * / % ^ ( ) 和小数点' }
+    return { ok: false, error: '含有非法字符' }
   }
   try {
     const value = new Parser(s).parse()
