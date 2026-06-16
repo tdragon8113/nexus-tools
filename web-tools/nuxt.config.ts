@@ -58,6 +58,8 @@ export default defineNuxtConfig({
         '/tools/json',
         '/tools/base64',
         '/tools/calculator',
+        '/tools/text',
+        '/tools/table',
         '/tools/ip',
         '/tools/geo'
       ]

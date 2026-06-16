@@ -4,12 +4,19 @@ import { MAX_CLIPBOARD_TEXT_CHARS, stripWrappingDoubleQuotes } from '~~/utils/ut
 import { getToolPinyinAliases } from './pinyin'
 import { siteTools, type SiteTool } from './tools'
 
-export type ContentHintKind = 'json' | 'base64' | 'calculator' | 'totp' | 'ip' | 'geo'
+export type ContentHintKind = 'json' | 'base64' | 'calculator' | 'totp' | 'ip' | 'geo' | 'text'
 
 export interface ContentHint {
   kind: ContentHintKind
   toolId: string
   label: string
+}
+
+/** 无内容类型、无工具名匹配时的默认兜底 */
+export const TEXT_FALLBACK_HINT: ContentHint = {
+  kind: 'text',
+  toolId: 'text',
+  label: '文本编辑'
 }
 
 export interface ScoredTool {
@@ -89,6 +96,22 @@ export function looksLikePlainDocument(raw: string): boolean {
   if (t.length < 48) return false
   const lines = t.split(/\r?\n/).filter((l) => l.trim())
   return lines.length >= 2 || t.length >= 160
+}
+
+/** 工具名/关键词强匹配阈值（高于此才认为「用户想找某个工具」） */
+const STRONG_TOOL_MATCH_SCORE = 72
+
+function hasStrongToolKeywordMatch(query: string): boolean {
+  const tokens = queryTokensForToolSearch(query)
+  if (!tokens.length) return false
+
+  let best = 0
+  for (const tool of siteTools) {
+    if (!tool.path) continue
+    const score = scoreTool(tool, tokens)
+    if (score > best) best = score
+  }
+  return best >= STRONG_TOOL_MATCH_SCORE
 }
 
 /**
@@ -314,13 +337,30 @@ export function detectContentHint(raw: string): ContentHint | null {
   return null
 }
 
-export function resolveSearchContentHint(query: string): ContentHint | null {
-  return detectContentHint(query)
+/**
+ * 内容识别 + 可选文本编辑兜底。
+ * 先判断 JSON / Base64 等类型；若无类型且未命中强工具关键词，则归入文本编辑。
+ */
+export function resolveSearchContentHint(
+  query: string,
+  enableTextFallback = false
+): ContentHint | null {
+  const typed = detectContentHint(query)
+  if (typed) return typed
+  if (!enableTextFallback || !query.trim()) return null
+
+  if (looksLikePlainDocument(query) && !hasStrongToolKeywordMatch(query)) {
+    return TEXT_FALLBACK_HINT
+  }
+  if (!hasStrongToolKeywordMatch(query)) {
+    return TEXT_FALLBACK_HINT
+  }
+  return null
 }
 
-/** 剪贴板 / 全文粘贴：仅按内容格式识别 */
+/** 剪贴板 / 全文粘贴：启用文本编辑兜底 */
 export function detectClipboardContentHint(raw: string): ContentHint | null {
-  return detectContentHint(raw)
+  return resolveSearchContentHint(raw, true)
 }
 
 export function searchTools(query: string): ScoredTool[] {
@@ -359,6 +399,12 @@ export interface ToolSearchResolveOptions {
   limit?: number
   /** 仅含已上线（有 path）的工具 */
   pathOnly?: boolean
+  /** 剪贴板 / payload：无其它识别时兜底到文本编辑工具 */
+  fallbackText?: boolean
+}
+
+function resolveContentHint(query: string, fallbackText: boolean): ContentHint | null {
+  return resolveSearchContentHint(query, fallbackText)
 }
 
 function rankToolsWithHint(query: string, hint: ContentHint | null, pathOnly: boolean): SiteTool[] {
@@ -393,7 +439,7 @@ export function resolveToolSearchResults(
     return { hint: null, tools: [], totalCount: 0, showEmpty: false }
   }
 
-  const hint = detectContentHint(trimmed)
+  const hint = resolveContentHint(trimmed, options.fallbackText ?? false)
   const all = rankToolsWithHint(trimmed, hint, pathOnly)
   const totalCount = all.length
   const tools = limit != null ? all.slice(0, limit) : all
@@ -421,9 +467,10 @@ export function resolveToolSearchResults(
 /** 桌面搜索：仅已上线工具，默认最多 6 条（名称 + 内容混合，Web 等场景） */
 export function resolveDisplayToolsForQuery(
   query: string,
-  limit = 6
+  limit = 6,
+  options?: Pick<ToolSearchResolveOptions, 'fallbackText'>
 ): ToolSearchResolveResult {
-  return resolveToolSearchResults(query, { limit, pathOnly: true })
+  return resolveToolSearchResults(query, { limit, pathOnly: true, fallbackText: options?.fallbackText })
 }
 
 /** 桌面 Command：仅按工具名 / 关键词 / 拼音匹配，不做内容格式识别 */
@@ -449,13 +496,17 @@ export function resolveToolsByName(query: string, limit = 6): ToolSearchResolveR
 }
 
 /** 桌面 Query：按粘贴内容格式匹配工具（可无 Command 搜索词） */
-export function resolveToolsByContent(query: string, limit = 6): ToolSearchResolveResult {
+export function resolveToolsByContent(
+  query: string,
+  limit = 6,
+  options?: Pick<ToolSearchResolveOptions, 'fallbackText'>
+): ToolSearchResolveResult {
   const trimmed = query.trim()
   if (!trimmed) {
     return { hint: null, tools: [], totalCount: 0, showEmpty: false }
   }
 
-  const hint = detectContentHint(trimmed)
+  const hint = resolveContentHint(trimmed, options?.fallbackText ?? true)
   const tools: SiteTool[] = []
 
   if (hint) {

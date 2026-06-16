@@ -232,4 +232,52 @@ html[data-nexus-desktop='1'] .json-tool-page .json-cm-wrap {
   min-height: 0;
   height: 100%;
 }
+
+html[data-nexus-desktop='1'] .table-tool-page .table-tool-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+html[data-nexus-desktop='1'] .table-tool-page .table-tool-split {
+  min-height: 0;
+}
+
+html[data-nexus-desktop='1'] .table-tool-page .table-tool-editor,
+html[data-nexus-desktop='1'] .table-tool-page .table-tool-export {
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-nexus-desktop='1'] .table-tool-page .table-grid,
+html[data-nexus-desktop='1'] .table-tool-page .table-tool-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  html[data-nexus-desktop='1'] .table-tool-page .table-tool-split {
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+  }
+
+  html[data-nexus-desktop='1'] .table-tool-page .table-tool-editor,
+  html[data-nexus-desktop='1'] .table-tool-page .table-tool-export {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  html[data-nexus-desktop='1'] .table-tool-page .table-tool-export-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  html[data-nexus-desktop='1'] .table-tool-page .table-tool-output {
+    min-height: clamp(14rem, 30vh, 22rem);
+  }
+
+  html[data-nexus-desktop='1'] .table-tool-page .table-tool-export--json .table-tool-output {
+    min-height: clamp(16rem, 34vh, 26rem);
+  }
+}
 </style>

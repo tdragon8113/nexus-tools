@@ -63,6 +63,56 @@ export const siteTools: SiteTool[] = [
     keywords: ['计算器', '计算', 'calculator', '算术', '加减乘除', '幂', '乘方', '算式', '数字', '数值', '+', '-', '*', '/']
   },
   {
+    id: 'text',
+    name: '文本编辑',
+    desc: '高亮/替换/处理',
+    icon: 'edit',
+    bgColor: 'bg-stone-100',
+    iconColor: 'text-stone-600',
+    path: '/tools/text',
+    keywords: [
+      '文本',
+      '文本编辑',
+      '纯文本',
+      'plain',
+      'text',
+      '记事',
+      'note',
+      '粘贴',
+      '剪贴板',
+      'markdown',
+      'md',
+      '标记',
+      'csv',
+      '逗号分隔'
+    ]
+  },
+  {
+    id: 'table',
+    name: '表格转换',
+    desc: 'CSV/Excel/JSON 互转',
+    icon: 'orders-o',
+    bgColor: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+    path: '/tools/table',
+    keywords: [
+      '表格',
+      'table',
+      'csv',
+      'tsv',
+      'excel',
+      'xlsx',
+      'json',
+      'markdown',
+      'html',
+      'sql',
+      '转换',
+      'tableconvert',
+      '导入',
+      '导出'
+    ]
+  },
+  {
     id: 'ip',
     name: 'IP 查询',
     desc: '归属地与运营商',

@@ -145,6 +145,12 @@ function previewByHint(hint: ContentHint, raw: string): SearchPreviewModel {
       return previewIp(raw)
     case 'geo':
       return previewGeo(raw)
+    case 'text':
+      return {
+        title: '文本编辑',
+        lines: [{ value: raw.length > 800 ? `${raw.slice(0, 800)}…` : raw, mono: true }],
+        copyText: raw
+      }
     case 'totp':
       return {
         title: '2FA / TOTP',
@@ -295,6 +301,12 @@ export function buildToolSearchPreview(
       return previewIp(raw)
     case 'geo':
       return previewGeo(raw)
+    case 'text':
+      return {
+        title: '文本编辑',
+        lines: [{ value: raw.length > 800 ? `${raw.slice(0, 800)}…` : raw, mono: true }],
+        copyText: raw
+      }
     case 'totp':
       return {
         title: '2FA / TOTP',
