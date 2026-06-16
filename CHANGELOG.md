@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.21] - 2026-06-16
+
+### 改进（web-tools 桌面端）
+
+- **计算器**：支持自由输入，非法字符即时提示；纸带列表边框加强（含最后一行）
+- **计算器记录**：保留时长固定为 12 小时（源码常量）
+
 ## [0.2.20] - 2026-06-15
 
 ### 修复（web-tools 桌面端）
