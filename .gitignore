@@ -1,8 +1,14 @@
 # macOS
 .DS_Store
+.DS_Store?
 .AppleDouble
 .LSOverride
 ._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
 
 # Xcode
 # Nested projects (e.g. mac-app/*.xcodeproj): * alone does not match path segments
@@ -33,6 +39,15 @@ target/
 # IntelliJ IDEA (keep .idea/.gitignore for project-specific)
 .idea/
 *.iml
+.obsidian/
+.opencode/
+.trae/
+**/.drafts/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
 
 # Docker
 docker/.env
@@ -43,22 +58,93 @@ logs/
 
 # Environment
 .env
+.env.*
+!.env.example
+!.env.*.example
 .env.local
 .env.*.local
+.env.production
+.env.development
 # Local Spring profile files often contain secrets
 **/application-local.yml
 
-# Node.js / Nuxt
+# Node.js / Nuxt / Vite
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 .nuxt/
 .output/
 .nitro/
+.next/
+out/
 dist/
+.vite/
+vite.config.*.timestamp-*
+*.tsbuildinfo
 # web-tools：dist 常为指向 .output/public 的符号链接，需显式路径
 web-tools/dist
 
-# Claude Code
+# Test / coverage / caches
+coverage/
+*.lcov
+.nyc_output/
+.npm
+.npm-cache/
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.node_repl_history
+*.tgz
+.yarn-integrity
+.parcel-cache
+storybook-static/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.drawio-tmp/
+tmp/
+temp/
+.git-versions/
+
+# Claude / agent skills (ignore local settings, keep shared skills)
 .claude/*
+!.claude/skills/
+!.claude/skills/**
+.agents/*
+!.agents/skills/
+!.agents/skills/**
 
 # Documentation generated files
 docs/CODEMAPS/
+
+# Axhub Make client — project-specific (Axhub原型设计/.gitignore is the source of truth)
+# vendor dist is tracked; general dist/ ignored above
+Axhub原型设计/!vendor/**/dist/
+Axhub原型设计/!vendor/**/dist/**
+
+# Runtime-generated local config
+.axhub/make/*
+!.axhub/make/client.json
+!.axhub/make/axhub.config.json
+!.axhub/make/README.md
+!.axhub/make/sidebar-tree.json
+.axhub/sessions/
+Axhub原型设计/components.json
+Axhub原型设计/.dev-server-info.json
+Axhub原型设计/entries.json
+
+# Large source fonts kept outside the published client template
+src/prototypes/beginner-guide/TsangerJinKai02-W04.ttf
+src/prototypes/beginner-guide/TsangerJinKai02-W05.ttf
+
+# ACP sidebar cache and local review artifacts — do not commit or export
+src/prototypes/**/.spec/acp/
+src/prototypes/**/.spec/prototype-comments.json
