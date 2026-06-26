@@ -69,5 +69,8 @@ export const LAUNCHER_MAX_HEIGHT = PANEL_HEIGHT
 /** 搜索窗手动拖动后，该时长内再次唤起保留位置；超时未再移动则恢复默认居中 */
 export const SEARCH_POSITION_TTL_MS = 60 * 60 * 1000
 
+/** 工具/设置页隐藏后，该时长内快捷键仍恢复该页；超时则回到搜索 */
+export const PANEL_SESSION_TTL_MS = 60 * 60 * 1000
+
 export const PANEL_MIN_WIDTH = 520
 export const PANEL_MIN_HEIGHT = 400

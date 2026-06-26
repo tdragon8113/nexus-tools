@@ -10,6 +10,7 @@ import {
   PANEL_MIN_HEIGHT,
   PANEL_MIN_WIDTH,
   PANEL_WIDTH,
+  PANEL_SESSION_TTL_MS,
   SEARCH_POSITION_TTL_MS,
   type ShowSearchPayload
 } from './types'
@@ -46,6 +47,8 @@ export class WindowManager {
   private shellLayoutReady = false
   /** 用户已请求显示，但仍在等待首次测高 */
   private awaitingReveal = false
+  /** 工具/设置页最近一次隐藏时刻；超时后快捷键回到搜索 */
+  private panelHiddenAt: number | null = null
   private revealMeasureTimer: ReturnType<typeof setTimeout> | null = null
   private resolvedTheme: 'light' | 'dark' = 'light'
 
@@ -671,6 +674,7 @@ export class WindowManager {
 
   showSearch(input: ShowSearchPayload = {}) {
     const { clipboard = '', q = '', source = 'hotkey' } = input
+    this.panelHiddenAt = null
     const win = this.ensureShell()
     this.applySearchChrome({ moveToActiveDisplay: true, reopening: true })
 
@@ -695,6 +699,9 @@ export class WindowManager {
   hide() {
     const win = this.shell
     if (!win || win.isDestroyed()) return
+    if (this.loaded && this.isPanelRoute(win.webContents.getURL())) {
+      this.panelHiddenAt = Date.now()
+    }
     this.savePanelBounds()
     this.saveSearchBounds(false)
     if (process.platform === 'darwin') {
@@ -719,6 +726,11 @@ export class WindowManager {
     return path.startsWith('/tools/') || path === '/desktop/settings'
   }
 
+  private isStalePanelSession(): boolean {
+    if (!this.panelHiddenAt) return false
+    return Date.now() - this.panelHiddenAt > PANEL_SESSION_TTL_MS
+  }
+
   revealPanel() {
     const win = this.shell
     if (!win || win.isDestroyed()) return
@@ -740,6 +752,10 @@ export class WindowManager {
 
     const url = win.webContents.getURL()
     if (this.loaded && this.isPanelRoute(url)) {
+      if (this.isStalePanelSession()) {
+        this.showSearch(payload)
+        return
+      }
       this.revealPanel()
       return
     }
@@ -766,7 +782,7 @@ export class WindowManager {
   /**
    * 全局快捷键：显隐切换。
    * - 窗口可见：隐藏
-   * - 隐藏后唤起：若上次在工具/工具集，仅恢复该页；否则打开搜索并带入剪贴板
+   * - 隐藏后唤起：若上次在工具/设置且未超过 PANEL_SESSION_TTL_MS，恢复该页；否则打开搜索并带入剪贴板
    */
   toggleSearch(clipboard = '') {
     const win = this.shell
