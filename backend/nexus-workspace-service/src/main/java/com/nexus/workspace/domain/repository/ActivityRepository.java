@@ -13,6 +13,7 @@ public interface ActivityRepository {
     List<Activity> findByUserId(Long userId);
     Activity findOngoingByUserId(Long userId);
     List<Activity> findByUserIdAndDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime);
+    int countByUserIdAndCategory(Long userId, String category);
     void save(Activity activity);
     void delete(Long id);
 }

@@ -4,6 +4,7 @@ import com.nexus.common.dto.ApiResponse;
 import com.nexus.user.application.command.LoginCommand;
 import com.nexus.user.application.command.RegisterCommand;
 import com.nexus.user.application.service.AuthApplicationService;
+import com.nexus.user.interfaces.dto.request.ChangePasswordRequest;
 import com.nexus.user.interfaces.dto.request.LoginRequest;
 import com.nexus.user.interfaces.dto.request.RefreshTokenRequest;
 import com.nexus.user.interfaces.dto.request.RegisterRequest;
@@ -33,7 +34,8 @@ public class AuthController {
         RegisterCommand command = new RegisterCommand(
             request.getUsername(),
             request.getEmail(),
-            request.getPassword()
+            request.getPassword(),
+            request.getNickname()
         );
         return ApiResponse.success(authApplicationService.register(command));
     }
@@ -72,6 +74,19 @@ public class AuthController {
             @RequestHeader("X-User-Id") Long userId,
             @RequestBody RefreshTokenRequest request) {
         authApplicationService.deleteAccount(userId, request.getRefreshToken());
+        return ApiResponse.success();
+    }
+
+    @PatchMapping("/password")
+    public ApiResponse<Void> changePassword(
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authApplicationService.changePassword(
+            userId,
+            request.getCurrentPassword(),
+            request.getNewPassword(),
+            request.getConfirmPassword()
+        );
         return ApiResponse.success();
     }
 }

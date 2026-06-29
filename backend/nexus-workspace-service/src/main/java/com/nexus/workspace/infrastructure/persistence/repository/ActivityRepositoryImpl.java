@@ -43,6 +43,11 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     }
 
     @Override
+    public int countByUserIdAndCategory(Long userId, String category) {
+        return activityMapper.countByUserIdAndCategory(userId, category);
+    }
+
+    @Override
     public void save(Activity activity) {
         if (activity.getId() == null) {
             activityMapper.insertActivity(activity);

@@ -1,7 +1,5 @@
 package com.nexus.workspace.application.command;
 
-import com.nexus.workspace.domain.model.activity.ActivityCategory;
-
 import java.time.LocalDateTime;
 
 /**
@@ -10,9 +8,11 @@ import java.time.LocalDateTime;
 public record CreateActivityCommand(
     Long userId,
     String title,
-    ActivityCategory category,
+    String category,
     LocalDateTime startTime,
     LocalDateTime endTime,
     Integer durationMinutes,
+    Integer mood,
+    Integer xp,
     String notes
 ) {}

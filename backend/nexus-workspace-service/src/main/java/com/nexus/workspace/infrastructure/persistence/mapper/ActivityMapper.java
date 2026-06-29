@@ -30,4 +30,6 @@ public interface ActivityMapper extends BaseMapper<Activity> {
         @Param("startTime") LocalDateTime startTime,
         @Param("endTime") LocalDateTime endTime
     );
+
+    int countByUserIdAndCategory(@Param("userId") Long userId, @Param("category") String category);
 }

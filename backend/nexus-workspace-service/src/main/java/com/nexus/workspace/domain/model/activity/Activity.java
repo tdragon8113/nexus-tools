@@ -1,16 +1,14 @@
 package com.nexus.workspace.domain.model.activity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.nexus.workspace.infrastructure.persistence.handler.ActivityCategoryTypeHandler;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 /**
- * Activity 实体（富领域模型）
+ * Activity 实体（时光记活动记录）
  */
 @Getter
 @TableName("activities")
@@ -19,64 +17,60 @@ public class Activity {
     private Long id;
     private Long userId;
     private String title;
-    @TableField(value = "category", typeHandler = ActivityCategoryTypeHandler.class)
-    private ActivityCategory category;
+    private String category;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Integer durationMinutes;
+    private Integer mood;
+    private Integer xp;
     private String notes;
     private LocalDateTime createdAt;
 
     public Activity() {}
 
-    // 创建番茄专注记录
-    public static Activity createPomodoro(Long userId, String title, LocalDateTime startTime, LocalDateTime endTime, Integer durationMinutes, String notes) {
+    public static Activity create(
+        Long userId,
+        String title,
+        String category,
+        LocalDateTime startTime,
+        LocalDateTime endTime,
+        Integer durationMinutes,
+        Integer mood,
+        Integer xp,
+        String notes
+    ) {
         Activity activity = new Activity();
         activity.userId = userId;
         activity.title = title;
-        activity.category = ActivityCategory.POMODORO_WORK;
+        activity.category = category != null && !category.isBlank() ? category : "other";
         activity.startTime = startTime;
         activity.endTime = endTime;
         activity.durationMinutes = durationMinutes;
+        activity.mood = mood;
+        activity.xp = xp != null ? xp : 0;
         activity.notes = notes;
         activity.createdAt = LocalDateTime.now();
         return activity;
     }
 
-    // 创建其他类型记录
-    public static Activity create(Long userId, String title, ActivityCategory category, LocalDateTime startTime, LocalDateTime endTime, Integer durationMinutes, String notes) {
-        Activity activity = new Activity();
-        activity.userId = userId;
-        activity.title = title;
-        activity.category = category != null ? category : ActivityCategory.POMODORO_WORK;
-        activity.startTime = startTime;
-        activity.endTime = endTime;
-        activity.durationMinutes = durationMinutes;
-        activity.notes = notes;
-        activity.createdAt = LocalDateTime.now();
-        return activity;
-    }
-
-    // 是否属于指定用户
     public boolean belongsTo(Long userId) {
         return userId != null && userId.equals(this.userId);
     }
 
-    // 是否为番茄专注
-    public boolean isPomodoroWork() {
-        return category != null && category.isPomodoroWork();
+    public boolean isOngoing() {
+        return endTime == null;
     }
 
-    // 计算时长（如果未提供）
     public int calculateDuration() {
-        if (durationMinutes != null) return durationMinutes;
+        if (durationMinutes != null) {
+            return durationMinutes;
+        }
         if (startTime != null && endTime != null) {
             return (int) java.time.Duration.between(startTime, endTime).toMinutes();
         }
         return 0;
     }
 
-    // 基础设施层使用的 setter
     public void setId(Long id) {
         this.id = id;
     }
@@ -89,12 +83,8 @@ public class Activity {
         this.title = title;
     }
 
-    public void setCategory(ActivityCategory category) {
+    public void setCategory(String category) {
         this.category = category;
-    }
-
-    public void setCategoryFromString(String value) {
-        this.category = ActivityCategory.fromString(value);
     }
 
     public void setStartTime(LocalDateTime startTime) {
@@ -109,16 +99,19 @@ public class Activity {
         this.durationMinutes = durationMinutes;
     }
 
+    public void setMood(Integer mood) {
+        this.mood = mood;
+    }
+
+    public void setXp(Integer xp) {
+        this.xp = xp;
+    }
+
     public void setNotes(String notes) {
         this.notes = notes;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    // 用于基础设施层
-    public String getCategoryCode() {
-        return category != null ? category.getCode() : "pomodoro-work";
     }
 }

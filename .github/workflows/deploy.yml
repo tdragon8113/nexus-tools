@@ -42,19 +42,16 @@ jobs:
 
       - name: Install and build (web-time)
         working-directory: web-time
-        env:
-          # 生产走同源 /api 反代，勿写死 localhost:8080
-          NUXT_PUBLIC_API_BASE: ''
         run: |
           npm ci && npm run build
-          test -f .output/public/manage/time/index.html
-          grep -q 'Nexus Time' .output/public/manage/time/index.html
+          test -f dist/index.html
+          grep -q '时光记' dist/index.html
 
       - name: Upload time static artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist-time
-          path: web-time/.output/public
+          path: web-time/dist
           if-no-files-found: error
           retention-days: 1
 
@@ -126,12 +123,12 @@ jobs:
           name: ${{ matrix.artifact }}
           path: fe-static
 
-      - name: Prepare .output/public for Docker
+      - name: Prepare dist for Docker
         run: |
-          mkdir -p "${{ matrix.context }}/.output/public"
-          cp -r fe-static/. "${{ matrix.context }}/.output/public/"
-          test -f "${{ matrix.context }}/.output/public/manage/time/index.html"
-          grep -q 'Nexus Time' "${{ matrix.context }}/.output/public/manage/time/index.html"
+          mkdir -p "${{ matrix.context }}/dist"
+          cp -r fe-static/. "${{ matrix.context }}/dist/"
+          test -f "${{ matrix.context }}/dist/index.html"
+          grep -q '时光记' "${{ matrix.context }}/dist/index.html"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -258,7 +255,7 @@ jobs:
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && \
             echo 'Checking frontend (time)...' && \
-            curl -sf http://localhost:8889/manage/time/ | grep -q 'Nexus Time' && echo 'Frontend time: OK' && \
+            curl -sf http://localhost:8889/manage/time/ | grep -q '时光记' && echo 'Frontend time: OK' && \
             echo 'Checking gateway (liveness; /health 在 Redis 等未就绪时可能 503)...' && \
             curl -sf --retry 12 --retry-delay 5 --retry-all-errors http://localhost:8080/actuator/health/liveness > /dev/null && echo 'Gateway: OK' && \
             docker-compose ps"

@@ -6,10 +6,12 @@
         <id column="id" property="id"/>
         <result column="user_id" property="userId"/>
         <result column="title" property="title"/>
-        <result column="category" property="categoryFromString"/>
+        <result column="category" property="category"/>
         <result column="start_time" property="startTime"/>
         <result column="end_time" property="endTime"/>
         <result column="duration_minutes" property="durationMinutes"/>
+        <result column="mood" property="mood"/>
+        <result column="xp" property="xp"/>
         <result column="notes" property="notes"/>
         <result column="created_at" property="createdAt"/>
     </resultMap>
@@ -20,14 +22,16 @@
 
     <insert id="insertActivity" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO activities (
-            user_id, title, category, start_time, end_time, duration_minutes, notes, created_at
+            user_id, title, category, start_time, end_time, duration_minutes, mood, xp, notes, created_at
         ) VALUES (
             #{userId},
             #{title},
-            #{categoryCode},
+            #{category},
             #{startTime},
             #{endTime},
             #{durationMinutes},
+            #{mood},
+            #{xp},
             #{notes},
             COALESCE(#{createdAt}, NOW())
         )
@@ -36,8 +40,11 @@
     <update id="updateActivity">
         UPDATE activities
         SET title = #{title},
+            category = #{category},
             end_time = #{endTime},
             duration_minutes = #{durationMinutes},
+            mood = #{mood},
+            xp = #{xp},
             notes = #{notes},
             updated_at = NOW()
         WHERE id = #{id}
@@ -62,5 +69,10 @@
         SELECT * FROM activities WHERE user_id = #{userId}
         AND start_time BETWEEN #{startTime} AND #{endTime}
         ORDER BY start_time ASC
+    </select>
+
+    <select id="countByUserIdAndCategory" resultType="int">
+        SELECT COUNT(*) FROM activities
+        WHERE user_id = #{userId} AND category = #{category}
     </select>
 </mapper>

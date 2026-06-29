@@ -1,0 +1,87 @@
+import { BarChart3, Home, PlusCircle, User } from 'lucide-react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import ActivityDetailRoute from '../pages/ActivityDetailRoute';
+import HomeRoute from '../pages/HomeRoute';
+import RecordPage from '../pages/RecordPage';
+
+const tabs = [
+    { id: 'home', to: '/', label: '首页', icon: Home, end: true },
+    { id: 'record', to: '/record', label: '记录', icon: PlusCircle, end: true },
+    { id: 'stats', to: '/stats', label: '统计', icon: BarChart3, end: true },
+    { id: 'profile', to: '/profile', label: '我的', icon: User, end: false },
+] as const;
+
+function isProfileRoute(pathname: string) {
+    return pathname === '/profile' || pathname.startsWith('/profile/');
+}
+
+function isTabActive(tabId: (typeof tabs)[number]['id'], pathname: string) {
+    if (tabId === 'home') {
+        return pathname === '/' || pathname.startsWith('/activity/');
+    }
+    if (tabId === 'profile') {
+        return isProfileRoute(pathname);
+    }
+    if (tabId === 'record') {
+        return pathname === '/record';
+    }
+    if (tabId === 'stats') {
+        return pathname === '/stats';
+    }
+    return false;
+}
+
+function isHomeShell(pathname: string) {
+    return pathname === '/' || pathname.startsWith('/activity/');
+}
+
+export function AppLayout() {
+    const { pathname } = useLocation();
+    const isRecordRoute = pathname === '/record';
+    const homeShell = isHomeShell(pathname);
+    const isActivityDetail = pathname.startsWith('/activity/');
+
+    return (
+        <div className="tj-shell">
+            <div className="tj-phone">
+                <main className="tj-main">
+                    <div
+                        className={homeShell ? undefined : 'tj-home-page-host'}
+                        aria-hidden={!homeShell}
+                    >
+                        <HomeRoute />
+                    </div>
+                    {isActivityDetail ? <ActivityDetailRoute /> : null}
+                    <div
+                        className={isRecordRoute ? undefined : 'tj-record-page-host'}
+                        aria-hidden={!isRecordRoute}
+                    >
+                        <RecordPage />
+                    </div>
+                    {!homeShell && !isRecordRoute ? <Outlet /> : null}
+                </main>
+
+                <nav className="tj-tabbar" aria-label="主导航">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const active = isTabActive(tab.id, pathname);
+                        return (
+                            <NavLink
+                                key={tab.id}
+                                to={tab.to}
+                                end={tab.end}
+                                className={`tj-tab ${active ? 'tj-tab-active' : ''}`}
+                                aria-current={active ? 'page' : undefined}
+                            >
+                                <span className="tj-tab-icon-wrap">
+                                    <Icon size={20} strokeWidth={active ? 2.4 : 2} />
+                                </span>
+                                <span>{tab.label}</span>
+                            </NavLink>
+                        );
+                    })}
+                </nav>
+            </div>
+        </div>
+    );
+}

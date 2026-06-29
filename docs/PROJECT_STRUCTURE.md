@@ -22,11 +22,11 @@ nexus-tools/
 │   └── package.json
 │
 ├── web-time/                     # [前端] 时间管理 + 账号（nginx 代理网关）
-│   ├── app/
-│   │   └── pages/                # /manage/time/*、auth、profile 等
+│   ├── src/                      # Vite + React SPA（base /manage/time/）
+│   ├── dist/                     # npm run build 产物
 │   ├── nginx.conf                # /api/ → nexus-gateway
 │   ├── Dockerfile                # 镜像 nexus-frontend-time
-│   ├── nuxt.config.ts
+│   ├── vite.config.ts
 │   └── package.json
 │
 ├── mac-app/                      # [Mac 应用] SwiftUI 原生应用
@@ -218,16 +218,14 @@ nexus-tools/
 
 ### 1. Web 前端（web-tools / web-time）
 
-**拆分说明**：原单一 `web/` 已拆为两个独立 Nuxt 工程，便于单独部署与域名。
+**拆分说明**：原单一 `web/` 已拆为两个独立前端工程，便于单独部署与域名。
 
-| 目录 | 职责 | 生产镜像 / 端口 |
-|------|------|-----------------|
-| `web-tools/` | JSON 等离线小工具 | `nexus-frontend` → 8888 |
-| `web-time/` | 时间管理、登录注册、个人中心，`/api/` 走网关 | `nexus-frontend-time` → 8889 |
+| 目录 | 技术栈 | 职责 | 生产镜像 / 端口 |
+|------|--------|------|-----------------|
+| `web-tools/` | Nuxt 4 | JSON 等离线小工具 | `nexus-frontend` → 8888 |
+| `web-time/` | Vite + React | 时间管理、登录注册、个人中心，`/api/` 走网关 | `nexus-frontend-time` → 8889 |
 
-**跨站环境变量（构建期 `NUXT_PUBLIC_*`）**：
-
-- `web-time`：`NUXT_PUBLIC_API_BASE`
+**web-time 构建**：`npm run build` → `dist/`（`vite.config.ts` 中 `base: '/manage/time/'`）。生产 API 走同源 `/api` 反代，无需构建期环境变量。
 
 仅 **web-time** 的 `nginx.conf` 含：
 

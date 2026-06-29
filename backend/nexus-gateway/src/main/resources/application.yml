@@ -48,7 +48,7 @@ spring:
         - id: workspace-service
           uri: lb://nexus-workspace-service
           predicates:
-            - Path=/api/todos/**,/api/habits/**,/api/activities/**,/api/life-cards/**
+            - Path=/api/activities/**,/api/activity-categories/**,/api/reflections/**
           filters:
             - StripPrefix=1
       globalcors:

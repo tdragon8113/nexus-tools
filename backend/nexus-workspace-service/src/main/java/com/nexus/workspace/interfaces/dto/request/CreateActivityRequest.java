@@ -4,9 +4,6 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * 创建 Activity 请求 DTO
- */
 @Data
 public class CreateActivityRequest {
     private String title;
@@ -14,5 +11,8 @@ public class CreateActivityRequest {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Integer durationMinutes;
+    /** 心情 1-5 */
+    private Integer mood;
+    private Integer xp;
     private String notes;
 }

@@ -43,6 +43,11 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     // 验证密码
     public boolean verifyPassword(String rawPassword, org.springframework.security.crypto.password.PasswordEncoder encoder) {
         return encoder.matches(rawPassword, this.password);

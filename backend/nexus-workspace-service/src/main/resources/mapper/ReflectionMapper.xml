@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.workspace.infrastructure.persistence.mapper.ReflectionMapper">
+
+    <resultMap id="ReflectionResultMap" type="com.nexus.workspace.domain.model.reflection.UserReflection">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="scope" property="scope"/>
+        <result column="period_key" property="periodKey"/>
+        <result column="content" property="content"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findByUserId" resultMap="ReflectionResultMap">
+        SELECT * FROM reflections
+        WHERE user_id = #{userId}
+        ORDER BY period_key DESC, id DESC
+    </select>
+
+    <select id="findByUserScopeAndPeriod" resultMap="ReflectionResultMap">
+        SELECT * FROM reflections
+        WHERE user_id = #{userId}
+          AND scope = #{scope}
+          AND period_key = #{periodKey}
+        LIMIT 1
+    </select>
+
+    <insert id="insertReflection" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reflections (user_id, scope, period_key, content)
+        VALUES (#{userId}, #{scope}, #{periodKey}, #{content})
+    </insert>
+
+    <update id="updateReflection">
+        UPDATE reflections
+        SET content = #{content},
+            updated_at = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM reflections WHERE id = #{id}
+    </delete>
+</mapper>

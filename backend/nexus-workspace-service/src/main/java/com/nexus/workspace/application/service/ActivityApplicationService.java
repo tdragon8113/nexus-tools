@@ -5,7 +5,6 @@ import com.nexus.common.support.ResourceAccessChecker;
 import com.nexus.workspace.application.command.CreateActivityCommand;
 import com.nexus.workspace.application.command.UpdateActivityCommand;
 import com.nexus.workspace.domain.model.activity.Activity;
-import com.nexus.workspace.domain.model.activity.ActivityCategory;
 import com.nexus.workspace.domain.repository.ActivityRepository;
 import com.nexus.workspace.interfaces.dto.response.ActivityResponse;
 import com.nexus.workspace.interfaces.dto.response.StatsResponse;
@@ -13,15 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Activity 应用服务
- */
 @Slf4j
 @Service
 public class ActivityApplicationService {
@@ -34,9 +32,12 @@ public class ActivityApplicationService {
 
     @Transactional
     public ActivityResponse createActivity(CreateActivityCommand command) {
-        Activity ongoing = activityRepository.findOngoingByUserId(command.userId());
-        if (ongoing != null) {
-            throw new BusinessException(409, "已有进行中的记录，请先结束后再开始新的");
+        boolean startingLiveSession = command.endTime() == null;
+        if (startingLiveSession) {
+            Activity ongoing = activityRepository.findOngoingByUserId(command.userId());
+            if (ongoing != null) {
+                throw new BusinessException(409, "已有进行中的记录，请先结束后再开始新的");
+            }
         }
 
         Activity activity = Activity.create(
@@ -46,11 +47,13 @@ public class ActivityApplicationService {
             command.startTime(),
             command.endTime(),
             command.durationMinutes(),
+            command.mood(),
+            command.xp(),
             command.notes()
         );
         activityRepository.save(activity);
         log.info("Activity created: userId={}, id={}, ongoing={}",
-            command.userId(), activity.getId(), command.endTime() == null);
+            command.userId(), activity.getId(), startingLiveSession);
         return toResponse(activity);
     }
 
@@ -65,6 +68,9 @@ public class ActivityApplicationService {
         if (command.title() != null && !command.title().isBlank()) {
             activity.setTitle(command.title());
         }
+        if (command.category() != null && !command.category().isBlank()) {
+            activity.setCategory(command.category());
+        }
         if (command.endTime() != null) {
             activity.setEndTime(command.endTime());
         }
@@ -72,6 +78,12 @@ public class ActivityApplicationService {
             activity.setDurationMinutes(command.durationMinutes());
         } else if (activity.getEndTime() != null && activity.getStartTime() != null) {
             activity.setDurationMinutes(activity.calculateDuration());
+        }
+        if (command.mood() != null) {
+            activity.setMood(command.mood());
+        }
+        if (command.xp() != null) {
+            activity.setXp(command.xp());
         }
         if (command.notes() != null) {
             activity.setNotes(command.notes());
@@ -87,9 +99,16 @@ public class ActivityApplicationService {
         return activity != null ? toResponse(activity) : null;
     }
 
-    public List<ActivityResponse> getActivities(Long userId) {
-        List<Activity> activities = activityRepository.findByUserId(userId);
-        return activities.stream().map(this::toResponse).toList();
+    public List<ActivityResponse> getActivities(Long userId, String from, String to) {
+        if (from != null && !from.isBlank() && to != null && !to.isBlank()) {
+            LocalDateTime start = LocalDate.parse(from).atStartOfDay();
+            LocalDateTime end = LocalDate.parse(to).atTime(LocalTime.of(23, 59, 59));
+            return activityRepository.findByUserIdAndDateRange(userId, start, end)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+        }
+        return activityRepository.findByUserId(userId).stream().map(this::toResponse).toList();
     }
 
     public StatsResponse getStats(Long userId) {
@@ -109,7 +128,6 @@ public class ActivityApplicationService {
         stats.setMonthMinutes(sumMinutes(monthActivities));
         stats.setTotalSessions(allActivities.size());
 
-        // 每小时分布
         Map<String, Integer> hourly = new HashMap<>();
         for (int i = 0; i < 24; i++) {
             hourly.put(String.format("%02d", i), 0);
@@ -122,7 +140,6 @@ public class ActivityApplicationService {
         }
         stats.setHourlyDistribution(hourly);
 
-        // 每日分布
         Map<String, Integer> daily = new HashMap<>();
         for (Activity a : monthActivities) {
             if (a.getStartTime() != null) {
@@ -157,10 +174,12 @@ public class ActivityApplicationService {
         ActivityResponse response = new ActivityResponse();
         response.setId(activity.getId());
         response.setTitle(activity.getTitle());
-        response.setCategory(activity.getCategoryCode());
+        response.setCategory(activity.getCategory());
         response.setStartTime(activity.getStartTime());
         response.setEndTime(activity.getEndTime());
         response.setDurationMinutes(activity.getDurationMinutes());
+        response.setMood(activity.getMood());
+        response.setXp(activity.getXp());
         response.setNotes(activity.getNotes());
         response.setCreatedAt(activity.getCreatedAt());
         return response;

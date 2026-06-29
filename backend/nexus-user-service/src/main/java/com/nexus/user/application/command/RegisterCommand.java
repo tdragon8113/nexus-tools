@@ -6,5 +6,6 @@ package com.nexus.user.application.command;
 public record RegisterCommand(
     String username,
     String email,
-    String password
+    String password,
+    String nickname
 ) {}

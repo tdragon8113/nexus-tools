@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.workspace.infrastructure.persistence.mapper.ActivityCategoryMapper">
+
+    <resultMap id="CategoryResultMap" type="com.nexus.workspace.domain.model.category.UserActivityCategory">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="slug" property="slug"/>
+        <result column="label" property="label"/>
+        <result column="emoji" property="emoji"/>
+        <result column="xp_per_hour" property="xpPerHour"/>
+        <result column="sort_order" property="sortOrder"/>
+    </resultMap>
+
+    <select id="findByUserId" resultMap="CategoryResultMap">
+        SELECT * FROM activity_categories
+        WHERE user_id = #{userId}
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="findByUserIdAndSlug" resultMap="CategoryResultMap">
+        SELECT * FROM activity_categories
+        WHERE user_id = #{userId} AND slug = #{slug}
+        LIMIT 1
+    </select>
+
+    <insert id="insertCategory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO activity_categories (
+            user_id, slug, label, emoji, xp_per_hour, sort_order
+        ) VALUES (
+            #{userId}, #{slug}, #{label}, #{emoji}, #{xpPerHour}, #{sortOrder}
+        )
+    </insert>
+
+    <update id="updateCategory">
+        UPDATE activity_categories
+        SET label = #{label},
+            emoji = #{emoji},
+            xp_per_hour = #{xpPerHour},
+            sort_order = #{sortOrder},
+            updated_at = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteByUserId">
+        DELETE FROM activity_categories WHERE user_id = #{userId}
+    </delete>
+
+    <delete id="deleteByUserIdAndSlug">
+        DELETE FROM activity_categories WHERE user_id = #{userId} AND slug = #{slug}
+    </delete>
+</mapper>

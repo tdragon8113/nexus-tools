@@ -5,9 +5,6 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * Activity 响应 DTO
- */
 @Data
 public class ActivityResponse {
     private Long id;
@@ -18,6 +15,8 @@ public class ActivityResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime endTime;
     private Integer durationMinutes;
+    private Integer mood;
+    private Integer xp;
     private String notes;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;

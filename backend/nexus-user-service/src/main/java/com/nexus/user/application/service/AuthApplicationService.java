@@ -44,12 +44,19 @@ public class AuthApplicationService {
             throw BusinessException.userAlreadyExists();
         }
 
-        if (userRepository.existsByEmail(command.email())) {
+        String email = command.email();
+        if (email == null || email.isBlank()) {
+            email = command.username().trim().toLowerCase() + "@timejournal.local";
+        }
+        if (userRepository.existsByEmail(email)) {
             throw new BusinessException(1005, "邮箱已被注册");
         }
 
         String encodedPassword = passwordService.encode(command.password());
-        User user = User.create(command.username(), command.email(), encodedPassword);
+        User user = User.create(command.username(), email, encodedPassword);
+        if (command.nickname() != null && !command.nickname().isBlank()) {
+            user.updateProfile(command.nickname().trim(), null);
+        }
         userRepository.save(user);
 
         log.info("User registered: {}", user.getUsername());
@@ -130,6 +137,31 @@ public class AuthApplicationService {
         refreshTokenService.revokeAllUserTokens(new UserId(userId));
         userRepository.delete(new UserId(userId));
         log.info("User account deleted: {}", user.getUsername());
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword) {
+        User user = userRepository.findById(new UserId(userId));
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+        if (!user.verifyPassword(currentPassword, passwordService.getEncoder())) {
+            throw BusinessException.invalidPassword();
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new BusinessException(400, "新密码长度至少6字符");
+        }
+        if (confirmPassword == null || !newPassword.equals(confirmPassword)) {
+            throw new BusinessException(400, "两次输入的新密码不一致");
+        }
+        if (currentPassword.equals(newPassword)) {
+            throw new BusinessException(400, "新密码不能与当前密码相同");
+        }
+
+        user.changePassword(passwordService.encode(newPassword));
+        userRepository.save(user);
+        refreshTokenService.revokeAllUserTokens(new UserId(userId));
+        log.info("User password changed: {}", user.getUsername());
     }
 
     private UserResponse toResponse(User user) {

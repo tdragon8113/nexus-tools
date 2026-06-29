@@ -10,6 +10,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Legacy life-cards API retained for backward compatibility only.
+ *
+ * <p>Removed from gateway routing and {@code init.sql} per 时光记 spec (2026-06-26).
+ * Use {@code /api/activity-categories} and {@code /api/reflections} instead.
+ *
+ * @deprecated Replaced by activity categories and reflections; not routed by nexus-gateway.
+ */
+@Deprecated
 @Slf4j
 @RestController
 @RequestMapping("/life-cards")
