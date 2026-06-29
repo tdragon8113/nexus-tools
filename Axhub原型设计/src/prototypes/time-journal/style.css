@@ -1129,6 +1129,107 @@ body,
     width: 100%;
 }
 
+.tj-record-mode-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 254, 252, 0.92);
+}
+
+.tj-record-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--mute);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tj-record-mode-btn-active {
+    background: var(--forest);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(15, 62, 23, 0.18);
+}
+
+.tj-time-range-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.tj-time-range-row .tj-field-label {
+    font-size: 11px;
+    color: var(--mute);
+}
+
+.tj-record-backfill-summary {
+    margin: 10px 0 0;
+    color: var(--forest-soft);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tj-overlap-hint {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid rgba(217, 119, 6, 0.24);
+    border-radius: var(--radius-md);
+    background: rgba(255, 247, 237, 0.92);
+    color: #92400e;
+    font-size: 12px;
+}
+
+.tj-overlap-hint strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.tj-overlap-hint ul {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 4px;
+}
+
+.tj-overlap-warning {
+    display: grid;
+    gap: 12px;
+    border-color: rgba(217, 119, 6, 0.28);
+    background: rgba(255, 251, 245, 0.96);
+}
+
+.tj-overlap-warning-title {
+    margin: 0;
+    font-size: 16px;
+    color: #92400e;
+}
+
+.tj-overlap-warning-lead {
+    margin: 0;
+    color: #a16207;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.tj-overlap-warning-list {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 6px;
+    color: var(--body);
+    font-size: 13px;
+}
+
 .tj-stat-grid,
 .tj-profile-metrics {
     display: grid;
@@ -1972,12 +2073,16 @@ body,
     background: var(--forest);
 }
 
-.tj-timeline-line {
+/* Profile/archive timeline only — do not apply to HomePage .tj-timeline-rail connectors */
+.tj-timeline-item .tj-timeline-line {
     position: absolute;
     left: 7px;
     top: 18px;
     bottom: 0;
     width: 2px;
+    flex: none;
+    min-height: 0;
+    margin-top: 0;
     background: rgba(15, 62, 23, 0.12);
 }
 

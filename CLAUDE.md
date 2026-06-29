@@ -7,7 +7,7 @@
 | 模块 | 技术 | 端口 |
 |------|------|------|
 | 小工具（Electron） | Nuxt 4 + Vue 3 + Electron | 本地 dev :3000 |
-| Web 时间管理 | Nuxt 4 + Vue 3 + Tailwind CSS + Vant 4 | 8889 |
+| Web 时间管理 | Vite + React + React Router | 8889 |
 | Mac 应用 | SwiftUI + GRDB.swift (macOS 14.0+) | - |
 | 网关 | Spring Cloud Gateway | 8080 |
 | 用户服务 | Spring Boot 3.x + MyBatis | 8081 |
@@ -21,8 +21,9 @@ nexus-tools/
 ├── web-tools/                  # 小工具（仅 Electron 桌面，不接网关 API）
 │   ├── app/
 │   └── desktop/               # Electron 壳
-├── web-time/                   # 时间管理 + 登录/个人中心（nginx 代理 /api）
-│   ├── app/
+├── web-time/                   # 时间管理 + 登录/个人中心（Vite React SPA，nginx 代理 /api）
+│   ├── src/
+│   ├── dist/                  # npm run build 产物
 │   ├── nginx.conf
 │   └── Dockerfile             # 镜像 nexus-frontend-time → :8889
 ├── mac-app/                    # Mac 应用
@@ -59,9 +60,9 @@ npm run dev     # http://localhost:3001
 npm run build
 ```
 
-`NUXT_PUBLIC_API_BASE`：网关基址（默认本地 `http://localhost:8080`）。
+本地 dev 通过 Vite 代理 `/api` → `http://localhost:8080`；生产走 nginx 同源反代。
 
-**web-time** 为预渲染静态资源，其 `nginx.conf` 将 `/api/` 反向代理到网关。
+**web-time** 为 Vite 构建的 SPA（`dist/`），其 `nginx.conf` 将 `/api/` 反向代理到网关。
 
 ### 后端
 
@@ -167,13 +168,13 @@ git tag deploy-v1.0.13 && git push origin deploy-v1.0.13
    docker inspect nexus-frontend-time --format '{{.Config.Image}}'
    docker exec nexus-frontend-time head -5 /usr/share/nginx/html/index.html
    ```
-2. 若 `index.html` 含 `Welcome to nginx`，说明镜像未打入 Nuxt 构建产物。在部署目录执行：
+2. 若 `index.html` 含 `Welcome to nginx`，说明镜像未打入 Vite 构建产物。在部署目录执行：
    ```bash
    export IMAGE_TAG=deploy-v1.0.13   # 与最近一次 deploy-v* tag 一致
    docker compose pull nexus-frontend-time
    docker compose up -d --force-recreate nexus-frontend-time
    ```
-3. 确保 `nuxt.config.ts` 为需预渲染的路由配置了 `nitro.prerender.routes`（见 `web-time/nuxt.config.ts`）。
+3. 本地验证：`cd web-time && npm run build`，确认 `dist/index.html` 含 `时光记`。
 4. `web-time/Dockerfile` 会在构建时删除基础镜像默认页并校验 `index.html`。
 
 ### 后端服务启动失败

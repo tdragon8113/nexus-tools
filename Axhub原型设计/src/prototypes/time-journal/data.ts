@@ -286,6 +286,13 @@ export function minutesBetween(start: Date, end: Date): number {
     return Math.max(1, Math.round(diffMs / 60000));
 }
 
+/** 将 YYYY-MM-DD 与 HH:mm 合并为本地 Date */
+export function combineDateKeyAndTime(dateKey: string, time: string): Date {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    return new Date(year, month - 1, day, hours, minutes, 0, 0);
+}
+
 export function formatTimeLabel(iso: string): string {
     const date = new Date(iso);
     const hours = String(date.getHours()).padStart(2, '0');
@@ -359,6 +366,47 @@ export function getActivityStartAt(activity: Activity): string {
     }
     const endedAt = new Date(activity.createdAt);
     return new Date(endedAt.getTime() - activity.durationMin * 60000).toISOString();
+}
+
+export function getActivityTimeRangeMs(activity: Activity): { startMs: number; endMs: number } {
+    const startMs = new Date(getActivityStartAt(activity)).getTime();
+    const endMs = new Date(activity.createdAt).getTime();
+    return { startMs, endMs: Math.max(endMs, startMs) };
+}
+
+/** 半开区间 [start, end)：首尾相接不算重叠 */
+export function doTimeRangesOverlap(
+    startMs: number,
+    endMs: number,
+    otherStartMs: number,
+    otherEndMs: number,
+): boolean {
+    return startMs < otherEndMs && otherStartMs < endMs;
+}
+
+export function findOverlappingActivities(
+    activities: Activity[],
+    startMs: number,
+    endMs: number,
+    excludeActivityId?: string,
+): Activity[] {
+    return activities.filter((activity) => {
+        if (excludeActivityId && activity.id === excludeActivityId) {
+            return false;
+        }
+        const range = getActivityTimeRangeMs(activity);
+        return doTimeRangesOverlap(startMs, endMs, range.startMs, range.endMs);
+    });
+}
+
+export function formatActivityTimeRangeLabel(
+    activity: Activity,
+    categories: ActivityCategoryConfig[],
+): string {
+    const meta = getCategoryMeta(categories, activity.category);
+    const start = formatTimeLabel(getActivityStartAt(activity));
+    const end = formatTimeLabel(activity.createdAt);
+    return `${meta.emoji} ${activity.title}（${start}–${end}）`;
 }
 
 export function getActivityDayTimelineSegment(activity: Activity): {

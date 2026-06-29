@@ -260,6 +260,7 @@ export default function TimeJournalApp() {
                     <div className={page === 'record' ? undefined : 'tj-record-page-host'} aria-hidden={page !== 'record'}>
                         <RecordPage
                             key={authSession?.user.id ?? 'guest'}
+                            activities={activities}
                             categories={categories}
                             initialActiveRecording={activeRecording}
                             onSave={handleSaveActivity}

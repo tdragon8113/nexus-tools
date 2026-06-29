@@ -1,18 +1,12 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-25T08:52:30.279Z",
+  "updatedAt": "2026-06-26T09:55:17.203Z",
   "prototypes": [
     {
       "id": "item-prototypes-time-journal",
       "kind": "item",
       "title": "time journal",
       "itemKey": "prototypes/time-journal"
-    },
-    {
-      "id": "item-prototypes-express-homepage",
-      "kind": "item",
-      "title": "express homepage",
-      "itemKey": "prototypes/express-homepage"
     },
     {
       "id": "item:prototypes:beginner-guide",
