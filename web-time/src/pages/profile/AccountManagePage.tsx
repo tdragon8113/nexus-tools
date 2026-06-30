@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight, Lock, LogOut } from 'lucide-react';
+import { ChevronRight, Lock, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SubpageHeader from '../../components/SubpageHeader';
 import { useTimeJournal } from '../../hooks/TimeJournalProvider';
 
 export default function AccountManagePage() {
@@ -16,14 +17,11 @@ export default function AccountManagePage() {
 
     return (
         <div className="tj-page tj-subpage">
-            <header className="tj-subpage-sticky-head">
-                <button type="button" className="tj-back-btn" onClick={() => navigate('/profile')}>
-                    <ChevronLeft size={18} />
-                    返回
-                </button>
-                <h1>账户管理</h1>
-                <p className="tj-page-lead">修改密码或退出当前账户。</p>
-            </header>
+            <SubpageHeader
+                title="账户管理"
+                lead="修改密码或退出当前账户。"
+                onBack={() => navigate('/profile')}
+            />
 
             <section className="tj-section">
                 <div className="tj-section-head">

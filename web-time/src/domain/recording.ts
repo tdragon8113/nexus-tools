@@ -1,4 +1,4 @@
-import { formatDateKey, parseApiDateTime } from './record';
+import { elapsedMsToDurationMin, formatDateKey, parseApiDateTime } from './record';
 import type { Activity, ActivityCategory } from './types';
 
 export const ACTIVE_RECORDING_ID = 'active-recording';
@@ -40,5 +40,5 @@ export function getActiveRecordingDurationMin(
     session: ActiveRecordingSession,
     nowMs = Date.now(),
 ): number {
-    return Math.max(0, Math.floor(getActiveRecordingElapsedMs(session, nowMs) / 60000));
+    return elapsedMsToDurationMin(getActiveRecordingElapsedMs(session, nowMs));
 }

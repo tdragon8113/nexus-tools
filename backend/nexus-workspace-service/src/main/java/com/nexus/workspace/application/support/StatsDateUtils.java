@@ -166,14 +166,15 @@ public final class StatsDateUtils {
         List<Activity> activities,
         List<UserActivityCategory> categories,
         String startKey,
-        String endKey
+        String endKey,
+        LocalDateTime now
     ) {
         List<Activity> periodActivities = activities.stream()
             .filter(item -> isActivityInDateRange(item, categories, startKey, endKey))
             .toList();
 
         int totalMinutes = periodActivities.stream()
-            .mapToInt(item -> item.getDurationMinutes() != null ? item.getDurationMinutes() : item.calculateDuration())
+            .mapToInt(item -> item.getStatsDurationMinutes(now))
             .sum();
         int totalXp = periodActivities.stream()
             .mapToInt(item -> item.getXp() != null ? item.getXp() : 0)
@@ -204,16 +205,15 @@ public final class StatsDateUtils {
         String startKey,
         String endKey,
         String previousStartKey,
-        String previousEndKey
+        String previousEndKey,
+        LocalDateTime now
     ) {
         Map<String, Integer> currentTotals = new HashMap<>();
         Map<String, Integer> previousTotals = new HashMap<>();
 
         for (Activity activity : activities) {
             String day = getActivityAttributionDateKey(activity, categories);
-            int duration = activity.getDurationMinutes() != null
-                ? activity.getDurationMinutes()
-                : activity.calculateDuration();
+            int duration = activity.getStatsDurationMinutes(now);
             if (day.compareTo(startKey) >= 0 && day.compareTo(endKey) <= 0) {
                 currentTotals.merge(activity.getCategory(), duration, Integer::sum);
             }
@@ -250,10 +250,11 @@ public final class StatsDateUtils {
     public static List<ActivityAnalyticsResponse.StatsChartBucket> getPeriodChartBuckets(
         List<Activity> activities,
         List<UserActivityCategory> categories,
-        ActivityAnalyticsResponse.StatsBounds bounds
+        ActivityAnalyticsResponse.StatsBounds bounds,
+        LocalDateTime now
     ) {
         if (bounds.getDayCount() <= 7) {
-            return buildDailyBuckets(activities, categories, bounds.getStartKey(), bounds.getEndKey());
+            return buildDailyBuckets(activities, categories, bounds.getStartKey(), bounds.getEndKey(), now);
         }
         if (bounds.getDayCount() <= 31) {
             int groupSize = Math.max(1, (int) Math.ceil(bounds.getDayCount() / 7.0));
@@ -262,7 +263,8 @@ public final class StatsDateUtils {
                 categories,
                 bounds.getStartKey(),
                 bounds.getEndKey(),
-                groupSize
+                groupSize,
+                now
             );
         }
         return buildGroupedBuckets(
@@ -270,7 +272,8 @@ public final class StatsDateUtils {
             categories,
             bounds.getStartKey(),
             bounds.getEndKey(),
-            7
+            7,
+            now
         );
     }
 
@@ -531,11 +534,12 @@ public final class StatsDateUtils {
         List<Activity> activities,
         List<UserActivityCategory> categories,
         String startKey,
-        String endKey
+        String endKey,
+        LocalDateTime now
     ) {
         return activities.stream()
             .filter(item -> isActivityInDateRange(item, categories, startKey, endKey))
-            .mapToInt(item -> item.getDurationMinutes() != null ? item.getDurationMinutes() : item.calculateDuration())
+            .mapToInt(item -> item.getStatsDurationMinutes(now))
             .sum();
     }
 
@@ -543,15 +547,14 @@ public final class StatsDateUtils {
         List<Activity> activities,
         List<UserActivityCategory> categories,
         String startKey,
-        String endKey
+        String endKey,
+        LocalDateTime now
     ) {
         Map<String, Integer> totals = new HashMap<>();
         for (Activity activity : activities) {
             String day = getActivityAttributionDateKey(activity, categories);
             if (day.compareTo(startKey) >= 0 && day.compareTo(endKey) <= 0) {
-                int duration = activity.getDurationMinutes() != null
-                    ? activity.getDurationMinutes()
-                    : activity.calculateDuration();
+                int duration = activity.getStatsDurationMinutes(now);
                 totals.merge(activity.getCategory(), duration, Integer::sum);
             }
         }
@@ -571,7 +574,8 @@ public final class StatsDateUtils {
         List<Activity> activities,
         List<UserActivityCategory> categories,
         String startKey,
-        String endKey
+        String endKey,
+        LocalDateTime now
     ) {
         List<ActivityAnalyticsResponse.StatsChartBucket> buckets = new ArrayList<>();
         LocalDate startDate = parseDateKey(startKey);
@@ -583,8 +587,8 @@ public final class StatsDateUtils {
             bucket.setId(key);
             bucket.setLabel(weekdayLabel(cursor));
             bucket.setSubLabel(cursor.getMonthValue() + "/" + cursor.getDayOfMonth());
-            bucket.setMinutes(sumMinutesInRange(activities, categories, key, key));
-            bucket.setCategories(aggregateCategoryMinutes(activities, categories, key, key));
+            bucket.setMinutes(sumMinutesInRange(activities, categories, key, key, now));
+            bucket.setCategories(aggregateCategoryMinutes(activities, categories, key, key, now));
             buckets.add(bucket);
         }
 
@@ -596,7 +600,8 @@ public final class StatsDateUtils {
         List<UserActivityCategory> categories,
         String startKey,
         String endKey,
-        int groupSize
+        int groupSize,
+        LocalDateTime now
     ) {
         List<ActivityAnalyticsResponse.StatsChartBucket> buckets = new ArrayList<>();
         LocalDate startDate = parseDateKey(startKey);
@@ -617,8 +622,8 @@ public final class StatsDateUtils {
             bucket.setId(start + "-" + end);
             bucket.setLabel("段" + index);
             bucket.setSubLabel(groupStart.getMonthValue() + "/" + groupStart.getDayOfMonth());
-            bucket.setMinutes(sumMinutesInRange(activities, categories, start, end));
-            bucket.setCategories(aggregateCategoryMinutes(activities, categories, start, end));
+            bucket.setMinutes(sumMinutesInRange(activities, categories, start, end, now));
+            bucket.setCategories(aggregateCategoryMinutes(activities, categories, start, end, now));
             buckets.add(bucket);
 
             cursor = groupEnd.plusDays(1);

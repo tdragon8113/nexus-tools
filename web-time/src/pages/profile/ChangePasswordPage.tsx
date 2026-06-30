@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ChevronLeft, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SubpageHeader from '../../components/SubpageHeader';
 import * as authApi from '../../api/auth';
 import { ApiError } from '../../api/client';
 import { useTimeJournal } from '../../hooks/TimeJournalProvider';
@@ -67,18 +68,11 @@ export default function ChangePasswordPage() {
 
     return (
         <div className="tj-page tj-subpage">
-            <header className="tj-subpage-sticky-head">
-                <button
-                    type="button"
-                    className="tj-back-btn"
-                    onClick={() => navigate('/profile/account')}
-                >
-                    <ChevronLeft size={18} />
-                    返回
-                </button>
-                <h1>修改密码</h1>
-                <p className="tj-page-lead">为账户 {user.account} 设置新密码。</p>
-            </header>
+            <SubpageHeader
+                title="修改密码"
+                lead={`为账户 ${user.account} 设置新密码。`}
+                onBack={() => navigate('/profile/account')}
+            />
 
             <div className="tj-card tj-auth-panel">
                 <div className="tj-auth-form">

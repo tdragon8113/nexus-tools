@@ -122,6 +122,28 @@ class ActivityAnalyticsServiceTest {
         assertThat(response.getXpChange()).isNull();
     }
 
+    @Test
+    void todayPreset_countsOngoingActivityDurationFromStartToNow() {
+        LocalDateTime now = LocalDateTime.of(2026, 6, 30, 17, 0);
+        Activity ongoing = new Activity();
+        ongoing.setUserId(USER_ID);
+        ongoing.setCategory("study");
+        ongoing.setTitle("开发");
+        ongoing.setStartTime(LocalDateTime.of(2026, 6, 30, 16, 42));
+        ongoing.setEndTime(null);
+        ongoing.setDurationMinutes(0);
+        ongoing.setMood(3);
+        ongoing.setXp(0);
+        when(activityRepository.findByUserId(USER_ID)).thenReturn(List.of(ongoing));
+
+        ActivityAnalyticsResponse response = service.analyze(USER_ID, "today", null, null, false, now);
+
+        assertThat(response.getMetrics().getTotalMinutes()).isEqualTo(18);
+        assertThat(response.getMetrics().getActivityCount()).isEqualTo(1);
+        assertThat(response.getCategoryBreakdown()).hasSize(1);
+        assertThat(response.getCategoryBreakdown().getFirst().getMinutes()).isEqualTo(18);
+    }
+
     private Activity activity(String category, int durationMinutes, LocalDateTime startTime) {
         Activity activity = new Activity();
         activity.setUserId(USER_ID);

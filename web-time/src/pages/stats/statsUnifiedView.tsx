@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import DailyOverviewList from '../../components/DailyOverviewList';
 import {
+    adjustCategoryBreakdownForLiveActivities,
+    calcStatsChangePercent,
+    computeLivePeriodTotalMinutes,
     formatDuration,
     getCategoryMeta,
     getCategoryTimelineColor,
@@ -25,7 +28,6 @@ export default function StatsUnifiedView({
     bounds,
     metrics,
     categoryBreakdown,
-    totalChange,
     onOpenActivity,
 }: StatsUnifiedViewProps) {
     const [focusedCategoryId, setFocusedCategoryId] = useState<string | null>(null);
@@ -71,8 +73,47 @@ export default function StatsUnifiedView({
         [activities, categories, bounds, nowTick],
     );
 
-    const totalMinutes = Math.max(metrics.totalMinutes, 1);
-    const visibleCategories = categoryBreakdown.filter((item) => item.minutes > 0);
+    const displayTotalMinutes = useMemo(
+        () =>
+            computeLivePeriodTotalMinutes(
+                activities,
+                categories,
+                bounds.startKey,
+                bounds.endKey,
+                excludeSleep,
+                nowTick,
+            ),
+        [activities, categories, bounds, excludeSleep, nowTick],
+    );
+
+    const displayCategoryBreakdown = useMemo(
+        () =>
+            adjustCategoryBreakdownForLiveActivities(
+                categoryBreakdown,
+                activities,
+                categories,
+                bounds.startKey,
+                bounds.endKey,
+                excludeSleep,
+                nowTick,
+            ),
+        [categoryBreakdown, activities, categories, bounds, excludeSleep, nowTick],
+    );
+
+    const displayTotalChange = useMemo(() => {
+        const previousTotalMinutes = computeLivePeriodTotalMinutes(
+            activities,
+            categories,
+            bounds.previousStartKey,
+            bounds.previousEndKey,
+            excludeSleep,
+            nowTick,
+        );
+        return calcStatsChangePercent(displayTotalMinutes, previousTotalMinutes);
+    }, [activities, categories, bounds, excludeSleep, displayTotalMinutes, nowTick]);
+
+    const totalMinutes = Math.max(displayTotalMinutes, 1);
+    const visibleCategories = displayCategoryBreakdown.filter((item) => item.minutes > 0);
 
     const handleFocusCategory = (categoryId: string) => {
         setFocusedCategoryId((current) => (current === categoryId ? null : categoryId));
@@ -95,11 +136,11 @@ export default function StatsUnifiedView({
             <section className="tj-card tj-stats-summary-card">
                 <div className="tj-stats-summary-main">
                     <span>{bounds.label}总时长</span>
-                    <strong>{formatDuration(metrics.totalMinutes)}</strong>
+                    <strong>{formatDuration(displayTotalMinutes)}</strong>
                 </div>
                 <div className="tj-stats-summary-meta">
                     <span>{metrics.activityCount} 条活动</span>
-                    <ChangeBadge change={totalChange} previousLabel={bounds.previousLabel} />
+                    <ChangeBadge change={displayTotalChange} previousLabel={bounds.previousLabel} />
                 </div>
             </section>
 

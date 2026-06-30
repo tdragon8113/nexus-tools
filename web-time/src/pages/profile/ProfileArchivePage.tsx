@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DailyOverviewList from '../../components/DailyOverviewList';
 import DatePickerField from '../../components/DatePickerField';
@@ -7,6 +7,7 @@ import MonthPickerField from '../../components/MonthPickerField';
 import YearPickerField from '../../components/YearPickerField';
 import RichNoteContent from '../../components/RichNoteContent';
 import RichNoteEditor from '../../components/RichNoteEditor';
+import SubpageHeader from '../../components/SubpageHeader';
 import { getActivityAttributionDateKey, getActivitiesSortedDesc } from '../../domain/dates';
 import { hasNoteContent } from '../../domain/noteRichText';
 import {
@@ -279,11 +280,7 @@ export default function ProfileArchivePage({ kind }: ProfileArchivePageProps) {
 
     return (
         <div className={subpageClassName}>
-            <header className="tj-subpage-sticky-head">
-                <button type="button" className="tj-back-btn" onClick={() => navigate('/profile')}>
-                    <ChevronLeft size={18} />
-                    返回
-                </button>
+            <SubpageHeader onBack={() => navigate('/profile')}>
                 {kind === 'record-days' ? (
                     <div className="tj-subpage-title-row">
                         <h1>{copy.title}</h1>
@@ -304,7 +301,7 @@ export default function ProfileArchivePage({ kind }: ProfileArchivePageProps) {
                         <p className="tj-page-lead">{copy.lead}</p>
                     </>
                 )}
-            </header>
+            </SubpageHeader>
 
             {kind === 'record-days' ? (
                 <DailyOverviewList

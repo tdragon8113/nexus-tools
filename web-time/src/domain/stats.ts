@@ -172,6 +172,78 @@ export function getActivitiesInDateRange(
         );
 }
 
+export function calcStatsChangePercent(current: number, previous: number): number | null {
+    if (previous === 0) {
+        return current > 0 ? 100 : null;
+    }
+    return Math.round(((current - previous) / previous) * 100);
+}
+
+export function computeLivePeriodTotalMinutes(
+    activities: Activity[],
+    categories: ActivityCategoryConfig[],
+    startKey: string,
+    endKey: string,
+    excludeSleep: boolean,
+    referenceMs = Date.now(),
+): number {
+    return getActivitiesInDateRange(activities, categories, startKey, endKey, excludeSleep).reduce(
+        (sum, item) => sum + getActivityDurationMin(item, referenceMs),
+        0,
+    );
+}
+
+export function adjustCategoryBreakdownForLiveActivities(
+    apiBreakdown: StatsCategoryBreakdown[],
+    activities: Activity[],
+    categories: ActivityCategoryConfig[],
+    startKey: string,
+    endKey: string,
+    excludeSleep: boolean,
+    referenceMs = Date.now(),
+): StatsCategoryBreakdown[] {
+    const periodActivities = getActivitiesInDateRange(
+        activities,
+        categories,
+        startKey,
+        endKey,
+        excludeSleep,
+    );
+    const currentByCategory = new Map<ActivityCategory, number>();
+    periodActivities.forEach((activity) => {
+        const durationMin = getActivityDurationMin(activity, referenceMs);
+        currentByCategory.set(
+            activity.category,
+            (currentByCategory.get(activity.category) ?? 0) + durationMin,
+        );
+    });
+
+    const previousByCategory = new Map(
+        apiBreakdown.map((item) => [item.category, item.previousMinutes]),
+    );
+    const categoryIds = new Set<ActivityCategory>([
+        ...currentByCategory.keys(),
+        ...apiBreakdown.map((item) => item.category),
+    ]);
+
+    return [...categoryIds]
+        .map((category) => {
+            const minutes = currentByCategory.get(category) ?? 0;
+            const previousMinutes = previousByCategory.get(category) ?? 0;
+            if (minutes <= 0 && previousMinutes <= 0) {
+                return null;
+            }
+            return {
+                category,
+                minutes,
+                previousMinutes,
+                changePercent: calcStatsChangePercent(minutes, previousMinutes),
+            };
+        })
+        .filter((item): item is StatsCategoryBreakdown => item !== null)
+        .sort((left, right) => right.minutes - left.minutes);
+}
+
 export function getPeriodDayMarkers(
     activities: Activity[],
     categories: ActivityCategoryConfig[],

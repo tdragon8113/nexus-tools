@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { ChevronLeft } from 'lucide-react';
 import RichNoteContent from '../components/RichNoteContent';
 import RichNoteEditor from '../components/RichNoteEditor';
+import SubpageHeader from '../components/SubpageHeader';
 import { hasNoteContent as noteHasContent } from '../domain/noteRichText';
 import {
     formatDuration,
     formatTimeLabel,
     getActivityEndAt,
     getActivityStartAt,
+    getActivityXp,
     getCategoryMeta,
     moodLabels,
 } from '../domain/record';
@@ -39,13 +40,7 @@ export default function ActivityDetailPage({
     if (!activity) {
         return (
             <div className="tj-page tj-subpage">
-                <header className="tj-subpage-header">
-                    <button type="button" className="tj-back-btn" onClick={onBack}>
-                        <ChevronLeft size={18} />
-                        返回
-                    </button>
-                    <h1>活动详情</h1>
-                </header>
+                <SubpageHeader title="活动详情" onBack={onBack} />
                 <div className="tj-empty-card">未找到这条活动记录。</div>
             </div>
         );
@@ -54,6 +49,7 @@ export default function ActivityDetailPage({
     const meta = getCategoryMeta(categories, activity.category);
     const startAt = getActivityStartAt(activity);
     const endAt = getActivityEndAt(activity);
+    const activityXp = getActivityXp(activity, categories);
     const moodLabel = moodLabels[activity.mood - 1] ?? '未知';
     const hasNote = noteHasContent(activity.note);
 
@@ -66,13 +62,7 @@ export default function ActivityDetailPage({
 
     return (
         <div className="tj-page tj-subpage">
-            <header className="tj-subpage-header">
-                <button type="button" className="tj-back-btn" onClick={onBack}>
-                    <ChevronLeft size={18} />
-                    返回
-                </button>
-                <h1>活动详情</h1>
-            </header>
+            <SubpageHeader title="活动详情" onBack={onBack} />
 
             <section className="tj-card tj-activity-detail-hero">
                 <div className="tj-activity-detail-icon">{meta.emoji}</div>
@@ -80,7 +70,7 @@ export default function ActivityDetailPage({
                     <h2>{activity.title}</h2>
                     <p>{meta.label}</p>
                 </div>
-                <strong className="tj-activity-detail-xp">+{activity.xp} XP</strong>
+                <strong className="tj-activity-detail-xp">+{activityXp} XP</strong>
             </section>
 
             <section className="tj-card tj-session-summary">

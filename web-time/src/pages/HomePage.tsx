@@ -24,6 +24,7 @@ import {
     parseApiDateTime,
     getActivityEndAt,
     getActivityStartAt,
+    getActivityXp,
     getCategoryMeta,
     getCategoryTimelineColor,
 } from '../domain/record';
@@ -606,7 +607,7 @@ export default function HomePage({
                                             <div className="tj-timeline-copy">
                                                 <strong>{item.title}</strong>
                                                 <p>
-                                                    {meta.label} · {formatDuration(item.durationMin)} · +{item.xp} XP
+                                                    {meta.label} · {formatDuration(item.durationMin)} · +{getActivityXp(item, categories)} XP
                                                 </p>
                                             </div>
                                             <ChevronRight size={16} className="tj-timeline-chevron" />

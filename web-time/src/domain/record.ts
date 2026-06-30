@@ -78,6 +78,10 @@ export function formatElapsed(ms: number): string {
     return `${mins}:${String(secs).padStart(2, '0')}`;
 }
 
+export function elapsedMsToDurationMin(elapsedMs: number): number {
+    return Math.max(0, Math.floor(elapsedMs / 60000));
+}
+
 export function minutesBetween(start: Date, end: Date): number {
     const diffMs = Math.max(0, end.getTime() - start.getTime());
     return Math.max(1, Math.round(diffMs / 60000));
@@ -99,6 +103,23 @@ export function calculateXp(
 ): number {
     const rate = getCategoryMeta(categories, categoryId).xpPerHour;
     return Math.max(5, Math.round((durationMin / 60) * rate));
+}
+
+export function getActivityXp(
+    activity: Activity,
+    categories: ActivityCategoryConfig[],
+    referenceMs = Date.now(),
+): number {
+    if (activity.xp > 0) {
+        return activity.xp;
+    }
+    const durationMin = isActivityOngoing(activity)
+        ? getActivityDurationMin(activity, referenceMs)
+        : activity.durationMin;
+    if (durationMin <= 0) {
+        return 0;
+    }
+    return calculateXp(categories, activity.category, durationMin);
 }
 
 export function getActivityStartAt(activity: Activity): string {
@@ -128,7 +149,7 @@ export function getActivityDurationMin(activity: Activity, referenceMs = Date.no
         return activity.durationMin;
     }
     const { startMs, endMs } = getActivityTimeRangeMs(activity, referenceMs);
-    return Math.max(0, Math.round((endMs - startMs) / 60000));
+    return elapsedMsToDurationMin(endMs - startMs);
 }
 
 export function getActivityTimeRangeMs(

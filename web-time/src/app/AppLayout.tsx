@@ -17,7 +17,7 @@ function isProfileRoute(pathname: string) {
 
 function isTabActive(tabId: (typeof tabs)[number]['id'], pathname: string) {
     if (tabId === 'home') {
-        return pathname === '/' || pathname.startsWith('/activity/');
+        return isHomeTabActive(pathname);
     }
     if (tabId === 'profile') {
         return isProfileRoute(pathname);
@@ -31,23 +31,37 @@ function isTabActive(tabId: (typeof tabs)[number]['id'], pathname: string) {
     return false;
 }
 
-function isHomeShell(pathname: string) {
+function isHomeTabActive(pathname: string) {
     return pathname === '/' || pathname.startsWith('/activity/');
+}
+
+function isHomeRoute(pathname: string) {
+    return pathname === '/';
+}
+
+function shouldShowTabbar(pathname: string) {
+    return (
+        pathname === '/' ||
+        pathname === '/record' ||
+        pathname === '/stats' ||
+        pathname === '/profile'
+    );
 }
 
 export function AppLayout() {
     const { pathname } = useLocation();
     const isRecordRoute = pathname === '/record';
-    const homeShell = isHomeShell(pathname);
+    const showHome = isHomeRoute(pathname);
     const isActivityDetail = pathname.startsWith('/activity/');
+    const showTabbar = shouldShowTabbar(pathname);
 
     return (
         <div className="tj-shell">
             <div className="tj-phone">
                 <main className="tj-main">
                     <div
-                        className={homeShell ? undefined : 'tj-home-page-host'}
-                        aria-hidden={!homeShell}
+                        className={showHome ? undefined : 'tj-home-page-host'}
+                        aria-hidden={!showHome}
                     >
                         <HomeRoute />
                     </div>
@@ -58,29 +72,31 @@ export function AppLayout() {
                     >
                         <RecordPage />
                     </div>
-                    {!homeShell && !isRecordRoute ? <Outlet /> : null}
+                    {!showHome && !isRecordRoute ? <Outlet /> : null}
                 </main>
 
-                <nav className="tj-tabbar" aria-label="主导航">
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon;
-                        const active = isTabActive(tab.id, pathname);
-                        return (
-                            <NavLink
-                                key={tab.id}
-                                to={tab.to}
-                                end={tab.end}
-                                className={`tj-tab ${active ? 'tj-tab-active' : ''}`}
-                                aria-current={active ? 'page' : undefined}
-                            >
-                                <span className="tj-tab-icon-wrap">
-                                    <Icon size={20} strokeWidth={active ? 2.4 : 2} />
-                                </span>
-                                <span>{tab.label}</span>
-                            </NavLink>
-                        );
-                    })}
-                </nav>
+                {showTabbar ? (
+                    <nav className="tj-tabbar" aria-label="主导航">
+                        {tabs.map((tab) => {
+                            const Icon = tab.icon;
+                            const active = isTabActive(tab.id, pathname);
+                            return (
+                                <NavLink
+                                    key={tab.id}
+                                    to={tab.to}
+                                    end={tab.end}
+                                    className={`tj-tab ${active ? 'tj-tab-active' : ''}`}
+                                    aria-current={active ? 'page' : undefined}
+                                >
+                                    <span className="tj-tab-icon-wrap">
+                                        <Icon size={20} strokeWidth={active ? 2.4 : 2} />
+                                    </span>
+                                    <span>{tab.label}</span>
+                                </NavLink>
+                            );
+                        })}
+                    </nav>
+                ) : null}
             </div>
         </div>
     );

@@ -71,6 +71,20 @@ public class Activity {
         return 0;
     }
 
+    /** 统计口径：进行中活动按 referenceTime 计算已进行时长 */
+    public int getStatsDurationMinutes(LocalDateTime referenceTime) {
+        if (isOngoing()) {
+            if (startTime != null && referenceTime != null) {
+                return Math.max(0, (int) java.time.Duration.between(startTime, referenceTime).toMinutes());
+            }
+            return 0;
+        }
+        if (durationMinutes != null) {
+            return durationMinutes;
+        }
+        return calculateDuration();
+    }
+
     public void setId(Long id) {
         this.id = id;
     }

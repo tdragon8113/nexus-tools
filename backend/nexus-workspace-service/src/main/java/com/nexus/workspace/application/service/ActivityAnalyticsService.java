@@ -59,13 +59,15 @@ public class ActivityAnalyticsService {
             filteredActivities,
             categories,
             bounds.getStartKey(),
-            bounds.getEndKey()
+            bounds.getEndKey(),
+            now
         );
         ActivityAnalyticsResponse.StatsMetrics previousMetrics = getPeriodMetrics(
             filteredActivities,
             categories,
             bounds.getPreviousStartKey(),
-            bounds.getPreviousEndKey()
+            bounds.getPreviousEndKey(),
+            now
         );
         List<ActivityAnalyticsResponse.StatsCategoryBreakdown> categoryBreakdown = getPeriodCategoryBreakdown(
             filteredActivities,
@@ -73,12 +75,14 @@ public class ActivityAnalyticsService {
             bounds.getStartKey(),
             bounds.getEndKey(),
             bounds.getPreviousStartKey(),
-            bounds.getPreviousEndKey()
+            bounds.getPreviousEndKey(),
+            now
         );
         List<ActivityAnalyticsResponse.StatsChartBucket> chartBuckets = getPeriodChartBuckets(
             filteredActivities,
             categories,
-            bounds
+            bounds,
+            now
         );
         List<ActivityAnalyticsResponse.StatsDayMarker> dayMarkers = getPeriodDayMarkers(
             filteredActivities,

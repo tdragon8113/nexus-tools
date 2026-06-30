@@ -245,6 +245,7 @@ export default function RecordPage() {
             endTime: formatApiDateTime(endedAt),
             durationMinutes: durationMin,
             mood,
+            xp: calculateXp(categories, session.category, durationMin),
             notes: hasNoteContent(note) ? note : null,
         });
         resetDraft();
@@ -265,6 +266,7 @@ export default function RecordPage() {
             endTime: formatApiDateTime(endedAt),
             durationMinutes: durationMin,
             mood,
+            xp: calculateXp(categories, category, durationMin),
             notes: hasNoteContent(note) ? note : null,
         });
         resetDraft();

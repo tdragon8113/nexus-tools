@@ -1,5 +1,5 @@
-import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SubpageHeader from '../../components/SubpageHeader';
 
 const helpSections = [
     {
@@ -37,14 +37,7 @@ export default function HelpPage() {
 
     return (
         <div className="tj-page tj-subpage">
-            <header className="tj-subpage-sticky-head">
-                <button type="button" className="tj-back-btn" onClick={() => navigate('/profile')}>
-                    <ChevronLeft size={18} />
-                    返回
-                </button>
-                <h1>使用帮助</h1>
-                <p className="tj-page-lead">了解时光记的核心功能与常用操作。</p>
-            </header>
+            <SubpageHeader title="使用帮助" onBack={() => navigate('/profile')} />
 
             <div className="tj-help-list">
                 {helpSections.map((section) => (
