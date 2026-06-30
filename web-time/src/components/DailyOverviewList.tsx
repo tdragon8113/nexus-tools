@@ -1,9 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { formatTimeLabel, getActivityStartAt } from '../domain/record';
+import {
+    formatTimeLabel,
+    getActivityDurationMin,
+    getActivityEndAt,
+    getActivityStartAt,
+    isActivityOngoing,
+} from '../domain/record';
 import {
     formatDuration,
     getCategoryMeta,
+    getCategoryTimelineColor,
     type StatsDailyTrack,
 } from '../domain/stats';
 import type { ActivityCategoryConfig } from '../domain/types';
@@ -26,6 +33,19 @@ export default function DailyOverviewList({
     emptyText = '还没有可查看的记录天。',
 }: DailyOverviewListProps) {
     const [expandedDateKey, setExpandedDateKey] = useState<string | null>(null);
+    const hasOngoing = useMemo(
+        () => dailyTracks.some((day) => day.activities.some(isActivityOngoing)),
+        [dailyTracks],
+    );
+    const [nowTick, setNowTick] = useState(() => Date.now());
+
+    useEffect(() => {
+        if (!hasOngoing) {
+            return;
+        }
+        const timer = window.setInterval(() => setNowTick(Date.now()), 1000);
+        return () => window.clearInterval(timer);
+    }, [hasOngoing]);
 
     const handleToggleDay = (dateKey: string, hasRecord: boolean) => {
         if (!hasRecord) {
@@ -110,6 +130,7 @@ export default function DailyOverviewList({
                                 {[...day.activities].reverse().map((activity, index) => {
                                     const meta = getCategoryMeta(categories, activity.category);
                                     const isLast = index === day.activities.length - 1;
+                                    const ongoing = isActivityOngoing(activity);
                                     const dimmed = Boolean(
                                         focusedCategoryId &&
                                             activity.category !== focusedCategoryId,
@@ -118,7 +139,7 @@ export default function DailyOverviewList({
                                         <button
                                             key={activity.id}
                                             type="button"
-                                            className={`tj-timeline-activity-row${dimmed ? ' tj-timeline-activity-row-is-dimmed' : ''}`}
+                                            className={`tj-timeline-activity-row${ongoing ? ' tj-timeline-activity-row-is-recording' : ''}${dimmed ? ' tj-timeline-activity-row-is-dimmed' : ''}`}
                                             onClick={() => onOpenActivity?.(activity.id)}
                                             disabled={!onOpenActivity}
                                         >
@@ -130,12 +151,32 @@ export default function DailyOverviewList({
                                                         )}
                                                     </span>
                                                     <span className="tj-timeline-time-sep">–</span>
-                                                    <span className="tj-timeline-time-end">
-                                                        {formatTimeLabel(activity.createdAt)}
-                                                    </span>
+                                                    {ongoing ? (
+                                                        <span className="tj-timeline-time-end tj-timeline-time-live">
+                                                            进行中
+                                                        </span>
+                                                    ) : (
+                                                        <span className="tj-timeline-time-end">
+                                                            {formatTimeLabel(
+                                                                getActivityEndAt(activity, nowTick),
+                                                            )}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="tj-timeline-rail">
-                                                    <span className="tj-timeline-dot" />
+                                                    <span
+                                                        className={`tj-timeline-dot${ongoing ? ' tj-timeline-dot-live' : ''}`}
+                                                        style={
+                                                            ongoing
+                                                                ? {
+                                                                      background:
+                                                                          getCategoryTimelineColor(
+                                                                              activity.category,
+                                                                          ),
+                                                                  }
+                                                                : undefined
+                                                        }
+                                                    />
                                                     {!isLast ? (
                                                         <span className="tj-timeline-line" />
                                                     ) : null}
@@ -147,7 +188,13 @@ export default function DailyOverviewList({
                                                     <strong>{activity.title}</strong>
                                                     <p>
                                                         {meta.label} ·{' '}
-                                                        {formatDuration(activity.durationMin)}
+                                                        {formatDuration(
+                                                            getActivityDurationMin(
+                                                                activity,
+                                                                nowTick,
+                                                            ),
+                                                        )}
+                                                        {ongoing ? ' · 计时中' : ''}
                                                     </p>
                                                 </div>
                                                 <ChevronRight

@@ -208,6 +208,8 @@ export default function HomePage({
         const windowStartMs = Math.min(...sorted.map((item) => item.startMs));
         const windowEndMs = Math.max(...sorted.map((item) => item.endMs));
         const spanMs = Math.max(windowEndMs - windowStartMs, 30 * 60 * 1000);
+        const axisEndMs = windowStartMs + spanMs;
+        const midMs = windowStartMs + spanMs / 2;
 
         const allSegments = sorted.map((item) => ({
             id: item.id,
@@ -228,13 +230,11 @@ export default function HomePage({
             };
         });
 
-        const midMs = windowStartMs + spanMs / 2;
-
         return {
             segments,
             axisStart: formatTimeLabel(new Date(windowStartMs)),
             axisMid: formatTimeLabel(new Date(midMs)),
-            axisEnd: formatTimeLabel(new Date(windowEndMs)),
+            axisEnd: formatTimeLabel(new Date(axisEndMs)),
             isCategoryFiltered: Boolean(focusedCategoryId),
         };
     }, [timelineEntries, categories, focusedCategoryId, nowTick]);

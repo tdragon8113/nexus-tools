@@ -4,9 +4,13 @@ import {
     formatDateKey,
     formatDuration,
     formatTimeLabel,
+    getActivityDurationMin,
+    getActivityEndAt,
     getActivityStartAt,
+    getActivityTimeRangeMs,
     getCategoryMeta,
     getCategoryTimelineColor,
+    isActivityOngoing,
     parseApiDateTime,
 } from './record';
 import type { Activity, ActivityCategory, ActivityCategoryConfig } from './types';
@@ -239,6 +243,7 @@ export function getPeriodTimeOfDayBreakdown(
     categories: ActivityCategoryConfig[],
     startKey: string,
     endKey: string,
+    referenceMs = Date.now(),
 ): StatsTimeOfDayBreakdown[] {
     const periodActivities = getActivitiesInDateRange(
         activities,
@@ -251,11 +256,12 @@ export function getPeriodTimeOfDayBreakdown(
 
     periodActivities.forEach((activity) => {
         const segment = getActivityTimeOfDaySegment(activity);
-        segmentTotals.set(segment, (segmentTotals.get(segment) ?? 0) + activity.durationMin);
+        const durationMin = getActivityDurationMin(activity, referenceMs);
+        segmentTotals.set(segment, (segmentTotals.get(segment) ?? 0) + durationMin);
         const categoryTotals = segmentCategories.get(segment) ?? new Map<ActivityCategory, number>();
         categoryTotals.set(
             activity.category,
-            (categoryTotals.get(activity.category) ?? 0) + activity.durationMin,
+            (categoryTotals.get(activity.category) ?? 0) + durationMin,
         );
         segmentCategories.set(segment, categoryTotals);
     });
@@ -278,11 +284,13 @@ export type ActivityDayTrackSegment = {
     width: number;
     color: string;
     title: string;
+    isLive?: boolean;
 };
 
 export function buildActivityDayTrack(
     activities: Activity[],
     categories: ActivityCategoryConfig[],
+    referenceMs = Date.now(),
 ): {
     segments: ActivityDayTrackSegment[];
     axisStart: string;
@@ -294,15 +302,19 @@ export function buildActivityDayTrack(
     }
 
     const timelineItems = activities.map((activity) => {
-        const startMs = parseApiDateTime(getActivityStartAt(activity)).getTime();
-        const endMs = parseApiDateTime(activity.createdAt).getTime();
+        const { startMs, endMs } = getActivityTimeRangeMs(activity, referenceMs);
         const meta = getCategoryMeta(categories, activity.category);
+        const isLive = isActivityOngoing(activity);
+        const endLabel = isLive
+            ? '进行中'
+            : formatTimeLabel(getActivityEndAt(activity, referenceMs));
         return {
             id: activity.id,
             category: activity.category,
             startMs,
             endMs,
-            title: `${meta.label} ${formatTimeLabel(getActivityStartAt(activity))}–${formatTimeLabel(activity.createdAt)}`,
+            isLive,
+            title: `${meta.label} ${formatTimeLabel(getActivityStartAt(activity))}–${endLabel}`,
         };
     });
 
@@ -310,6 +322,7 @@ export function buildActivityDayTrack(
     const windowStartMs = Math.min(...sorted.map((item) => item.startMs));
     const windowEndMs = Math.max(...sorted.map((item) => item.endMs));
     const spanMs = Math.max(windowEndMs - windowStartMs, 30 * 60 * 1000);
+    const axisEndMs = windowStartMs + spanMs;
     const midMs = windowStartMs + spanMs / 2;
 
     return {
@@ -320,10 +333,11 @@ export function buildActivityDayTrack(
             width: Math.max(1.5, ((item.endMs - item.startMs) / spanMs) * 100),
             color: getCategoryTimelineColor(item.category),
             title: item.title,
+            isLive: item.isLive,
         })),
         axisStart: formatTimeLabel(new Date(windowStartMs)),
         axisMid: formatTimeLabel(new Date(midMs)),
-        axisEnd: formatTimeLabel(new Date(windowEndMs)),
+        axisEnd: formatTimeLabel(new Date(axisEndMs)),
     };
 }
 
@@ -345,6 +359,7 @@ export function getPeriodDailyTracks(
     categories: ActivityCategoryConfig[],
     startKey: string,
     endKey: string,
+    referenceMs = Date.now(),
 ): StatsDailyTrack[] {
     const dayMarkers = getPeriodDayMarkers(activities, categories, startKey, endKey);
 
@@ -356,8 +371,11 @@ export function getPeriodDailyTracks(
                 day.dateKey,
                 day.dateKey,
             );
-            const track = buildActivityDayTrack(dayActivities, categories);
-            const minutes = dayActivities.reduce((sum, item) => sum + item.durationMin, 0);
+            const track = buildActivityDayTrack(dayActivities, categories, referenceMs);
+            const minutes = dayActivities.reduce(
+                (sum, item) => sum + getActivityDurationMin(item, referenceMs),
+                0,
+            );
 
             return {
                 dateKey: day.dateKey,

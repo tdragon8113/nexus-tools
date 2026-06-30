@@ -119,6 +119,18 @@ export function getActivityEndAt(activity: Activity, referenceMs = Date.now()): 
     return activity.createdAt;
 }
 
+export function isActivityOngoing(activity: Activity): boolean {
+    return Boolean(activity.startedAt) && !activity.endedAt;
+}
+
+export function getActivityDurationMin(activity: Activity, referenceMs = Date.now()): number {
+    if (!isActivityOngoing(activity)) {
+        return activity.durationMin;
+    }
+    const { startMs, endMs } = getActivityTimeRangeMs(activity, referenceMs);
+    return Math.max(0, Math.round((endMs - startMs) / 60000));
+}
+
 export function getActivityTimeRangeMs(
     activity: Activity,
     referenceMs = Date.now(),

@@ -7,6 +7,7 @@ import {
     getPeriodDailyTracks,
     getPeriodTimeOfDayBreakdown,
 } from '../../domain/stats';
+import { isActivityOngoing } from '../../domain/record';
 import StatsRangeToolbar from './statsRangeToolbar';
 import { ChangeBadge, ExcludeSleepToggle, type StatsViewProps } from './statsShared';
 
@@ -28,10 +29,23 @@ export default function StatsUnifiedView({
     onOpenActivity,
 }: StatsUnifiedViewProps) {
     const [focusedCategoryId, setFocusedCategoryId] = useState<string | null>(null);
+    const hasOngoing = useMemo(
+        () => activities.some(isActivityOngoing),
+        [activities],
+    );
+    const [nowTick, setNowTick] = useState(() => Date.now());
 
     useEffect(() => {
         setFocusedCategoryId(null);
     }, [rangeSelection, excludeSleep]);
+
+    useEffect(() => {
+        if (!hasOngoing) {
+            return;
+        }
+        const timer = window.setInterval(() => setNowTick(Date.now()), 1000);
+        return () => window.clearInterval(timer);
+    }, [hasOngoing]);
 
     const timeOfDayBreakdown = useMemo(
         () =>
@@ -40,13 +54,21 @@ export default function StatsUnifiedView({
                 categories,
                 bounds.startKey,
                 bounds.endKey,
+                nowTick,
             ),
-        [activities, categories, bounds],
+        [activities, categories, bounds, nowTick],
     );
 
     const dailyTracks = useMemo(
-        () => getPeriodDailyTracks(activities, categories, bounds.startKey, bounds.endKey),
-        [activities, categories, bounds],
+        () =>
+            getPeriodDailyTracks(
+                activities,
+                categories,
+                bounds.startKey,
+                bounds.endKey,
+                nowTick,
+            ),
+        [activities, categories, bounds, nowTick],
     );
 
     const totalMinutes = Math.max(metrics.totalMinutes, 1);
