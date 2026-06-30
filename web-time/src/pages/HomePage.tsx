@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight, Cloud, Plus, Sparkles } from 'lucide-react';
 import RichNoteContent from '../components/RichNoteContent';
 import RichNoteEditor from '../components/RichNoteEditor';
+import TimelineActivityLeading from '../components/TimelineActivityLeading';
 import { hasNoteContent } from '../domain/noteRichText';
 import {
     getTodayActivities,
@@ -510,8 +511,7 @@ export default function HomePage({
                         </article>
 
                         <div className="tj-activity-timeline">
-                            {visibleTimelineEntries.map((entry, index) => {
-                                const isLast = index === visibleTimelineEntries.length - 1;
+                            {visibleTimelineEntries.map((entry) => {
                                 const entryId = getTimelineEntryId(entry);
 
                                 if (entry.kind === 'recording') {
@@ -531,28 +531,11 @@ export default function HomePage({
                                             className={`tj-timeline-activity-row tj-timeline-activity-row-is-recording${locatedActivityId === entryId ? ' tj-timeline-activity-row-is-located' : ''}`}
                                             onClick={onOpenRecording}
                                         >
-                                            <div className="tj-timeline-leading">
-                                                <div className="tj-timeline-time-range">
-                                                    <span className="tj-timeline-time-start">
-                                                        {formatTimeLabel(entry.session.startedAt)}
-                                                    </span>
-                                                    <span className="tj-timeline-time-sep">–</span>
-                                                    <span className="tj-timeline-time-end tj-timeline-time-live">
-                                                        进行中
-                                                    </span>
-                                                </div>
-                                                <div className="tj-timeline-rail" aria-hidden="true">
-                                                    <span
-                                                        className="tj-timeline-dot tj-timeline-dot-live"
-                                                        style={{
-                                                            background: getCategoryTimelineColor(
-                                                                entry.session.category,
-                                                            ),
-                                                        }}
-                                                    />
-                                                    {!isLast ? <span className="tj-timeline-line" /> : null}
-                                                </div>
-                                            </div>
+                                            <TimelineActivityLeading
+                                                startLabel={formatTimeLabel(entry.session.startedAt)}
+                                                endLabel="进行中"
+                                                ongoing
+                                            />
                                             <div className="tj-timeline-card">
                                                 <span className="tj-timeline-emoji">{meta.emoji}</span>
                                                 <div className="tj-timeline-copy">
@@ -587,21 +570,10 @@ export default function HomePage({
                                         className={`tj-timeline-activity-row${locatedActivityId === entryId ? ' tj-timeline-activity-row-is-located' : ''}`}
                                         onClick={() => onOpenActivity(item.id)}
                                     >
-                                        <div className="tj-timeline-leading">
-                                            <div className="tj-timeline-time-range">
-                                                <span className="tj-timeline-time-start">
-                                                    {formatTimeLabel(startAt)}
-                                                </span>
-                                                <span className="tj-timeline-time-sep">–</span>
-                                                <span className="tj-timeline-time-end">
-                                                    {formatTimeLabel(endAt)}
-                                                </span>
-                                            </div>
-                                            <div className="tj-timeline-rail" aria-hidden="true">
-                                                <span className="tj-timeline-dot" />
-                                                {!isLast ? <span className="tj-timeline-line" /> : null}
-                                            </div>
-                                        </div>
+                                        <TimelineActivityLeading
+                                            startLabel={formatTimeLabel(startAt)}
+                                            endLabel={formatTimeLabel(endAt)}
+                                        />
                                         <div className="tj-timeline-card">
                                             <span className="tj-timeline-emoji">{meta.emoji}</span>
                                             <div className="tj-timeline-copy">

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
+import TimelineActivityLeading from './TimelineActivityLeading';
 import {
     formatTimeLabel,
     getActivityDurationMin,
@@ -10,7 +11,6 @@ import {
 import {
     formatDuration,
     getCategoryMeta,
-    getCategoryTimelineColor,
     type StatsDailyTrack,
 } from '../domain/stats';
 import type { ActivityCategoryConfig } from '../domain/types';
@@ -127,9 +127,8 @@ export default function DailyOverviewList({
 
                         {expanded && day.activities.length > 0 ? (
                             <div className="tj-activity-timeline tj-stats-day-timeline">
-                                {[...day.activities].reverse().map((activity, index) => {
+                                {[...day.activities].reverse().map((activity) => {
                                     const meta = getCategoryMeta(categories, activity.category);
-                                    const isLast = index === day.activities.length - 1;
                                     const ongoing = isActivityOngoing(activity);
                                     const dimmed = Boolean(
                                         focusedCategoryId &&
@@ -143,45 +142,19 @@ export default function DailyOverviewList({
                                             onClick={() => onOpenActivity?.(activity.id)}
                                             disabled={!onOpenActivity}
                                         >
-                                            <div className="tj-timeline-leading">
-                                                <div className="tj-timeline-time-range">
-                                                    <span className="tj-timeline-time-start">
-                                                        {formatTimeLabel(
-                                                            getActivityStartAt(activity),
-                                                        )}
-                                                    </span>
-                                                    <span className="tj-timeline-time-sep">–</span>
-                                                    {ongoing ? (
-                                                        <span className="tj-timeline-time-end tj-timeline-time-live">
-                                                            进行中
-                                                        </span>
-                                                    ) : (
-                                                        <span className="tj-timeline-time-end">
-                                                            {formatTimeLabel(
-                                                                getActivityEndAt(activity, nowTick),
-                                                            )}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="tj-timeline-rail">
-                                                    <span
-                                                        className={`tj-timeline-dot${ongoing ? ' tj-timeline-dot-live' : ''}`}
-                                                        style={
-                                                            ongoing
-                                                                ? {
-                                                                      background:
-                                                                          getCategoryTimelineColor(
-                                                                              activity.category,
-                                                                          ),
-                                                                  }
-                                                                : undefined
-                                                        }
-                                                    />
-                                                    {!isLast ? (
-                                                        <span className="tj-timeline-line" />
-                                                    ) : null}
-                                                </div>
-                                            </div>
+                                            <TimelineActivityLeading
+                                                startLabel={formatTimeLabel(
+                                                    getActivityStartAt(activity),
+                                                )}
+                                                endLabel={
+                                                    ongoing
+                                                        ? '进行中'
+                                                        : formatTimeLabel(
+                                                              getActivityEndAt(activity, nowTick),
+                                                          )
+                                                }
+                                                ongoing={ongoing}
+                                            />
                                             <article className="tj-timeline-card">
                                                 <span className="tj-timeline-emoji">{meta.emoji}</span>
                                                 <div className="tj-timeline-copy">
