@@ -397,6 +397,9 @@ export class WindowManager {
       alwaysOnTop: true,
       show: false,
       backgroundColor: '#ffffff',
+      ...(process.platform === 'darwin'
+        ? { type: 'panel' as const, hiddenInMissionControl: true }
+        : {}),
       ...(icon ? { icon } : {}),
       webPreferences: {
         preload: this.preloadPath('preload.js'),
@@ -602,31 +605,24 @@ export class WindowManager {
     win.once('closed', () => this.clearRevealMeasureTimer())
   }
 
-  /** macOS 用 app.hide/show（等同 ⌘H），Cmd+Tab / 台前调度才能正确恢复 */
   private isShellVisible(): boolean {
     const win = this.shell
     if (!win || win.isDestroyed()) return false
-    if (process.platform === 'darwin') return !app.isHidden() && win.isVisible()
     return win.isVisible()
   }
 
-  /**
-   * macOS 台前调度：优先 win.show + 弱抢焦，避免首次 app.show() 把整个分组顶到最前。
-   * app.hide() 后若窗口仍不出现，再回退 app.show()。
-   */
+  /** panel 窗口：仅 show/focus，不 app.show()，避免出现在 Cmd+Tab */
   private showAndFocus(win: BrowserWindow) {
     if (win.isDestroyed()) return
     this.restoreLauncherOnTop(win)
     if (process.platform === 'darwin') {
-      if (app.isHidden()) win.show()
-      else if (!win.isVisible()) win.show()
+      if (!win.isVisible()) win.show()
+      win.focus()
       try {
         app.focus({ steal: false })
       } catch {
         /* older Electron */
       }
-      if (!win.isVisible()) app.show()
-      win.focus()
       return
     }
     if (!win.isVisible()) win.show()
@@ -704,10 +700,6 @@ export class WindowManager {
     }
     this.savePanelBounds()
     this.saveSearchBounds(false)
-    if (process.platform === 'darwin') {
-      app.hide()
-      return
-    }
     win.hide()
   }
 
@@ -763,7 +755,7 @@ export class WindowManager {
     this.showSearch(payload)
   }
 
-  /** Dock / 菜单栏图标 / Cmd+Tab 切回本应用时恢复窗口 */
+  /** Dock / 菜单栏图标点击时恢复窗口 */
   activateFromUser(clipboard = '') {
     const win = this.shell
     if (!win || win.isDestroyed()) {

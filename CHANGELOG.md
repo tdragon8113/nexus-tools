@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.22] - 2026-06-16
+## [0.2.23] - 2026-06-30
+
+### 修复（web-tools 桌面端）
+
+- **macOS 应用切换器**：搜索/工具窗口改为 panel 类型，隐藏时不再出现在 Cmd+Tab 中
+
 
 ### 新增（web-tools 桌面端）
 

@@ -240,6 +240,9 @@ app.whenReady().then(async () => {
   if (process.platform === 'darwin') {
     void listMacApplications()
     app.dock?.hide()
+    if (typeof app.setActivationPolicy === 'function') {
+      app.setActivationPolicy('accessory')
+    }
   }
 
   appTray = setupAppTray({

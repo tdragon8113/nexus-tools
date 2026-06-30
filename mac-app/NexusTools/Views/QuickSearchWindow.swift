@@ -56,9 +56,6 @@ class QuickSearchWindow: NSPanel {
         makeKeyAndOrderFront(nil)
         center()
         
-        // 激活应用
-        NSApp.activate(ignoringOtherApps: true)
-        
         // 重置搜索状态
         if let hostingView = hostingView {
             hostingView.rootView = QuickSearchView(onClose: { self.hideWindow() })
@@ -86,6 +83,6 @@ class QuickSearchWindow: NSPanel {
     }
     
     override var canBecomeMain: Bool {
-        return true
+        return false
     }
 }

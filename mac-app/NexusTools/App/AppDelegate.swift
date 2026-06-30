@@ -4,7 +4,7 @@ import AppKit
 /// 工具窗口宿主： accessory 应用里普通 `NSPanel` 容易在切前台时自动隐藏或不成第一响应者，导致点击后卡住、光标移出才恢复。
 private final class ToolHostPanel: NSPanel {
     override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
+    override var canBecomeMain: Bool { false }
 }
 
 /// 应用代理 - 管理后台任务和数据库初始化
@@ -16,8 +16,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Lifecycle
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
 
         Task {
             await initializeDatabase()
@@ -56,8 +59,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func scheduleOpenTool(_ tool: ToolItem, input: String) {
         DispatchQueue.main.async {
             DispatchQueue.main.async {
-                NSApp.unhide(nil)
-                NSApp.activate(ignoringOtherApps: true)
                 self.openToolWindow(tool, withInput: input)
             }
         }
@@ -77,7 +78,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             )
             existingPanel.contentView = NSHostingView(rootView: contentView)
             existingPanel.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
             return
         }
         
@@ -108,7 +108,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         toolWindows[tool.type] = panel
         
         panel.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
     }
     
     private func configureToolPanel(_ panel: NSPanel) {
