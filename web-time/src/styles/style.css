@@ -1605,11 +1605,11 @@ a,
 .tj-tab:focus,
 .tj-tab:focus-visible {
     display: grid;
-    gap: 4px;
+    gap: 3px;
     justify-items: center;
     align-content: center;
-    min-height: 44px;
-    padding: 2px 2px;
+    min-height: 40px;
+    padding: 0 2px;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -1676,14 +1676,23 @@ html:not([data-native-shell]) .tj-phone .tj-tabbar {
 
 html[data-native-shell] {
     background: var(--canvas-soft);
+    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
 }
 
 html[data-native-shell] body {
     background: var(--canvas-soft);
+    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
 }
 
 html[data-native-shell] #root {
     background: var(--canvas-soft);
+    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
 }
 
 html[data-native-shell]::before {
@@ -1700,8 +1709,9 @@ html[data-native-shell]::before {
 
 html[data-native-shell] .tj-shell {
     display: block;
-    min-height: 100dvh;
     height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
     padding: 0;
     background: var(--canvas-soft);
 }
@@ -1709,7 +1719,8 @@ html[data-native-shell] .tj-shell {
 html[data-native-shell] .tj-phone {
     width: 100%;
     height: 100%;
-    min-height: 100dvh;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
     max-height: none;
     border: none;
     border-radius: 0;
@@ -1728,6 +1739,14 @@ html[data-native-shell] .tj-main {
         var(--canvas-soft) calc(env(safe-area-inset-top, 0px) + 48px),
         var(--canvas) 32%
     );
+}
+
+html[data-native-shell] .tj-phone:has(.tj-tabbar) .tj-main {
+    padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px));
+}
+
+html[data-standalone-pwa] .tj-phone:has(.tj-tabbar) .tj-main {
+    padding-bottom: 54px;
 }
 
 html[data-native-shell] .tj-page-pull-content {
@@ -1753,10 +1772,19 @@ html[data-native-shell] .tj-subpage-sticky-head {
 }
 
 html[data-native-shell] .tj-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
     padding-top: 4px;
     padding-left: calc(4px + env(safe-area-inset-left, 0px));
     padding-right: calc(4px + env(safe-area-inset-right, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html[data-standalone-pwa] .tj-tabbar {
+    padding-bottom: 8px;
 }
 
 .tj-tab-recording-dot {

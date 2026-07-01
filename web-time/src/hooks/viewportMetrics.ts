@@ -1,10 +1,13 @@
-export function isNativeShell() {
+export function isStandalonePwa() {
     const nav = navigator as Navigator & { standalone?: boolean };
-    if (nav.standalone) {
+    return nav.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+}
+
+export function isNativeShell() {
+    if (isStandalonePwa()) {
         return true;
     }
     return (
-        window.matchMedia('(display-mode: standalone)').matches ||
         window.matchMedia('(display-mode: fullscreen)').matches ||
         window.matchMedia('(max-width: 768px)').matches ||
         window.matchMedia('(hover: none) and (pointer: coarse)').matches
@@ -12,7 +15,9 @@ export function isNativeShell() {
 }
 
 export function syncNativeShell() {
-    document.documentElement.toggleAttribute('data-native-shell', isNativeShell());
+    const root = document.documentElement;
+    root.toggleAttribute('data-native-shell', isNativeShell());
+    root.toggleAttribute('data-standalone-pwa', isStandalonePwa());
 }
 
 export function startNativeShellSync() {

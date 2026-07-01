@@ -16,13 +16,16 @@
     <script>
       (function () {
         var root = document.documentElement;
-        var native =
+        var standalone =
           navigator.standalone ||
-          window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: standalone)').matches;
+        var native =
+          standalone ||
           window.matchMedia('(display-mode: fullscreen)').matches ||
           window.matchMedia('(max-width: 768px)').matches ||
           window.matchMedia('(hover: none) and (pointer: coarse)').matches;
         root.toggleAttribute('data-native-shell', native);
+        root.toggleAttribute('data-standalone-pwa', standalone);
       })();
     </script>
   </head>
