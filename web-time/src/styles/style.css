@@ -129,31 +129,34 @@ a,
     transition: none;
 }
 
-.tj-pull-refresh {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+.tj-pull-refresh-slot {
     display: flex;
+    flex-shrink: 0;
+    align-items: flex-end;
     justify-content: center;
-    width: 100%;
-    height: 0;
-    overflow: visible;
+    overflow: hidden;
+    padding-bottom: 6px;
     pointer-events: none;
+}
+
+.tj-page-pull-content-animating .tj-pull-refresh-slot {
+    transition:
+        height 0.32s cubic-bezier(0.33, 1, 0.68, 1),
+        margin-top 0.32s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.tj-page-pull-content-dragging .tj-pull-refresh-slot {
+    transition: none;
 }
 
 .tj-pull-refresh-inner {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding-bottom: 8px;
     color: var(--forest-soft);
     font-size: 12px;
     font-weight: 600;
-    transform: translate3d(0, calc(var(--pull-indicator-offset, 0px) - 100%), 0)
-        scale(calc(0.88 + var(--pull-progress, 0) * 0.12));
-    opacity: var(--pull-progress, 0);
-    transform-origin: center bottom;
-    will-change: transform, opacity;
+    white-space: nowrap;
 }
 
 .tj-pull-refresh-icon {
@@ -171,7 +174,6 @@ a,
 
 .tj-pull-refresh-inner-spin {
     opacity: 1;
-    transform: translate3d(0, calc(var(--pull-indicator-offset, 0px) - 100%), 0) scale(1);
 }
 
 @keyframes tj-pull-refresh-spin {
@@ -1591,7 +1593,7 @@ a,
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
-    padding: 6px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgba(15, 62, 23, 0.06);
     background: rgba(255, 254, 252, 0.98);
     backdrop-filter: blur(12px);
@@ -1606,8 +1608,8 @@ a,
     gap: 4px;
     justify-items: center;
     align-content: center;
-    min-height: 48px;
-    padding: 4px 2px;
+    min-height: 44px;
+    padding: 2px 2px;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -1673,11 +1675,11 @@ html:not([data-native-shell]) .tj-phone .tj-tabbar {
 }
 
 html[data-native-shell] {
-    background: var(--app-canvas);
+    background: var(--canvas-soft);
 }
 
 html[data-native-shell] body {
-    background: var(--app-canvas);
+    background: var(--canvas-soft);
 }
 
 html[data-native-shell] .tj-shell {
@@ -1685,7 +1687,7 @@ html[data-native-shell] .tj-shell {
     min-height: 100dvh;
     height: 100dvh;
     padding: 0;
-    background: var(--canvas);
+    background: var(--canvas-soft);
 }
 
 html[data-native-shell] .tj-phone {
@@ -1696,19 +1698,29 @@ html[data-native-shell] .tj-phone {
     border: none;
     border-radius: 0;
     box-shadow: none;
+    background: var(--canvas-soft);
 }
 
 html[data-native-shell] .tj-main {
-    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    padding-top: 0;
     padding-right: calc(18px + env(safe-area-inset-right, 0px));
-    padding-bottom: 12px;
+    padding-bottom: 0;
     padding-left: calc(18px + env(safe-area-inset-left, 0px));
+    background: linear-gradient(180deg, var(--canvas-soft) 0%, var(--canvas) 24%);
+}
+
+html[data-native-shell] .tj-page-pull-content {
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
 }
 
 html[data-native-shell] .tj-main:has(.tj-subpage) {
     padding-top: 0;
     padding-right: calc(18px + env(safe-area-inset-right, 0px));
     padding-left: calc(18px + env(safe-area-inset-left, 0px));
+}
+
+html[data-native-shell] .tj-main:has(.tj-subpage) .tj-page-pull-content {
+    padding-top: 0;
 }
 
 html[data-native-shell] .tj-subpage-sticky-head {
@@ -1720,9 +1732,10 @@ html[data-native-shell] .tj-subpage-sticky-head {
 }
 
 html[data-native-shell] .tj-tabbar {
+    padding-top: 4px;
     padding-left: calc(4px + env(safe-area-inset-left, 0px));
     padding-right: calc(4px + env(safe-area-inset-right, 0px));
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
 }
 
 .tj-tab-recording-dot {

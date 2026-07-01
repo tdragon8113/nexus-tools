@@ -17,7 +17,7 @@ type UsePullToRefreshOptions = {
 };
 
 const DEFAULT_THRESHOLD = 56;
-const DEFAULT_HOLD = 48;
+const DEFAULT_HOLD = 52;
 const MIN_REFRESH_MS = 420;
 const COLLAPSE_MS = 320;
 

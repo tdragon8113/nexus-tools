@@ -80,18 +80,18 @@ export function AppLayout() {
             <div className="tj-phone">
                 <main className="tj-main" ref={scrollElementRef}>
                     <div className="tj-page-pull-wrap">
-                        <PullToRefreshIndicator
-                            offset={offset}
-                            threshold={threshold}
-                            holdOffset={holdOffset}
-                            isRefreshing={isRefreshing}
-                            phase={phase}
-                        />
                         <div
                             ref={contentRef}
                             className={`tj-page-pull-content${isAnimating ? ' tj-page-pull-content-animating' : ''}${isPulling ? ' tj-page-pull-content-dragging' : ''}`}
                             style={pullTransform ? { transform: pullTransform } : undefined}
                         >
+                            <PullToRefreshIndicator
+                                offset={offset}
+                                threshold={threshold}
+                                holdOffset={holdOffset}
+                                isRefreshing={isRefreshing}
+                                phase={phase}
+                            />
                             <div
                                 className={showHome ? undefined : 'tj-home-page-host'}
                                 aria-hidden={!showHome}
