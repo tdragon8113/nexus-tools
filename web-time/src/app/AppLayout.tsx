@@ -1,10 +1,7 @@
 import { useRef } from 'react';
 import { BarChart3, Home, PlusCircle, User } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import PullToRefreshIndicator from '../components/PullToRefreshIndicator';
 import { useNativeShell } from '../hooks/useNativeShell';
-import { usePageRefresh } from '../hooks/PageRefreshProvider';
-import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import ActivityDetailRoute from '../pages/ActivityDetailRoute';
 import HomeRoute from '../pages/HomeRoute';
 import RecordPage from '../pages/RecordPage';
@@ -56,57 +53,31 @@ function shouldShowTabbar(pathname: string) {
 export function AppLayout() {
     useNativeShell();
     const { pathname } = useLocation();
-    const { refreshCurrentPage } = usePageRefresh();
     const scrollElementRef = useRef<HTMLElement | null>(null);
-    const contentRef = useRef<HTMLDivElement | null>(null);
     const isRecordRoute = pathname === '/record';
     const showHome = isHomeRoute(pathname);
     const isActivityDetail = pathname.startsWith('/activity/');
     const showTabbar = shouldShowTabbar(pathname);
 
-    const { offset, phase, isPulling, isRefreshing, isAnimating, threshold, holdOffset } =
-        usePullToRefresh({
-            scrollElementRef,
-            contentRef,
-            onRefresh: refreshCurrentPage,
-            enabled: true,
-        });
-
-    const pullTransform =
-        offset > 0 || isAnimating ? `translate3d(0, ${offset}px, 0)` : undefined;
-
     return (
         <div className="tj-shell">
             <div className="tj-phone">
                 <main className="tj-main" ref={scrollElementRef}>
-                    <div className="tj-page-pull-wrap">
+                    <div className="tj-page-content">
                         <div
-                            ref={contentRef}
-                            className={`tj-page-pull-content${isAnimating ? ' tj-page-pull-content-animating' : ''}${isPulling ? ' tj-page-pull-content-dragging' : ''}`}
-                            style={pullTransform ? { transform: pullTransform } : undefined}
+                            className={showHome ? undefined : 'tj-home-page-host'}
+                            aria-hidden={!showHome}
                         >
-                            <PullToRefreshIndicator
-                                offset={offset}
-                                threshold={threshold}
-                                holdOffset={holdOffset}
-                                isRefreshing={isRefreshing}
-                                phase={phase}
-                            />
-                            <div
-                                className={showHome ? undefined : 'tj-home-page-host'}
-                                aria-hidden={!showHome}
-                            >
-                                <HomeRoute />
-                            </div>
-                            {isActivityDetail ? <ActivityDetailRoute /> : null}
-                            <div
-                                className={isRecordRoute ? undefined : 'tj-record-page-host'}
-                                aria-hidden={!isRecordRoute}
-                            >
-                                <RecordPage />
-                            </div>
-                            {!showHome && !isRecordRoute ? <Outlet /> : null}
+                            <HomeRoute />
                         </div>
+                        {isActivityDetail ? <ActivityDetailRoute /> : null}
+                        <div
+                            className={isRecordRoute ? undefined : 'tj-record-page-host'}
+                            aria-hidden={!isRecordRoute}
+                        >
+                            <RecordPage />
+                        </div>
+                        {!showHome && !isRecordRoute ? <Outlet /> : null}
                     </div>
                 </main>
 

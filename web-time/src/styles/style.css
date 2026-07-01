@@ -113,73 +113,8 @@ a,
     display: none;
 }
 
-.tj-page-pull-wrap {
-    position: relative;
-}
-
-.tj-page-pull-content {
-    will-change: transform;
-}
-
-.tj-page-pull-content-animating {
-    transition: transform 0.32s cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.tj-page-pull-content-dragging {
-    transition: none;
-}
-
-.tj-pull-refresh-slot {
-    display: flex;
-    flex-shrink: 0;
-    align-items: flex-end;
-    justify-content: center;
-    overflow: hidden;
-    padding-bottom: 6px;
-    pointer-events: none;
-}
-
-.tj-page-pull-content-animating .tj-pull-refresh-slot {
-    transition:
-        height 0.32s cubic-bezier(0.33, 1, 0.68, 1),
-        margin-top 0.32s cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.tj-page-pull-content-dragging .tj-pull-refresh-slot {
-    transition: none;
-}
-
-.tj-pull-refresh-inner {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--forest-soft);
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.tj-pull-refresh-icon {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(15, 62, 23, 0.18);
-    border-top-color: var(--forest);
-    border-radius: 999px;
-    flex-shrink: 0;
-}
-
-.tj-pull-refresh-inner-spin .tj-pull-refresh-icon {
-    animation: tj-pull-refresh-spin 0.8s linear infinite;
-}
-
-.tj-pull-refresh-inner-spin {
-    opacity: 1;
-}
-
-@keyframes tj-pull-refresh-spin {
-    to {
-        transform: rotate(360deg);
-    }
+.tj-page-content {
+    min-height: 0;
 }
 
 .tj-page {
@@ -1608,7 +1543,7 @@ a,
     gap: 3px;
     justify-items: center;
     align-content: center;
-    min-height: 40px;
+    min-height: 38px;
     padding: 0 2px;
     border: none;
     border-radius: 0;
@@ -1669,30 +1604,39 @@ html[data-native-shell] .tj-timeline-activity-row:active {
     height: 28px;
 }
 
-/* 桌面手机框预览：模拟 iOS Home Indicator（真机/PWA 由 safe-area 处理） */
+/* 桌面手机框预览：Home 条空间放在 Tab 项内 */
 html:not([data-native-shell]) .tj-phone .tj-tabbar {
-    padding-bottom: calc(8px + 20px);
+    align-items: end;
+    padding: 2px 4px 0;
+}
+
+html:not([data-native-shell]) .tj-phone .tj-tab {
+    align-content: end;
+    min-height: auto;
+    padding-bottom: calc(4px + 12px);
 }
 
 html[data-native-shell] {
     background: var(--canvas-soft);
     height: 100%;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    height: -webkit-fill-available;
+    min-height: 0;
+    max-height: 100%;
+    max-height: -webkit-fill-available;
 }
 
 html[data-native-shell] body {
     background: var(--canvas-soft);
     height: 100%;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    min-height: 0;
+    max-height: 100%;
 }
 
 html[data-native-shell] #root {
     background: var(--canvas-soft);
     height: 100%;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    min-height: 0;
+    max-height: 100%;
 }
 
 html[data-native-shell]::before {
@@ -1708,27 +1652,34 @@ html[data-native-shell]::before {
 }
 
 html[data-native-shell] .tj-shell {
-    display: block;
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    min-height: 0;
+    max-height: 100%;
     padding: 0;
     background: var(--canvas-soft);
+    overflow: hidden;
 }
 
 html[data-native-shell] .tj-phone {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     width: 100%;
     height: 100%;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
-    max-height: none;
+    min-height: 0;
+    max-height: 100%;
     border: none;
     border-radius: 0;
     box-shadow: none;
     background: var(--canvas-soft);
+    overflow: hidden;
 }
 
 html[data-native-shell] .tj-main {
+    flex: 1;
+    min-height: 0;
     padding-top: 0;
     padding-right: calc(18px + env(safe-area-inset-right, 0px));
     padding-bottom: 0;
@@ -1741,15 +1692,7 @@ html[data-native-shell] .tj-main {
     );
 }
 
-html[data-native-shell] .tj-phone:has(.tj-tabbar) .tj-main {
-    padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px));
-}
-
-html[data-standalone-pwa] .tj-phone:has(.tj-tabbar) .tj-main {
-    padding-bottom: 54px;
-}
-
-html[data-native-shell] .tj-page-pull-content {
+html[data-native-shell] .tj-page-content {
     padding-top: calc(10px + env(safe-area-inset-top, 0px));
 }
 
@@ -1759,7 +1702,7 @@ html[data-native-shell] .tj-main:has(.tj-subpage) {
     padding-left: calc(18px + env(safe-area-inset-left, 0px));
 }
 
-html[data-native-shell] .tj-main:has(.tj-subpage) .tj-page-pull-content {
+html[data-native-shell] .tj-main:has(.tj-subpage) .tj-page-content {
     padding-top: 0;
 }
 
@@ -1771,20 +1714,95 @@ html[data-native-shell] .tj-subpage-sticky-head {
     padding-left: calc(18px + env(safe-area-inset-left, 0px));
 }
 
-html[data-native-shell] .tj-tabbar {
+/* 浏览器/mobile 预览：Tab 内容靠底，Home 条空间放在 Tab 项内 */
+html[data-native-shell]:not([data-standalone-pwa]) .tj-tabbar {
+    position: static;
+    height: auto;
+    align-items: end;
+    padding: 2px 4px 0;
+}
+
+html[data-native-shell]:not([data-standalone-pwa]) .tj-tab {
+    align-content: end;
+    min-height: auto;
+    padding: 0 2px calc(4px + 12px);
+}
+
+/* PWA 主屏幕：fixed body 锁视口 + Tab 栏文档流贴底，不用 env 撑高 */
+html[data-standalone-pwa] {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+html[data-standalone-pwa] body {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
+html[data-standalone-pwa] #root,
+html[data-standalone-pwa] .tj-shell,
+html[data-standalone-pwa] .tj-phone {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+html[data-standalone-pwa] .tj-main {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 44px;
+}
+
+html[data-standalone-pwa] .tj-tabbar {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: 30;
-    padding-top: 4px;
-    padding-left: calc(4px + env(safe-area-inset-left, 0px));
-    padding-right: calc(4px + env(safe-area-inset-right, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    flex-shrink: 0;
+    height: auto;
+    box-sizing: border-box;
+    padding: 2px env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+    border-top: 1px solid rgba(15, 62, 23, 0.06);
+    background: rgba(255, 254, 252, 0.98);
+    backdrop-filter: blur(12px);
 }
 
-html[data-standalone-pwa] .tj-tabbar {
-    padding-bottom: 8px;
+/* PWA：Tab 贴屏幕底，不再叠 safe-area（fixed bottom:0 已贴底，env 会重复抬高） */
+html[data-standalone-pwa] .tj-tab {
+    display: grid;
+    gap: 2px;
+    justify-items: center;
+    align-content: end;
+    min-height: auto;
+    height: auto;
+    padding: 0 2px 4px;
+}
+
+html[data-standalone-pwa] .tj-tab-icon-wrap {
+    width: 26px;
+    height: 26px;
+}
+
+html[data-standalone-pwa] .tj-tab svg {
+    width: 24px;
+    height: 24px;
+}
+
+html[data-standalone-pwa] .tj-tab-label {
+    margin-top: 0;
+    font-size: 10px;
+    line-height: 1;
 }
 
 .tj-tab-recording-dot {

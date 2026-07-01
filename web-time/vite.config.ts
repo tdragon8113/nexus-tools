@@ -51,8 +51,9 @@ export default defineConfig({
             },
         }),
     ],
-    base: '/manage/time/',
+    base: '/manage/time',
     server: {
+        host: true,
         port: 3001,
         proxy: {
             '/api': { target: 'http://localhost:8080', changeOrigin: true },
