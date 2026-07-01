@@ -17,6 +17,7 @@ type StatsRangeToolbarProps = {
     rangeSelection: StatsRangeSelection;
     bounds: StatsPeriodBounds;
     onChange: (selection: StatsRangeSelection) => void;
+    disabled?: boolean;
 };
 
 function buildDefaultCustomRange(now = new Date()): { startKey: string; endKey: string } {
@@ -29,6 +30,7 @@ export default function StatsRangeToolbar({
     rangeSelection,
     bounds,
     onChange,
+    disabled = false,
 }: StatsRangeToolbarProps) {
     const todayKey = formatDateKey(new Date());
     const defaultCustom = useMemo(() => buildDefaultCustomRange(), []);
@@ -89,7 +91,10 @@ export default function StatsRangeToolbar({
             : `对比${bounds.previousLabel}`;
 
     return (
-        <section className="tj-stats-range-toolbar" aria-label="统计时间范围">
+        <section
+            className={`tj-stats-range-toolbar${disabled ? ' tj-stats-range-toolbar-disabled' : ''}`}
+            aria-label="统计时间范围"
+        >
             <div className="tj-stats-range-chips" role="tablist" aria-label="快捷时间范围">
                 {RANGE_PRESET_OPTIONS.map((item) => {
                     const active = rangeSelection.preset === item.id;
@@ -99,6 +104,7 @@ export default function StatsRangeToolbar({
                             type="button"
                             role="tab"
                             aria-selected={active}
+                            disabled={disabled}
                             className={`tj-stats-range-chip${active ? ' tj-stats-range-chip-active' : ''}`}
                             onClick={() => handlePresetClick(item.id)}
                         >

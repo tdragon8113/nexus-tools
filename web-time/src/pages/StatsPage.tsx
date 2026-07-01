@@ -1,23 +1,37 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getDemoStatsViewData } from '../domain/statsDemoData';
 import { filterActivitiesForStats, type StatsRangeSelection } from '../domain/stats';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { usePageRefresh } from '../hooks/PageRefreshProvider';
 import { useTimeJournal } from '../hooks/TimeJournalProvider';
 import StatsUnifiedView from './stats/statsUnifiedView';
 
 export default function StatsPage() {
     const navigate = useNavigate();
-    const { authSession, categories, activities } = useTimeJournal();
+    const { authSession, categories, activities, refreshData } = useTimeJournal();
+    const { registerPageRefresh } = usePageRefresh();
     const [rangeSelection, setRangeSelection] = useState<StatsRangeSelection>({
         preset: 'week',
     });
     const [excludeSleep, setExcludeSleep] = useState(false);
+    const demoData = useMemo(() => getDemoStatsViewData(), []);
 
     const { loading, error, data, refetch } = useAnalytics({
         rangeSelection,
         excludeSleep,
         enabled: Boolean(authSession),
     });
+
+    useEffect(() => {
+        if (!authSession) {
+            return;
+        }
+        return registerPageRefresh(async () => {
+            await refreshData(['activities', 'ongoing']);
+            await refetch();
+        });
+    }, [authSession, registerPageRefresh, refreshData, refetch]);
 
     const filteredActivities = useMemo(
         () => filterActivitiesForStats(activities, excludeSleep),
@@ -26,13 +40,12 @@ export default function StatsPage() {
 
     if (!authSession) {
         return (
-            <div className="tj-page tj-stats-root">
-                <header className="tj-page-header">
-                    <p className="tj-kicker">时间结构</p>
-                    <h1>统计</h1>
-                </header>
-                <div className="tj-empty-card">
-                    <span>登录账户，查看时间统计</span>
+            <div className="tj-stats-root tj-stats-root-guest">
+                <div className="tj-stats-demo-banner">
+                    <div>
+                        <strong>示例预览</strong>
+                        <span>登录后查看你的真实时间统计</span>
+                    </div>
                     <button
                         type="button"
                         className="tj-primary-btn"
@@ -41,6 +54,20 @@ export default function StatsPage() {
                         去登录
                     </button>
                 </div>
+                <StatsUnifiedView
+                    demoMode
+                    activities={demoData.activities}
+                    categories={demoData.categories}
+                    rangeSelection={rangeSelection}
+                    setRangeSelection={setRangeSelection}
+                    excludeSleep={excludeSleep}
+                    setExcludeSleep={setExcludeSleep}
+                    bounds={demoData.bounds}
+                    metrics={demoData.metrics}
+                    categoryBreakdown={demoData.categoryBreakdown}
+                    totalChange={demoData.totalChange}
+                    onOpenActivity={() => navigate('/profile')}
+                />
             </div>
         );
     }

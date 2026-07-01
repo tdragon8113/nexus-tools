@@ -23,6 +23,7 @@ import {
 import type { Activity, ActivityCategory } from '../domain/types';
 import { useTimeJournal } from '../hooks/TimeJournalProvider';
 import { hasNoteContent } from '../domain/noteRichText';
+import RecordGuestPreview from './RecordGuestPreview';
 
 type RecordPhase = 'idle' | 'active';
 type RecordMode = 'live' | 'backfill';
@@ -376,16 +377,7 @@ export default function RecordPage() {
     }
 
     if (!authSession) {
-        return (
-            <div className="tj-page">
-                <header className="tj-page-header">
-                    <p className="tj-kicker">开始记录</p>
-                    <h1>记录一次活动</h1>
-                    <p className="tj-page-lead">登录后可开始实时记录或补录过往活动。</p>
-                </header>
-                <div className="tj-empty-card">请先在「我的」页面登录账户</div>
-            </div>
-        );
+        return <RecordGuestPreview />;
     }
 
     const overlapPromptSection = overlapPrompt ? (

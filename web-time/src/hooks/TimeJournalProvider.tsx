@@ -69,7 +69,18 @@ type TimeJournalContextValue = {
     deleteCategory: (slug: string) => Promise<void>;
     resetCategories: () => Promise<ActivityCategoryConfig[]>;
     clearError: () => void;
+    refreshData: (targets: DataRefreshTarget[]) => Promise<void>;
 };
+
+export type DataRefreshTarget =
+    | 'session'
+    | 'categories'
+    | 'activities'
+    | 'ongoing'
+    | 'reflections'
+    | 'summary';
+
+export type TimeJournalRefreshApi = Pick<TimeJournalContextValue, 'refreshData'>;
 
 const TimeJournalContext = createContext<TimeJournalContextValue | null>(null);
 
@@ -122,6 +133,60 @@ export function TimeJournalProvider({ children }: { children: ReactNode }) {
         setReflections(mapReflections(reflectionRows));
         setOngoing(ongoingRow ? mapActivity(ongoingRow) : null);
         setSummary(mapSummary(summaryRow));
+    }, []);
+
+    const refreshData = useCallback(async (targets: DataRefreshTarget[]) => {
+        if (!tokenStorage.hasTokens()) {
+            return;
+        }
+
+        const unique = [...new Set(targets)];
+        const jobs: Promise<void>[] = [];
+
+        if (unique.includes('session')) {
+            jobs.push(
+                authApi.getMe().then((user) => {
+                    setAuthSession(mapAuthSession(user));
+                }),
+            );
+        }
+        if (unique.includes('categories')) {
+            jobs.push(
+                categoriesApi.listCategories().then((rows) => {
+                    setCategories(mapCategories(rows));
+                }),
+            );
+        }
+        if (unique.includes('activities')) {
+            jobs.push(
+                activitiesApi.listActivities().then((rows) => {
+                    setActivities(mapActivities(rows));
+                }),
+            );
+        }
+        if (unique.includes('ongoing')) {
+            jobs.push(
+                activitiesApi.getOngoingActivity().then((row) => {
+                    setOngoing(row ? mapActivity(row) : null);
+                }),
+            );
+        }
+        if (unique.includes('reflections')) {
+            jobs.push(
+                reflectionsApi.listReflections().then((rows) => {
+                    setReflections(mapReflections(rows));
+                }),
+            );
+        }
+        if (unique.includes('summary')) {
+            jobs.push(
+                analyticsApi.getSummary().then((row) => {
+                    setSummary(mapSummary(row));
+                }),
+            );
+        }
+
+        await Promise.all(jobs);
     }, []);
 
     useEffect(() => {
@@ -309,6 +374,7 @@ export function TimeJournalProvider({ children }: { children: ReactNode }) {
             logout,
             register,
             refreshAll,
+            refreshData,
             saveActivity,
             updateActivity,
             deleteActivity,
@@ -333,6 +399,7 @@ export function TimeJournalProvider({ children }: { children: ReactNode }) {
             logout,
             register,
             refreshAll,
+            refreshData,
             saveActivity,
             updateActivity,
             deleteActivity,

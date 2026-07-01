@@ -70,13 +70,16 @@ export function CategoryChange({ change }: { change: number | null }) {
 export function ExcludeSleepToggle({
     excludeSleep,
     onChange,
+    disabled = false,
 }: {
     excludeSleep: boolean;
     onChange: (value: boolean) => void;
+    disabled?: boolean;
 }) {
     return (
         <button
             type="button"
+            disabled={disabled}
             className={`tj-stats-filter-chip${excludeSleep ? ' tj-stats-filter-chip-active' : ''}`}
             onClick={() => onChange(!excludeSleep)}
         >

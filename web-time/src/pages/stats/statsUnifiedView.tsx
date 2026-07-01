@@ -16,6 +16,7 @@ import { ChangeBadge, ExcludeSleepToggle, type StatsViewProps } from './statsSha
 
 type StatsUnifiedViewProps = StatsViewProps & {
     onOpenActivity?: (activityId: string) => void;
+    demoMode?: boolean;
 };
 
 export default function StatsUnifiedView({
@@ -29,6 +30,7 @@ export default function StatsUnifiedView({
     metrics,
     categoryBreakdown,
     onOpenActivity,
+    demoMode = false,
 }: StatsUnifiedViewProps) {
     const [focusedCategoryId, setFocusedCategoryId] = useState<string | null>(null);
     const hasOngoing = useMemo(
@@ -120,7 +122,7 @@ export default function StatsUnifiedView({
     };
 
     return (
-        <div className="tj-page tj-stats-unified">
+        <div className={`tj-page tj-stats-unified${demoMode ? ' tj-stats-unified-demo' : ''}`}>
             <header className="tj-page-header">
                 <p className="tj-kicker">时间结构</p>
                 <h1>统计</h1>
@@ -131,6 +133,7 @@ export default function StatsUnifiedView({
                 rangeSelection={rangeSelection}
                 bounds={bounds}
                 onChange={setRangeSelection}
+                disabled={demoMode}
             />
 
             <section className="tj-card tj-stats-summary-card">
@@ -203,7 +206,11 @@ export default function StatsUnifiedView({
             <section className="tj-section">
                 <div className="tj-section-head">
                     <h2>类型分布</h2>
-                    <ExcludeSleepToggle excludeSleep={excludeSleep} onChange={setExcludeSleep} />
+                    <ExcludeSleepToggle
+                        excludeSleep={excludeSleep}
+                        onChange={setExcludeSleep}
+                        disabled={demoMode}
+                    />
                 </div>
                 {visibleCategories.length === 0 ? (
                     <div className="tj-empty-card">{bounds.label}还没有可统计的数据。</div>

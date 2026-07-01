@@ -1,4 +1,5 @@
 import { BrowserRouter, useRoutes } from 'react-router-dom';
+import { PageRefreshProvider } from '../hooks/PageRefreshProvider';
 import { TimeJournalProvider } from '../hooks/TimeJournalProvider';
 import { routes } from './routes';
 
@@ -10,7 +11,9 @@ export function App() {
     return (
         <TimeJournalProvider>
             <BrowserRouter basename="/manage/time">
-                <AppRoutes />
+                <PageRefreshProvider>
+                    <AppRoutes />
+                </PageRefreshProvider>
             </BrowserRouter>
         </TimeJournalProvider>
     );
