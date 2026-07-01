@@ -81,6 +81,7 @@ lerna-debug.log*
 .next/
 out/
 dist/
+dev-dist/
 .vite/
 vite.config.*.timestamp-*
 *.tsbuildinfo
