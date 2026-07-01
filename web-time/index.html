@@ -7,12 +7,33 @@
     <meta name="description" content="记录时间，看见生活" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="时光记" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <title>时光记</title>
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var syncShell = function () {
+          var nav = navigator;
+          var native =
+            nav.standalone ||
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.matchMedia('(display-mode: fullscreen)').matches ||
+            window.matchMedia('(max-width: 768px)').matches ||
+            window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+          root.toggleAttribute('data-native-shell', native);
+        };
+        var syncVh = function () {
+          var height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+          root.style.setProperty('--app-vh', height + 'px');
+        };
+        syncShell();
+        syncVh();
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

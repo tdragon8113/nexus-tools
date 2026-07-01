@@ -19,8 +19,8 @@ export default defineConfig({
                 scope: '/manage/time/',
                 display: 'standalone',
                 orientation: 'portrait',
-                theme_color: '#0f3e17',
-                background_color: '#eef6ef',
+                theme_color: '#f7faf6',
+                background_color: '#f7faf6',
                 icons: [
                     {
                         src: 'pwa-192.png',
