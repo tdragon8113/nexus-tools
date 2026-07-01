@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { startViewportMetricsSync } from './viewportMetrics';
+import { startNativeShellSync } from './viewportMetrics';
 
 export function useNativeShell() {
-    useEffect(() => startViewportMetricsSync(), []);
+    useEffect(() => startNativeShellSync(), []);
 }

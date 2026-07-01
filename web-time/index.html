@@ -16,22 +16,13 @@
     <script>
       (function () {
         var root = document.documentElement;
-        var syncShell = function () {
-          var nav = navigator;
-          var native =
-            nav.standalone ||
-            window.matchMedia('(display-mode: standalone)').matches ||
-            window.matchMedia('(display-mode: fullscreen)').matches ||
-            window.matchMedia('(max-width: 768px)').matches ||
-            window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-          root.toggleAttribute('data-native-shell', native);
-        };
-        var syncVh = function () {
-          var height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-          root.style.setProperty('--app-vh', height + 'px');
-        };
-        syncShell();
-        syncVh();
+        var native =
+          navigator.standalone ||
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: fullscreen)').matches ||
+          window.matchMedia('(max-width: 768px)').matches ||
+          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        root.toggleAttribute('data-native-shell', native);
       })();
     </script>
   </head>

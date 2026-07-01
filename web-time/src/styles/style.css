@@ -1676,19 +1676,13 @@ html:not([data-native-shell]) .tj-phone .tj-tabbar {
 
 html[data-native-shell] {
     background: var(--canvas-soft);
-    height: var(--app-vh, 100svh);
-    min-height: var(--app-vh, 100svh);
 }
 
 html[data-native-shell] body {
     background: var(--canvas-soft);
-    height: var(--app-vh, 100svh);
-    min-height: var(--app-vh, 100svh);
 }
 
 html[data-native-shell] #root {
-    height: var(--app-vh, 100svh);
-    min-height: var(--app-vh, 100svh);
     background: var(--canvas-soft);
 }
 
@@ -1706,17 +1700,17 @@ html[data-native-shell]::before {
 
 html[data-native-shell] .tj-shell {
     display: block;
-    min-height: var(--app-vh, 100svh);
-    height: var(--app-vh, 100svh);
+    min-height: 100dvh;
+    height: 100%;
     padding: 0;
     background: var(--canvas-soft);
 }
 
 html[data-native-shell] .tj-phone {
     width: 100%;
-    height: var(--app-vh, 100svh);
-    min-height: var(--app-vh, 100svh);
-    max-height: var(--app-vh, 100svh);
+    height: 100%;
+    min-height: 100dvh;
+    max-height: none;
     border: none;
     border-radius: 0;
     box-shadow: none;
@@ -1762,7 +1756,7 @@ html[data-native-shell] .tj-tabbar {
     padding-top: 4px;
     padding-left: calc(4px + env(safe-area-inset-left, 0px));
     padding-right: calc(4px + env(safe-area-inset-right, 0px));
-    padding-bottom: calc(4px + var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .tj-tab-recording-dot {
